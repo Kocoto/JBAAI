@@ -1,0 +1,9 @@
+.vs
+node_modules/
+.vercel
+dist/
+
+# Logs
+*.log
+error.log
+logs/
