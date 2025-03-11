@@ -5,6 +5,8 @@ import { hashPassword, comparePasswords } from "../utils/Password.Util";
 import {
   accessTokenGenerator,
   refreshTokenGenerator,
+  TokenPayload,
+  verifyToken,
 } from "../utils/Token.Util";
 
 class AuthService {
@@ -59,6 +61,47 @@ class AuthService {
     );
 
     return { user, accessToken, refreshToken };
+  }
+
+  async refreshAccessToken(refreshToken: string, clientId: string) {
+    // Verify refresh token
+    const decoded = verifyToken(refreshToken, true) as TokenPayload;
+
+    // Check if refresh token exists and is active in database
+    const tokenDoc = await TokenModel.findOne({
+      userId: decoded.userId,
+      clientId: clientId,
+      token: refreshToken,
+      status: "active",
+    });
+
+    if (!tokenDoc) {
+      throw new CustomError(401, "Refresh token không hợp lệ hoặc đã hết hạn");
+    }
+
+    // Generate new access token
+    const accessToken = accessTokenGenerator(decoded.userId, clientId);
+    const refreshTokenNew = refreshTokenGenerator(decoded.userId, clientId);
+
+    // Update refresh token in database
+    await TokenModel.findOneAndUpdate(
+      { userId: decoded.userId, clientId: clientId },
+      { token: refreshTokenNew }
+    );
+
+    return {
+      accessToken,
+      refreshToken: refreshTokenNew, // Return existing refresh token
+    };
+  }
+
+  async logout(userId: string, clientId: string) {
+    const token = await TokenModel.findOneAndUpdate(
+      { userId: userId, clientId: clientId },
+      { status: "inactive" },
+      { new: true }
+    );
+    return token;
   }
 }
 export default new AuthService();

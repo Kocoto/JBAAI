@@ -4,9 +4,11 @@ import { route } from "./app/routes";
 import { connect } from "./app/config/db";
 import * as dotenv from "dotenv";
 import errorHandler from "./app/middlewares/Error.Middleware";
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./app/config/swagger.config";
 
 dotenv.config();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 const app = express();
 
@@ -17,6 +19,8 @@ app.use(bodyParser.json());
 
 // Database connection
 connect();
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Routes
 route(app);
