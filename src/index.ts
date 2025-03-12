@@ -6,6 +6,7 @@ import * as dotenv from "dotenv";
 import errorHandler from "./app/middlewares/Error.Middleware";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./app/config/swagger.config";
+import { transporter } from "./app/config/nodemailer.config";
 
 dotenv.config();
 const port = process.env.PORT || 4000;
@@ -22,6 +23,14 @@ connect();
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("Nodemailer connection error:", error);
+  } else {
+    console.log("Nodemailer is ready to send emails");
+    console.log("Server is ready to take our messages");
+  }
+});
 // Routes
 route(app);
 
