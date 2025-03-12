@@ -18,6 +18,7 @@ export interface IUser {
     default: "active";
     required: true;
   };
+  verify: boolean;
   birthday?: string;
   avatar?: string;
   address?: string;
@@ -41,6 +42,10 @@ const UserSchema = new Schema<IUser>(
       enum: ["active", "inactive"],
       default: "active",
       required: true,
+    },
+    verify: {
+      type: Boolean,
+      default: false,
     },
     birthday: { type: String },
     avatar: { type: String },
