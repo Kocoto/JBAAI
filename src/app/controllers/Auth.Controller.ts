@@ -229,6 +229,83 @@ class AuthController {
       next(error);
     }
   }
+
+  
+  /**
+   * @swagger
+   * /api/v1/auth/verify-otp:
+   *   post:
+   *     summary: Verify OTP
+   *     description: Verifies the OTP sent to user's email and activates the account
+   *     tags: [Auth]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - email
+   *               - otp
+   *               - clientId
+   *             properties:
+   *               email:
+   *                 type: string
+   *                 format: email
+   *                 description: User's email address
+   *               otp:
+   *                 type: string
+   *                 description: One-time password sent to user's email
+   *               clientId:
+   *                 type: string
+   *                 description: Client identifier for token generation
+   *     responses:
+   *       200:
+   *         description: OTP verified successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     user:
+   *                       $ref: '#/components/schemas/User'
+   *                     accessToken:
+   *                       type: string
+   *                       description: JWT access token
+   *                     refreshToken:
+   *                       type: string
+   *                       description: JWT refresh token
+   *       400:
+   *         description: Invalid OTP or user not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       500:
+   *         description: Server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  async verifyOTP(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, otp, clientId } = req.body;
+      const user = await AuthService.verifyOTP(email, otp, clientId);
+      res.status(200).json({
+        success: true,
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new AuthController();

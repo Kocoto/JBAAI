@@ -26,9 +26,9 @@ export interface IUser {
 
 const UserSchema = new Schema<IUser>(
   {
-    username: { type: String, required: true },
+    username: { type: String, unique: true, required: true, index: true },
     password: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, unique: true, required: true, index: true },
     gender: { type: String, required: true },
     phone: { type: String, required: true },
     role: {
