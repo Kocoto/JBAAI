@@ -188,5 +188,43 @@ class AuthService {
       throw new CustomError(500, "Error verifying OTP");
     }
   }
+
+  async resendOTP(email: string) {
+    const user = await UserModel.findOne({ email: email });
+    if (!user) {
+      throw new CustomError(400, "User not found");
+    }
+
+    const otp = generateOTP();
+    const hashedOtp = await hashOtp(otp);
+    await OtpModel.findOneAndUpdate(
+      { userId: user._id },
+      { otp: hashedOtp },
+      { new: true, upsert: true }
+    );
+
+    const mailOptions = {
+      from: "duoc6694@gmail.com",
+      to: user.email,
+      subject: "OTP",
+      html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+        <h2>Your OTP Code</h2>
+        <p>Please use the following OTP code to proceed:</p>
+        <div style="display: flex; align-items: center;">
+          <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
+        </div>
+        <p>Thank you for using our service!</p>
+      </div>
+    `,
+    };
+
+    const checkSendMail = await sendMail(mailOptions);
+    if (!checkSendMail) {
+      throw new CustomError(400, "Send mail failed");
+    }
+
+    return { message: "OTP resent successfully" };
+  }
 }
 export default new AuthService();

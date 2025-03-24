@@ -230,7 +230,6 @@ class AuthController {
     }
   }
 
-  
   /**
    * @swagger
    * /api/v1/auth/verify-otp:
@@ -301,6 +300,18 @@ class AuthController {
       res.status(200).json({
         success: true,
         data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async resendOTP(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email } = req.body;
+      await AuthService.resendOTP(email);
+      res.status(200).json({
+        success: true,
       });
     } catch (error) {
       next(error);
