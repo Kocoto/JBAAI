@@ -7,6 +7,7 @@ const router = Router();
 router.post("/refresh-token", AuthControllers.refreshToken);
 router.post("/logout", checkLogin, AuthControllers.logout);
 router.post("/verify-otp", AuthControllers.verifyOTP);
+router.post("/resend-otp", AuthControllers.resendOTP);
 router.post("/register", AuthControllers.register);
 router.post("/login", AuthControllers.login);
 
