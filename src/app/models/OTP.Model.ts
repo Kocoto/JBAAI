@@ -5,6 +5,8 @@ interface IOtp {
   otp: string;
   email: string;
   expiresAt: Date;
+  updatedAt?: Date;
+  createdAt?: Date;
 }
 
 const OtpSchema = new Schema<IOtp>(

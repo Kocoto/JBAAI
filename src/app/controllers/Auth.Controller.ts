@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import AuthService from "../services/Auth.Service";
+import OTPService from "../services/OTP.Service";
 
 class AuthController {
   /**
@@ -232,7 +233,7 @@ class AuthController {
 
   /**
    * @swagger
-   * /api/v1/auth/verify-otp:
+   * /api/v1/auth/verify-otp-to-login:
    *   post:
    *     summary: Verify OTP
    *     description: Verifies the OTP sent to user's email and activates the account
@@ -293,10 +294,10 @@ class AuthController {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  async verifyOTP(req: Request, res: Response, next: NextFunction) {
+  async verifyOTPtoLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, otp, clientId } = req.body;
-      const user = await AuthService.verifyOTP(email, otp, clientId);
+      const user = await OTPService.verifyOTPtoLogin(email, otp, clientId);
       res.status(200).json({
         success: true,
         data: user,
@@ -306,12 +307,39 @@ class AuthController {
     }
   }
 
-  async resendOTP(req: Request, res: Response, next: NextFunction) {
+  async getOTP(req: Request, res: Response, next: NextFunction) {
     try {
       const { email } = req.body;
-      await AuthService.resendOTP(email);
+      const result = await OTPService.getOTP(email);
       res.status(200).json({
         success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async verifyOTP(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, otp } = req.body;
+      const result = await OTPService.verifyOTP(email, otp);
+      res.status(200).json({
+        success: true,
+        message: result.message,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { email, password } = req.body;
+      const result = await AuthService.resetPassword(email, password);
+      res.status(200).json({
+        success: true,
+        message: result.message,
       });
     } catch (error) {
       next(error);
