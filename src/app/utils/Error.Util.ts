@@ -1,11 +1,13 @@
 class CustomError extends Error {
   status: number;
-  data?: any;
+  // data?: any;
 
   constructor(status: number, message: string, data?: any) {
     super(message);
     this.status = status;
-    this.data = data;
+    this.name = "CustomError";
+    Object.setPrototypeOf(this, CustomError.prototype);
+    // this.data = data;
   }
 }
 

@@ -35,61 +35,91 @@ class AuthService {
   }
 
   async login(email: string, password: string, clientId: string) {
-    const user = await UserModel.findOne({
-      $or: [{ email: email }, { username: email }],
-    });
-    if (!user) {
-      throw new CustomError(400, "Không tìm thấy người dùng hoặc email");
-    }
-    const isPasswordValid = comparePasswords(password, user.password);
-    if (!isPasswordValid) {
-      throw new CustomError(400, "Mật khẩu không hợp lệ");
-    }
-    const checkVerified = user.verify;
-    if (!checkVerified) {
-      await OtpModel.deleteOne({ userId: user._id });
-      const otp = generateOTP();
-      const hashedOtp = await hashOtp(otp);
-      await OtpModel.create({
-        userId: user._id,
-        otp: hashedOtp,
-        email: user.email,
+    try {
+      // Find user
+      const user = await UserModel.findOne({
+        $or: [{ email: email }, { username: email }],
       });
-      console.log(
-        "Đây là log dòng số 50 của file Auth.Service.ts để kiếm tra xem user đã verify chưa"
-      );
-      const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: user.email,
-        subject: "Mã OTP",
-        html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-          <h2>Mã OTP của bạn</h2>
-          <p>Vui lòng sử dụng mã OTP sau để tiếp tục:</p>
-          <div style="display: flex; align-items: center;">
-            <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
-          </div>
-          <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
-        </div>
-      `,
-      };
 
-      const checkSendMail = await sendMail(mailOptions);
-      if (!checkSendMail) {
-        throw new CustomError(400, "Gửi email thất bại");
+      if (!user) {
+        throw new CustomError(400, "Không tìm thấy người dùng hoặc email");
       }
-      throw new CustomError(400, "Vui lòng xác thực email của bạn");
+      // Validate password
+      const isPasswordValid = await comparePasswords(password, user.password);
+      if (!isPasswordValid) {
+        throw new CustomError(400, "Mật khẩu không hợp lệ");
+      }
+
+      // Check if user is verified
+      if (!user.verify) {
+        try {
+          // Delete existing OTP if any
+          await OtpModel.deleteOne({ userId: user._id });
+
+          // Generate and hash new OTP
+          const otp = generateOTP();
+          const hashedOtp = await hashOtp(otp);
+
+          // Create OTP record with expiration
+          await OtpModel.create({
+            userId: user._id,
+            otp: hashedOtp,
+            email: user.email,
+          });
+
+          // Prepare and send email
+          const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: user.email,
+            subject: "Xác thực tài khoản - Mã OTP",
+            html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+              <h2>Mã OTP của bạn</h2>
+              <p>Vui lòng sử dụng mã OTP sau để xác thực tài khoản của bạn:</p>
+              <div style="display: flex; align-items: center;">
+                <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
+              </div>
+              <p>Mã này sẽ hết hạn sau 10 phút.</p>
+              <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+            </div>
+            `,
+          };
+
+          const checkSendMail = await sendMail(mailOptions);
+          if (!checkSendMail) {
+            throw new CustomError(
+              500,
+              "Gửi email thất bại. Vui lòng thử lại sau."
+            );
+          }
+
+          throw new CustomError(
+            400,
+            "Vui lòng kiểm tra email và xác thực tài khoản của bạn"
+          );
+        } catch (otpError) {
+          if (otpError instanceof CustomError) throw otpError;
+          throw new CustomError(500, "Lỗi trong quá trình tạo và gửi mã OTP");
+        }
+      }
+
+      // Generate tokens and update token record
+      const [refreshToken, accessToken] = await Promise.all([
+        refreshTokenGenerator(String(user._id), clientId),
+        accessTokenGenerator(String(user._id), clientId),
+      ]);
+
+      await TokenModel.findOneAndUpdate(
+        { userId: user._id, clientId: clientId },
+        { token: refreshToken, status: "active" },
+        { new: true, upsert: true }
+      );
+
+      return { user, accessToken, refreshToken };
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, "Lỗi khi đăng nhập");
     }
-
-    const refreshToken = refreshTokenGenerator(String(user._id), clientId);
-    const accessToken = accessTokenGenerator(String(user._id), clientId);
-    await TokenModel.findOneAndUpdate(
-      { userId: user._id, clientId: clientId },
-      { token: refreshToken, status: "active" },
-      { new: true, upsert: true }
-    );
-
-    return { user, accessToken, refreshToken };
   }
 
   async refreshAccessToken(refreshToken: string, clientId: string) {
@@ -129,6 +159,7 @@ class AuthService {
         refreshToken: refreshTokenNew,
       };
     } catch (error) {
+      if (error instanceof CustomError) throw error;
       throw new CustomError(401, "Token làm mới không hợp lệ hoặc đã hết hạn");
     }
   }
