@@ -14,7 +14,7 @@ const OtpSchema = new Schema<IOtp>(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     otp: { type: String, required: true },
     email: { type: String, required: true },
-    expiresAt: { type: Date, default: Date.now, expires: 300 },
+    expiresAt: { type: Date, default: Date.now, expires: 600 },
   },
   {
     timestamps: true,

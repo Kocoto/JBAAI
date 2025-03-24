@@ -8,14 +8,14 @@ const errorHandler: ErrorRequestHandler = (
   res: Response,
   next: NextFunction
 ) => {
-  logger.error(err.stack);
+  // logger.error(err.stack);
 
   const statusCode = err instanceof CustomError ? err.status : 500;
 
   res.status(statusCode).json({
     success: false,
     message: err.message,
-    data: err instanceof CustomError ? err.data : null,
+    // data: err instanceof CustomError ? err.data : null,
     stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
 };

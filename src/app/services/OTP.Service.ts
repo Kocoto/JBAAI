@@ -59,11 +59,6 @@ class OTPService {
 
   async getOTP(email: string) {
     try {
-      // Validate input
-      if (!email) {
-        throw new CustomError(400, "Email là bắt buộc");
-      }
-
       const user = await UserModel.findOne({ email: email });
       if (!user) {
         throw new CustomError(400, "Không tìm thấy người dùng");

@@ -4,7 +4,6 @@ export interface IUser {
   username: string;
   password: string;
   email: string;
-  gender: string;
   phone: string;
   role: {
     type: string;
@@ -19,9 +18,6 @@ export interface IUser {
     required: true;
   };
   verify: boolean;
-  birthday?: string;
-  avatar?: string;
-  address?: string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -29,8 +25,7 @@ const UserSchema = new Schema<IUser>(
     username: { type: String, unique: true, required: true, index: true },
     password: { type: String, required: true },
     email: { type: String, unique: true, required: true, index: true },
-    gender: { type: String, required: true },
-    phone: { type: String, required: true },
+    phone: { type: String, required: true, unique: true },
     role: {
       type: String,
       enum: ["admin", "user"],
@@ -47,9 +42,6 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
-    birthday: { type: String },
-    avatar: { type: String },
-    address: { type: String },
   },
   { timestamps: true }
 );
