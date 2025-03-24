@@ -3,7 +3,7 @@ import TokenModel from "../models/Token.Model";
 import UserModel, { IUser } from "../models/User.Model";
 import CustomError from "../utils/Error.Util";
 import { sendMail } from "../utils/Mail.Util";
-import { generateOTP, hashOtp } from "../utils/OTP.Util";
+import { compareOtp, generateOTP, hashOtp } from "../utils/OTP.Util";
 import { hashPassword, comparePasswords } from "../utils/Password.Util";
 import {
   accessTokenGenerator,
@@ -20,10 +20,10 @@ class AuthService {
     ]);
 
     if (existingEmail) {
-      throw new CustomError(400, "Email already exists");
+      throw new CustomError(400, "Email đã tồn tại");
     }
     if (existingUsername) {
-      throw new CustomError(400, "Username already exists");
+      throw new CustomError(400, "Tên người dùng đã tồn tại");
     }
     const hashedPassword = await hashPassword(data.password);
     const user = await UserModel.create({
@@ -39,11 +39,11 @@ class AuthService {
       $or: [{ email: email }, { username: email }],
     });
     if (!user) {
-      throw new CustomError(400, "User or email not found");
+      throw new CustomError(400, "Không tìm thấy người dùng hoặc email");
     }
     const isPasswordValid = comparePasswords(password, user.password);
     if (!isPasswordValid) {
-      throw new CustomError(400, "Invalid password");
+      throw new CustomError(400, "Mật khẩu không hợp lệ");
     }
     const checkVerified = user.verify;
     if (!checkVerified) {
@@ -59,26 +59,26 @@ class AuthService {
         "Đây là log dòng số 50 của file Auth.Service.ts để kiếm tra xem user đã verify chưa"
       );
       const mailOptions = {
-        from: "duoc6694@gmail.com",
+        from: process.env.EMAIL_USER,
         to: user.email,
-        subject: "OTP",
+        subject: "Mã OTP",
         html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-          <h2>Your OTP Code</h2>
-          <p>Please use the following OTP code to proceed:</p>
+          <h2>Mã OTP của bạn</h2>
+          <p>Vui lòng sử dụng mã OTP sau để tiếp tục:</p>
           <div style="display: flex; align-items: center;">
             <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
           </div>
-          <p>Thank you for using our service!</p>
+          <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
         </div>
       `,
       };
 
       const checkSendMail = await sendMail(mailOptions);
       if (!checkSendMail) {
-        throw new CustomError(400, "Send mail failed");
+        throw new CustomError(400, "Gửi email thất bại");
       }
-      throw new CustomError(400, "Please verify your email");
+      throw new CustomError(400, "Vui lòng xác thực email của bạn");
     }
 
     const refreshToken = refreshTokenGenerator(String(user._id), clientId);
@@ -129,8 +129,7 @@ class AuthService {
         refreshToken: refreshTokenNew,
       };
     } catch (error) {
-      // Tối ưu: Xử lý lỗi token hết hạn
-      throw new CustomError(401, "Invalid or expired refresh token");
+      throw new CustomError(401, "Token làm mới không hợp lệ hoặc đã hết hạn");
     }
   }
 
@@ -143,88 +142,44 @@ class AuthService {
     return token;
   }
 
-  async verifyOTP(email: string, otp: string, clientId: string) {
-    // Tối ưu: Thêm try-catch để xử lý lỗi
+  async resetPassword(email: string, password: string) {
     try {
-      const user = await UserModel.findOne({ email: email });
-      if (!user) {
-        throw new CustomError(400, "User not found");
+      // Validate input
+      if (!email || !password) {
+        throw new CustomError(400, "Email và mật khẩu là bắt buộc");
       }
 
-      const otpDoc = await OtpModel.findOne({ userId: user._id });
-      if (!otpDoc) {
-        throw new CustomError(400, "OTP not found or expired");
-      }
-
-      const isValidOtp = comparePasswords(otp, otpDoc.otp);
-      if (!isValidOtp) {
-        throw new CustomError(400, "Invalid OTP");
-      }
-
-      // Tối ưu: Thực hiện các thao tác cập nhật song song
-      const [updatedUser] = await Promise.all([
-        UserModel.findOneAndUpdate(
-          { _id: user._id },
-          { verify: true },
-          { new: true }
-        ),
-        OtpModel.deleteOne({ userId: user._id }),
+      // Find user and verify OTP status
+      const [user, otpDoc] = await Promise.all([
+        UserModel.findOne({ email: email }),
+        OtpModel.findOne({ email: email }),
       ]);
 
-      // Tạo token
-      const refreshToken = refreshTokenGenerator(String(user._id), clientId);
-      const accessToken = accessTokenGenerator(String(user._id), clientId);
+      if (!user) {
+        throw new CustomError(400, "Không tìm thấy người dùng");
+      }
 
-      await TokenModel.findOneAndUpdate(
-        { userId: user._id, clientId: clientId },
-        { token: refreshToken, status: "active" },
-        { new: true, upsert: true }
+      // Hash new password
+      const hashedPassword = await hashPassword(password);
+
+      const updatedUser = await UserModel.findOneAndUpdate(
+        { email: email },
+        { password: hashedPassword },
+        { new: true }
       );
 
-      return { user: updatedUser, accessToken, refreshToken };
+      if (!updatedUser) {
+        throw new CustomError(500, "Cập nhật mật khẩu thất bại");
+      }
+
+      return {
+        message: "Đặt lại mật khẩu thành công",
+        email: updatedUser.email,
+      };
     } catch (error) {
-      // Xử lý lỗi
       if (error instanceof CustomError) throw error;
-      throw new CustomError(500, "Error verifying OTP");
+      throw new CustomError(500, "Lỗi khi đặt lại mật khẩu");
     }
-  }
-
-  async resendOTP(email: string) {
-    const user = await UserModel.findOne({ email: email });
-    if (!user) {
-      throw new CustomError(400, "User not found");
-    }
-
-    const otp = generateOTP();
-    const hashedOtp = await hashOtp(otp);
-    await OtpModel.findOneAndUpdate(
-      { userId: user._id },
-      { otp: hashedOtp },
-      { new: true, upsert: true }
-    );
-
-    const mailOptions = {
-      from: "duoc6694@gmail.com",
-      to: user.email,
-      subject: "OTP",
-      html: `
-      <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-        <h2>Your OTP Code</h2>
-        <p>Please use the following OTP code to proceed:</p>
-        <div style="display: flex; align-items: center;">
-          <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
-        </div>
-        <p>Thank you for using our service!</p>
-      </div>
-    `,
-    };
-
-    const checkSendMail = await sendMail(mailOptions);
-    if (!checkSendMail) {
-      throw new CustomError(400, "Send mail failed");
-    }
-
-    return { message: "OTP resent successfully" };
   }
 }
 export default new AuthService();
