@@ -127,7 +127,6 @@ class AuthService {
       // Verify refresh token
       const decoded = verifyToken(refreshToken, true) as TokenPayload;
 
-      // Tối ưu: Sửa lỗi decoded._id thành decoded.userId
       // Check if refresh token exists and is active in database
       const tokenDoc = await TokenModel.findOne({
         userId: decoded.userId,

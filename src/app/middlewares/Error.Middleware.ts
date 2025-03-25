@@ -9,7 +9,6 @@ const errorHandler: ErrorRequestHandler = (
   next: NextFunction
 ) => {
   // logger.error(err.stack);
-
   const statusCode = err instanceof CustomError ? err.status : 500;
 
   res.status(statusCode).json({
