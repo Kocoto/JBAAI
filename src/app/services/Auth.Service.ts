@@ -163,13 +163,18 @@ class AuthService {
     }
   }
 
-  async logout(userId: string, clientId: string) {
-    const token = await TokenModel.findOneAndUpdate(
-      { userId: userId, clientId: clientId },
-      { status: "inactive" },
-      { new: true }
-    );
-    return token;
+  async logout(refreshToken: string) {
+    try {
+      const decoded = verifyToken(refreshToken, true) as TokenPayload;
+      await TokenModel.deleteOne({
+        userId: decoded.userId,
+        token: refreshToken,
+      });
+      return { message: "Đăng xuất thành công" };
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, "Lỗi khi đăng xuất");
+    }
   }
 
   async resetPassword(email: string, password: string) {
@@ -180,10 +185,7 @@ class AuthService {
       }
 
       // Find user and verify OTP status
-      const [user, otpDoc] = await Promise.all([
-        UserModel.findOne({ email: email }),
-        OtpModel.findOne({ email: email }),
-      ]);
+      const [user] = await Promise.all([UserModel.findOne({ email: email })]);
 
       if (!user) {
         throw new CustomError(400, "Không tìm thấy người dùng");
@@ -201,6 +203,8 @@ class AuthService {
       if (!updatedUser) {
         throw new CustomError(500, "Cập nhật mật khẩu thất bại");
       }
+
+      await TokenModel.deleteMany({ userId: user._id });
 
       return {
         message: "Đặt lại mật khẩu thành công",
