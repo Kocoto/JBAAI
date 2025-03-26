@@ -6,6 +6,13 @@ import CustomError from "../utils/Error.Util";
 class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
+      const { email, password, username, phone } = req.body;
+      if (!email || !password || !username || !phone) {
+        throw new CustomError(
+          400,
+          "Email, mật khẩu, tên người dùng và số điện thoại là bắt buộc"
+        );
+      }
       const user = await AuthService.register(req.body);
       res.status(201).json({
         success: true,

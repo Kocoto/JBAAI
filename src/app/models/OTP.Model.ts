@@ -1,7 +1,7 @@
-import mongoose, { Schema } from "mongoose";
+import { Schema, Types, model } from "mongoose";
 
 interface IOtp {
-  userId: mongoose.Types.ObjectId;
+  userId: Types.ObjectId;
   otp: string;
   email: string;
   expiresAt: Date;
@@ -21,5 +21,5 @@ const OtpSchema = new Schema<IOtp>(
   }
 );
 
-const OtpModel = mongoose.model<IOtp>("Otp", OtpSchema);
+const OtpModel = model<IOtp>("Otp", OtpSchema);
 export default OtpModel;
