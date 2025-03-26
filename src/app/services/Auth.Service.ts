@@ -215,5 +215,11 @@ class AuthService {
       throw new CustomError(500, "Lỗi khi đặt lại mật khẩu");
     }
   }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ) {}
 }
 export default new AuthService();
