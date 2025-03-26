@@ -53,11 +53,9 @@ class AuthController {
 
   async logout(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = req.user;
-      const { _id } = user;
-      const { clientId } = req.body;
-
-      await AuthService.logout(_id, clientId);
+      const { refreshToken } = req.body;
+      if (!refreshToken) throw new CustomError(400, "refreshToken là bắt buộc");
+      await AuthService.logout(refreshToken);
       res.status(200).json({
         success: true,
       });
