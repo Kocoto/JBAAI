@@ -51,57 +51,57 @@ class AuthService {
       }
 
       // Check if user is verified
-      if (!user.verify) {
-        try {
-          // Delete existing OTP if any
-          await OtpModel.deleteOne({ userId: user._id });
+      // if (!user.verify) {
+      //   try {
+      //     // Delete existing OTP if any
+      //     await OtpModel.deleteOne({ userId: user._id });
 
-          // Generate and hash new OTP
-          const otp = generateOTP();
-          const hashedOtp = await hashOtp(otp);
+      //     // Generate and hash new OTP
+      //     const otp = generateOTP();
+      //     const hashedOtp = await hashOtp(otp);
 
-          // Create OTP record with expiration
-          await OtpModel.create({
-            userId: user._id,
-            otp: hashedOtp,
-            email: user.email,
-          });
+      //     // Create OTP record with expiration
+      //     await OtpModel.create({
+      //       userId: user._id,
+      //       otp: hashedOtp,
+      //       email: user.email,
+      //     });
 
-          // Prepare and send email
-          const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: user.email,
-            subject: "Xác thực tài khoản - Mã OTP",
-            html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-              <h2>Mã OTP của bạn</h2>
-              <p>Vui lòng sử dụng mã OTP sau để xác thực tài khoản của bạn:</p>
-              <div style="display: flex; align-items: center;">
-                <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
-              </div>
-              <p>Mã này sẽ hết hạn sau 10 phút.</p>
-              <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
-            </div>
-            `,
-          };
+      //     // Prepare and send email
+      //     const mailOptions = {
+      //       from: process.env.EMAIL_USER,
+      //       to: user.email,
+      //       subject: "Xác thực tài khoản - Mã OTP",
+      //       html: `
+      //       <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+      //         <h2>Mã OTP của bạn</h2>
+      //         <p>Vui lòng sử dụng mã OTP sau để xác thực tài khoản của bạn:</p>
+      //         <div style="display: flex; align-items: center;">
+      //           <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
+      //         </div>
+      //         <p>Mã này sẽ hết hạn sau 10 phút.</p>
+      //         <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+      //       </div>
+      //       `,
+      //     };
 
-          const checkSendMail = await sendMail(mailOptions);
-          if (!checkSendMail) {
-            throw new CustomError(
-              500,
-              "Gửi email thất bại. Vui lòng thử lại sau."
-            );
-          }
+      //     const checkSendMail = await sendMail(mailOptions);
+      //     if (!checkSendMail) {
+      //       throw new CustomError(
+      //         500,
+      //         "Gửi email thất bại. Vui lòng thử lại sau."
+      //       );
+      //     }
 
-          throw new CustomError(
-            400,
-            "Vui lòng kiểm tra email và xác thực tài khoản của bạn"
-          );
-        } catch (otpError) {
-          if (otpError instanceof CustomError) throw otpError;
-          throw new CustomError(500, "Lỗi trong quá trình tạo và gửi mã OTP");
-        }
-      }
+      //     throw new CustomError(
+      //       400,
+      //       "Vui lòng kiểm tra email và xác thực tài khoản của bạn"
+      //     );
+      //   } catch (otpError) {
+      //     if (otpError instanceof CustomError) throw otpError;
+      //     throw new CustomError(500, "Lỗi trong quá trình tạo và gửi mã OTP");
+      //   }
+      // }
 
       // Generate tokens and update token record
       const [refreshToken, accessToken] = await Promise.all([

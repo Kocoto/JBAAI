@@ -134,11 +134,11 @@ class AuthController {
       if (!userId || !oldPassword || !newPassword) {
         throw new CustomError(400, "Mật khẩu cũ, mật khẩu mới là bắt buộc");
       }
-      const result = await AuthService.changePassword(
-        userId,
-        oldPassword,
-        newPassword
-      );
+      await AuthService.changePassword(userId, oldPassword, newPassword);
+      return res.status(200).json({
+        success: true,
+        message: "Thay đổi mật khẩu thành công",
+      });
     } catch (error) {
       next(error);
     }
