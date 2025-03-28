@@ -126,6 +126,23 @@ class AuthController {
       next(error);
     }
   }
+
+  async changePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { oldPassword, newPassword } = req.body;
+      const userId = req.user?._id;
+      if (!userId || !oldPassword || !newPassword) {
+        throw new CustomError(400, "Mật khẩu cũ, mật khẩu mới là bắt buộc");
+      }
+      const result = await AuthService.changePassword(
+        userId,
+        oldPassword,
+        newPassword
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new AuthController();
