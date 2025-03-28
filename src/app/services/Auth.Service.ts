@@ -220,6 +220,41 @@ class AuthService {
     userId: string,
     currentPassword: string,
     newPassword: string
-  ) {}
+  ) {
+    try {
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+        throw new CustomError(404, "Không tìm thấy người dùng");
+      }
+      const isPasswordValid = await comparePasswords(
+        currentPassword,
+        user.password
+      );
+
+      if (!isPasswordValid) {
+        throw new CustomError(400, "Mật khẩu hiện tại không đúng");
+      }
+
+      const hashedPassword = await hashPassword(newPassword);
+
+      const updatedUser = await UserModel.findOneAndUpdate(
+        { _id: userId },
+        { password: hashedPassword },
+        { new: true }
+      );
+
+      if (!updatedUser) {
+        throw new CustomError(500, "Cập nhật mật khẩu thất bại");
+      }
+
+      return {
+        message: "Đổi mật khẩu thành công",
+      };
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, "Lỗi khi đổi mật khẩu");
+    }
+  }
 }
 export default new AuthService();
