@@ -5,7 +5,7 @@ export interface IUserProfile {
   height: number;
   weight: number;
   age: number;
-  gender: { type: string; enum: ["male", "female"] };
+  gender: "male" | "female";
 }
 
 const userProfileSchema = new Schema<IUserProfile>({

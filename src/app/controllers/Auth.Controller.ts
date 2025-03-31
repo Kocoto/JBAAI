@@ -6,14 +6,36 @@ import CustomError from "../utils/Error.Util";
 class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
     try {
-      const { email, password, username, phone } = req.body;
+      const {
+        email,
+        password,
+        username,
+        phone,
+        role,
+        address,
+        invitationCode,
+      } = req.body;
       if (!email || !password || !username || !phone) {
         throw new CustomError(
           400,
           "Email, mật khẩu, tên người dùng và số điện thoại là bắt buộc"
         );
       }
-      const user = await AuthService.register(req.body);
+      if (role && role !== "user" && role !== "admin" && !address) {
+        throw new CustomError(
+          400,
+          "Địa chỉ là bắt buộc cho các vai trò khác user"
+        );
+      }
+      const user = await AuthService.register(
+        email,
+        password,
+        username,
+        phone,
+        role,
+        address,
+        invitationCode
+      );
       res.status(201).json({
         success: true,
         data: user,

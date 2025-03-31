@@ -22,3 +22,14 @@ export const compareOtp = async (
   const isMatch = await compareSync(otp, hashedOtp);
   return isMatch;
 };
+
+export const generateInviteCode = () => {
+  const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let inviteCode = "";
+  for (let i = 0; i < 6; i++) {
+    inviteCode += characters.charAt(
+      Math.floor(Math.random() * characters.length)
+    );
+  }
+  return inviteCode;
+};
