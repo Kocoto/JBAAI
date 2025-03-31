@@ -11,13 +11,32 @@ import {
   TokenPayload,
   verifyToken,
 } from "../utils/Token.Util";
+import InvitationService from "./Invitation.Service";
+import InvitationCodeService from "./InvitationCode.Service";
 
 class AuthService {
-  async register(data: IUser) {
+  async register(
+    email: string,
+    password: string,
+    username: string,
+    phone: string,
+    role?: string,
+    address?: string,
+    invitationCode?: string
+  ) {
     const [existingEmail, existingUsername] = await Promise.all([
-      UserModel.findOne({ email: data.email }),
-      UserModel.findOne({ username: data.username }),
+      UserModel.findOne({ email: email }),
+      UserModel.findOne({ username: username }),
     ]);
+    let checkInvitationCode;
+    if (invitationCode) {
+      checkInvitationCode = await InvitationCodeService.checkCode(
+        invitationCode
+      );
+      if (!checkInvitationCode) {
+        throw new CustomError(400, "Mã mời không hợp lệ");
+      }
+    }
 
     if (existingEmail) {
       throw new CustomError(400, "Email đã tồn tại");
@@ -25,11 +44,42 @@ class AuthService {
     if (existingUsername) {
       throw new CustomError(400, "Tên người dùng đã tồn tại");
     }
-    const hashedPassword = await hashPassword(data.password);
+    const hashedPassword = await hashPassword(password);
     const user = await UserModel.create({
-      ...data,
+      username: username,
+      email: email,
+      phone: phone,
+      role: role || "user",
       password: hashedPassword,
     });
+    if (!user) {
+      throw new CustomError(500, "lỗi xảy ra khi tạo người dùng");
+    }
+    if (invitationCode) {
+      const invitation = await InvitationService.createInvitation(
+        invitationCode,
+        user._id.toString()
+      );
+      if (!invitation) {
+        throw new CustomError(500, "Tạo mời thất bại");
+      }
+    }
+    if (user.role !== "user" && user.role !== "admin") {
+      const [updatedUser, invitationCode] = await Promise.all([
+        UserModel.findOneAndUpdate(
+          { _id: user._id },
+          { address: address },
+          { new: true }
+        ),
+        InvitationCodeService.createInvitationCode(user._id.toString()),
+      ]);
+      if (!updatedUser) {
+        throw new CustomError(500, "Cập nhật địa chỉ thất bại");
+      }
+      if (!invitationCode) {
+        throw new CustomError(500, "Tạo mã mời thất bại");
+      }
+    }
 
     return user;
   }

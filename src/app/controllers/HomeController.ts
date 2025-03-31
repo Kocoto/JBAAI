@@ -31,6 +31,9 @@ class HomeController {
     );
     res.send("Hello World");
   }
+  async test(req: Request, res: Response) {
+    res.send("Hello World");
+  }
 }
 
 export default new HomeController();

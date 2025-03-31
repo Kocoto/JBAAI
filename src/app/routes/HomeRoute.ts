@@ -3,6 +3,7 @@ import { Router } from "express";
 import { checkLogin } from "../middlewares/Auth.Middleware";
 const router = Router();
 
-router.get("/", checkLogin, HomeController.index);
+router.get("/", HomeController.index);
+router.get("/check", checkLogin, HomeController.test);
 
 module.exports = router;

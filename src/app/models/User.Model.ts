@@ -5,19 +5,17 @@ export interface IUser {
   password: string;
   email: string;
   phone: string;
-  role: {
-    type: string;
-    enum: ["admin", "user"];
-    default: "user";
-    required: true;
-  };
-  status: {
-    type: string;
-    enum: ["active", "inactive"];
-    default: "active";
-    required: true;
-  };
+  role:
+    | "admin"
+    | "user"
+    | "spa"
+    | "doctor"
+    | "pharmacy"
+    | "school"
+    | "hospital";
+  status: "active" | "inactive";
   verify: boolean;
+  address?: string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -28,7 +26,15 @@ const UserSchema = new Schema<IUser>(
     phone: { type: String, required: true, unique: true },
     role: {
       type: String,
-      enum: ["admin", "user"],
+      enum: [
+        "admin",
+        "user",
+        "spa",
+        "doctor",
+        "pharmacy",
+        "school",
+        "hospital",
+      ],
       default: "user",
       required: true,
     },
@@ -42,6 +48,7 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    address: { type: String },
   },
   { timestamps: true }
 );
