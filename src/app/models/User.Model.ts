@@ -16,6 +16,7 @@ export interface IUser {
   status: "active" | "inactive";
   verify: boolean;
   address?: string;
+  isSubscription: boolean;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -49,8 +50,11 @@ const UserSchema = new Schema<IUser>(
       default: false,
     },
     address: { type: String },
+    isSubscription: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 const UserModel = mongoose.model<IUser>("User", UserSchema);

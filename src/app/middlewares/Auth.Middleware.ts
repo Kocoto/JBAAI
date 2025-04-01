@@ -41,9 +41,9 @@ export const checkLogin = async (
       throw new CustomError(401, "User không tồn tại");
     }
 
-    if (user.verify == false) {
-      throw new CustomError(403, "Người dùng cần xác minh tài khoản trước");
-    }
+    // if (user.verify == false) {
+    //   throw new CustomError(403, "Người dùng cần xác minh tài khoản trước");
+    // }
 
     req.user = user;
 
