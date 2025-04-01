@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import AuthService from "../services/Auth.Service";
 import OTPService from "../services/OTP.Service";
 import CustomError from "../utils/Error.Util";
+import SubscriptionService from "../services/Subscription.Service";
 
 class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {

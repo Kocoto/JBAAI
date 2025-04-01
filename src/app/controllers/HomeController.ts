@@ -23,12 +23,6 @@ class HomeController {
    *                   example: "Hello World"
    */
   async index(req: Request, res: Response) {
-    const otp = generateOTP();
-    const hashedOtp = await hashOtp(otp);
-    console.log(
-      "Đây là log dòng số 28 để kiếm tra otp và hashedOtp " + otp,
-      hashedOtp
-    );
     res.send("Hello World");
   }
   async test(req: Request, res: Response) {
