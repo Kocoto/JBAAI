@@ -122,7 +122,9 @@ class AuthController {
       const result = await OTPService.getOTP(email);
       res.status(200).json({
         success: true,
-        message: result.message,
+        data: {
+          message: result.message,
+        },
       });
     } catch (error) {
       next(error);
