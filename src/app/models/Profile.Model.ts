@@ -1,6 +1,6 @@
 import mongoose, { Schema, model } from "mongoose";
 
-export interface IUserProfile {
+export interface IProfile {
   userId: mongoose.Types.ObjectId;
   height: number;
   weight: number;
@@ -8,7 +8,7 @@ export interface IUserProfile {
   gender: "male" | "female";
 }
 
-const userProfileSchema = new Schema<IUserProfile>({
+const profileSchema = new Schema<IProfile>({
   userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
   height: { type: Number, required: true },
   weight: { type: Number, required: true },
@@ -16,5 +16,5 @@ const userProfileSchema = new Schema<IUserProfile>({
   gender: { type: String, enum: ["male", "female"] },
 });
 
-const UserProfile = model<IUserProfile>("UserProfile", userProfileSchema);
-export default UserProfile;
+const profileModel = model<IProfile>("Profile", profileSchema);
+export default profileModel;
