@@ -28,14 +28,14 @@ app.use(upload.any());
 connect();
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-const test = UserHealthDataService.createHealthData();
-console.log(
-  "Đây là log dòng số 32 trang index, kiểm tra transformer: " +
-    JSON.stringify(test)
-);
-console.log(
-  "Đây là log dòng số 32 trang index, kiểm tra chi tiết transformer: " + test
-);
+// const test = UserHealthDataService.createHealthData();
+// console.log(
+//   "Đây là log dòng số 32 trang index, kiểm tra transformer: " +
+//     JSON.stringify(test)
+// );
+// console.log(
+//   "Đây là log dòng số 32 trang index, kiểm tra chi tiết transformer: " + test
+// );
 transporter.verify((error, success) => {
   if (error) {
     console.log("Nodemailer connection error:", error);
