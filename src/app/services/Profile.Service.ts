@@ -12,7 +12,7 @@ class ProfileService {
       if (error instanceof CustomError) {
         throw error;
       }
-      throw new CustomError(500, "Lỗi khi lấy hồ sơ");
+      throw new CustomError(500, error as string);
     }
   }
 
@@ -30,7 +30,7 @@ class ProfileService {
       if (error instanceof CustomError) {
         throw error;
       }
-      throw new CustomError(500, "Lỗi khi tạo hồ sơ");
+      throw new CustomError(500, error as string);
     }
   }
 }

@@ -22,10 +22,7 @@ class ProfileController {
         data: result,
       });
     } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
-      throw new CustomError(500, "Lỗi khi cập nhật thông tin người dùng");
+      next(error);
     }
   }
 
@@ -44,10 +41,7 @@ class ProfileController {
         data: result,
       });
     } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
-      throw new CustomError(500, "Lỗi khi lấy thông tin người dùng");
+      next(error);
     }
   }
 }

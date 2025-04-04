@@ -14,7 +14,7 @@ class SubscriptionService {
       return subscription;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new CustomError(500, "Internal server error");
+      throw new CustomError(500, error as string);
     }
   }
 }

@@ -36,7 +36,19 @@ class HealthDataService {
     }
   }
 
-  async deleteHealthDate() {}
+  async deleteHealthDate(healthDataId: string) {
+    try {
+      const healthData = await HealthDataModel.findByIdAndDelete(healthDataId);
+      if (!healthData) {
+        throw new CustomError(400, "Không thể xóa health data");
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new CustomError(500, error as string);
+    }
+  }
 }
 
 export default new HealthDataService();
