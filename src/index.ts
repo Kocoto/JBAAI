@@ -36,6 +36,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 // console.log(
 //   "Đây là log dòng số 32 trang index, kiểm tra chi tiết transformer: " + test
 // );
+client;
 transporter.verify((error, success) => {
   if (error) {
     console.log("Nodemailer connection error:", error);

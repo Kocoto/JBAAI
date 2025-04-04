@@ -25,7 +25,7 @@ class HealthDataController {
   async createHealthData(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user.id;
-      const rawData = req.body;
+      const rawData = req.body.healthData;
       if (!rawData) {
         throw new CustomError(400, "Dữ liệu sức khỏe là bắt buộc");
       }

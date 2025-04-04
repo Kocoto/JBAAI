@@ -17,8 +17,8 @@ export const checkLogin = async (
   next: NextFunction
 ) => {
   try {
-    // const authHeader = req.headers.authorization;
-    const authHeader = req.body.authorization;
+    const authHeader = req.headers.authorization;
+    // const authHeader = req.body.authorization;
     if (!authHeader) {
       throw new CustomError(401, "Authorization header không tồn tại");
     }

@@ -14,6 +14,7 @@ import {
 } from "../utils/Token.Util";
 import InvitationService from "./Invitation.Service";
 import InvitationCodeService from "./InvitationCode.Service";
+import ProfileService from "./Profile.Service";
 
 class AuthService {
   async register(
@@ -171,7 +172,9 @@ class AuthService {
         { new: true, upsert: true }
       );
 
-      return { user, accessToken, refreshToken };
+      const profile = await ProfileService.getProfile(user._id.toString());
+
+      return { user, accessToken, refreshToken, profile };
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(500, error as string);
