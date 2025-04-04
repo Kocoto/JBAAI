@@ -4,23 +4,33 @@ import { generateInviteCode } from "../utils/OTP.Util";
 
 class InvitationCodeService {
   async createInvitationCode(userId: string) {
-    let code = generateInviteCode();
-    let checkCode = await InvitationCodeModel.findOne({ code: code });
-    while (checkCode) {
-      code = generateInviteCode();
-      checkCode = await InvitationCodeModel.findOne({ code: code });
-      if (!checkCode) break;
+    try {
+      let code = generateInviteCode();
+      let checkCode = await InvitationCodeModel.findOne({ code: code });
+      while (checkCode) {
+        code = generateInviteCode();
+        checkCode = await InvitationCodeModel.findOne({ code: code });
+        if (!checkCode) break;
+      }
+      const newCode = new InvitationCodeModel({ code: code, userId: userId });
+      await newCode.save();
+      return code;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, error as string);
     }
-    const newCode = new InvitationCodeModel({ code: code, userId: userId });
-    await newCode.save();
-    return code;
   }
   async checkCode(code: string) {
-    const checkCode = await InvitationCodeModel.findOne({ code: code });
-    if (!checkCode) {
-      throw new CustomError(400, "Mã mời không hợp lệ");
+    try {
+      const checkCode = await InvitationCodeModel.findOne({ code: code });
+      if (!checkCode) {
+        throw new CustomError(400, "Mã mời không hợp lệ");
+      }
+      return checkCode;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, error as string);
     }
-    return checkCode;
   }
 }
 

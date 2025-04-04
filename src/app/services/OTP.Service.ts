@@ -1,3 +1,4 @@
+import e from "express";
 import OtpModel from "../models/OTP.Model";
 import TokenModel from "../models/Token.Model";
 import UserModel from "../models/User.Model";
@@ -53,7 +54,7 @@ class OTPService {
     } catch (error) {
       // Xử lý lỗi
       if (error instanceof CustomError) throw error;
-      throw new CustomError(500, "Lỗi khi xác thực mã OTP");
+      throw new CustomError(500, error as string);
     }
   }
 
@@ -119,7 +120,7 @@ class OTPService {
     } catch (error) {
       // Xử lý lỗi
       if (error instanceof CustomError) throw error;
-      throw new CustomError(500, "Lỗi khi gửi mã OTP");
+      throw new CustomError(500, error as string);
     }
   }
 
@@ -155,7 +156,7 @@ class OTPService {
       if (error instanceof CustomError) {
         throw error;
       }
-      throw new CustomError(500, "Lỗi khi xác thực mã OTP");
+      throw new CustomError(500, error as string);
     }
   }
 }
