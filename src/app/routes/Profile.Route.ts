@@ -4,7 +4,7 @@ import ProfileController from "../controllers/Profile.Controller";
 
 const router = Router();
 
-router.post("/update-profile", checkLogin, ProfileController.updateProfile);
+router.post("/update", checkLogin, ProfileController.updateProfile);
 router.post("/", checkLogin, ProfileController.getProfile);
 
 export default router;
