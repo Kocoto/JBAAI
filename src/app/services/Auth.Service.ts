@@ -27,10 +27,12 @@ class AuthService {
     invitationCode?: string
   ) {
     try {
-      const [existingEmail, existingUsername] = await Promise.all([
-        UserModel.findOne({ email: email }),
-        UserModel.findOne({ username: username }),
-      ]);
+      const [existingEmail, existingUsername, existingPhone] =
+        await Promise.all([
+          UserModel.findOne({ email: email }),
+          UserModel.findOne({ username: username }),
+          UserModel.findOne({ phone: phone }),
+        ]);
       let checkInvitationCode;
       if (invitationCode) {
         checkInvitationCode = await InvitationCodeService.checkCode(
@@ -46,6 +48,9 @@ class AuthService {
       }
       if (existingUsername) {
         throw new CustomError(400, "Tên người dùng đã tồn tại");
+      }
+      if (existingPhone) {
+        throw new CustomError(400, "Số điện thoại đã tồn tại");
       }
       const hashedPassword = await hashPassword(password);
       const user = await UserModel.create({
