@@ -4,9 +4,7 @@ class ProfileService {
   async getProfile(userId: string) {
     try {
       const profile = await profileModel.findOne({ userId: userId });
-      if (!profile) {
-        throw new CustomError(404, "Không tìm thấy hồ sơ");
-      }
+
       return profile;
     } catch (error) {
       if (error instanceof CustomError) {
