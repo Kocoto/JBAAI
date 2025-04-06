@@ -2,7 +2,7 @@ import mongoose, { Schema, model } from "mongoose";
 
 interface ISubscription {
   userId: Schema.Types.ObjectId;
-  subscriptionName: "none" | "standard" | "premium" | "enterprise";
+  packageId: Schema.Types.ObjectId;
   price: number;
   startDate: Date;
   endDate: Date;
@@ -16,10 +16,9 @@ const subscriptionSchema = new Schema<ISubscription>({
     required: true,
     indexes: true,
   },
-  subscriptionName: {
-    type: String,
-    enum: ["none", "standard", "premium", "enterprise"],
-    default: "none",
+  packageId: {
+    type: Schema.Types.ObjectId,
+    ref: "Package",
     required: true,
   },
   price: { type: Number, default: 0 },
