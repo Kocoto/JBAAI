@@ -7,14 +7,17 @@ export interface TokenPayload extends JwtPayload {
   clientId: string;
 }
 
-export const accessTokenGenerator = (userId: string, clientId: string): string => {
+export const accessTokenGenerator = (
+  userId: string,
+  clientId: string
+): string => {
   if (!process.env.ACCESS_TOKEN_SECRET) {
     throw new CustomError(500, "Chưa cấu hình ACCESS_TOKEN_SECRET");
   }
-  
+
   try {
     return jwt.sign({ userId, clientId }, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "1m",
     });
   } catch (error) {
     console.error("Lỗi tạo access token:", error);
@@ -22,11 +25,14 @@ export const accessTokenGenerator = (userId: string, clientId: string): string =
   }
 };
 
-export const refreshTokenGenerator = (userId: string, clientId: string): string => {
+export const refreshTokenGenerator = (
+  userId: string,
+  clientId: string
+): string => {
   if (!process.env.REFRESH_TOKEN_SECRET) {
     throw new CustomError(500, "Chưa cấu hình REFRESH_TOKEN_SECRET");
   }
-  
+
   try {
     return jwt.sign({ userId, clientId }, process.env.REFRESH_TOKEN_SECRET, {
       expiresIn: "7d",
@@ -37,14 +43,17 @@ export const refreshTokenGenerator = (userId: string, clientId: string): string 
   }
 };
 
-export const verifyToken = (token: string, isRefreshToken: boolean = false): TokenPayload => {
+export const verifyToken = (
+  token: string,
+  isRefreshToken: boolean = false
+): TokenPayload => {
   if (!token) {
     throw new CustomError(401, "Không tìm thấy token");
   }
-  
+
   try {
-    const secret = isRefreshToken 
-      ? process.env.REFRESH_TOKEN_SECRET 
+    const secret = isRefreshToken
+      ? process.env.REFRESH_TOKEN_SECRET
       : process.env.ACCESS_TOKEN_SECRET;
 
     if (!secret) {
