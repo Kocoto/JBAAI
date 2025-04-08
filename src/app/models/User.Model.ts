@@ -12,7 +12,8 @@ export interface IUser {
     | "doctor"
     | "pharmacy"
     | "school"
-    | "hospital";
+    | "hospital"
+    | "saler";
   status: "active" | "inactive";
   verify: boolean;
   address?: string;
