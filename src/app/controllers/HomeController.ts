@@ -28,6 +28,12 @@ class HomeController {
   async test(req: Request, res: Response) {
     res.send("Hello World");
   }
+  async paymentSuccess(req: Request, res: Response) {
+    res.send("Payment Success");
+  }
+  async paymentCancel(req: Request, res: Response) {
+    res.send("Payment Cancel");
+  }
 }
 
 export default new HomeController();

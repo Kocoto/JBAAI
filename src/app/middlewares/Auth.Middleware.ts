@@ -17,7 +17,14 @@ export const checkLogin = async (
   next: NextFunction
 ) => {
   try {
-    const authHeader = req.headers.authorization;
+    let authHeader;
+    if (req.body.authorization) {
+      authHeader = req.body.authorization;
+      console.log("Có token trong body");
+    } else {
+      authHeader = req.headers.authorization;
+      console.log("Có token trong header");
+    }
     // const authHeader = req.body.authorization;
     if (!authHeader) {
       throw new CustomError(401, "Authorization header không tồn tại");
