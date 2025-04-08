@@ -46,6 +46,21 @@ class PackageService {
       throw new CustomError(500, error as string);
     }
   }
+
+  async getPackageById(id: string) {
+    try {
+      const packages = await PackageModel.findById(id);
+      if (!packages) {
+        throw new CustomError(404, "Package not found");
+      }
+      return packages;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(500, error as string);
+    }
+  }
 }
 
 export default new PackageService();

@@ -15,6 +15,7 @@ const subscriptionSchema = new Schema<ISubscription>({
     ref: "User",
     required: true,
     indexes: true,
+    unique: true,
   },
   packageId: {
     type: Schema.Types.ObjectId,
@@ -24,7 +25,7 @@ const subscriptionSchema = new Schema<ISubscription>({
   price: { type: Number, default: 0 },
   startDate: { type: Date, default: Date.now },
   endDate: { type: Date },
-  isActive: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: true },
 });
 
 const SubscriptionModel = model<ISubscription>(
