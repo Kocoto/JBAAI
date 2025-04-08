@@ -72,7 +72,11 @@ class AuthService {
           throw new CustomError(500, "Tạo mời thất bại");
         }
       }
-      if (user.role !== "user" && user.role !== "admin") {
+      if (
+        user.role !== "user" &&
+        user.role !== "admin" &&
+        user.role !== "saler"
+      ) {
         const [updatedUser, invitationCode] = await Promise.all([
           UserModel.findOneAndUpdate(
             { _id: user._id },
