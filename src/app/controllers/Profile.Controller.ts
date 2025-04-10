@@ -13,7 +13,7 @@ class ProfileController {
       if (!profile) {
         throw new CustomError(400, "Không tìm thấy thông tin người dùng");
       }
-      const result = await ProfileService.createPRofile(userId, profile);
+      const result = await ProfileService.updateProfile(userId, profile);
       if (!result) {
         throw new CustomError(400, "Không tìm thấy thông tin người dùng");
       }
@@ -38,6 +38,29 @@ class ProfileController {
       }
       return res.status(200).json({
         message: "Lấy thông tin người dùng thành công",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createProfile(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user._id;
+      if (!userId) {
+        throw new CustomError(400, "Không tìm thấy người dùng");
+      }
+      const profile = req.body;
+      if (!profile) {
+        throw new CustomError(400, "Không tìm thấy thông tin người dùng");
+      }
+      const result = await ProfileService.createProfile(userId, profile);
+      if (!result) {
+        throw new CustomError(400, "Không tìm thấy thông tin người dùng");
+      }
+      return res.status(200).json({
+        message: "Cập nhật thông tin người dùng thành công",
         data: result,
       });
     } catch (error) {

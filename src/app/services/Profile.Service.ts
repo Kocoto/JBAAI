@@ -19,7 +19,7 @@ class ProfileService {
     }
   }
 
-  async createPRofile(userId: string, profile: any) {
+  async createProfile(userId: string, profile: any) {
     try {
       const newProfile = await profileModel.create({
         userId: userId,
@@ -29,6 +29,22 @@ class ProfileService {
         throw new CustomError(400, "Không thể tạo hồ sơ");
       }
       return newProfile;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(500, error as string);
+    }
+  }
+
+  async updateProfile(userId: string, profile: any) {
+    try {
+      const updateProfile = await profileModel.findOneAndUpdate(
+        { userId: userId },
+        { ...profile },
+        { new: true }
+      );
+      return updateProfile;
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
