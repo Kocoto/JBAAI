@@ -23,7 +23,7 @@ interface IMetricValue<T> {
 // Interface cho một điểm dữ liệu RRI (ví dụ đơn giản)
 interface IRriPoint {
   timestamp: number; // Giả sử mỗi điểm RRI có timestamp
-  value: number; // và giá trị
+  interval: number; // và giá trị
 }
 
 // Interface chính cho toàn bộ cấu trúc dữ liệu sức khỏe (đã bỏ type)
@@ -100,7 +100,7 @@ const NumericMetricValueSchema = new Schema(
 const RriPointSchema = new Schema<IRriPoint>(
   {
     timestamp: { type: Number, required: true },
-    value: { type: Number, required: true },
+    interval: { type: Number, required: true },
   },
   { _id: false }
 );
