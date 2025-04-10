@@ -25,7 +25,7 @@ class HealthDataService {
       const endDate = new Date(startDate.getTime() + 24 * 60 * 60 * 1000);
       const healthData = await HealthDataModel.find({
         userId,
-        date: { $gte: startDate, $lt: endDate },
+        createdAt: { $gte: startDate, $lt: endDate },
       });
       return healthData;
     } catch (error) {

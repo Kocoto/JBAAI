@@ -28,7 +28,7 @@ function isValidRriArray(arr: any): arr is IRriPoint[] {
         p &&
         typeof p === "object" &&
         typeof p.timestamp === "number" &&
-        typeof p.value === "number"
+        typeof p.interval === "number"
     )
   );
 }
