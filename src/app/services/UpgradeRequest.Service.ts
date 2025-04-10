@@ -34,6 +34,57 @@ class UpgradeRequestService {
       throw new CustomError(500, error as string);
     }
   }
+
+  async getUpgradeRequestById(upgradeRequestId: string) {
+    try {
+      const upgradeRequest = await UpgradeRequestModel.findById(
+        upgradeRequestId
+      );
+      if (!upgradeRequest) {
+        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+      }
+      return upgradeRequest;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(500, error as string);
+    }
+  }
+
+  async getUpgradeRequestsByStatus(status: string) {
+    try {
+      const upgradeRequests = await UpgradeRequestModel.find({ status });
+      if (!upgradeRequests) {
+        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+      }
+      return upgradeRequests;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(500, error as string);
+    }
+  }
+
+  async updateUpgradeRequest(upgradeRequestId: string, data: any) {
+    try {
+      const upgradeRequest = await UpgradeRequestModel.findByIdAndUpdate(
+        upgradeRequestId,
+        data,
+        { new: true }
+      );
+      if (!upgradeRequest) {
+        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+      }
+      return upgradeRequest;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(500, error as string);
+    }
+  }
 }
 
 export default new UpgradeRequestService();
