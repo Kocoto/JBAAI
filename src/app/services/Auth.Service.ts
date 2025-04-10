@@ -92,7 +92,13 @@ class AuthService {
           throw new CustomError(500, "Tạo mã mời thất bại");
         }
       }
-
+      await ProfileService.createPRofile(user._id.toString(), {
+        height: 0,
+        weight: 0,
+        age: 0,
+        gender: "",
+        smokingStatus: 0,
+      });
       return user;
     } catch (error) {
       if (error instanceof CustomError) throw error;

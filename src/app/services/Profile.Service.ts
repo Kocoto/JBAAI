@@ -8,7 +8,7 @@ class ProfileService {
       if (!user) {
         throw new CustomError(404, "Không tìm thấy người dùng");
       }
-      const profile = await profileModel.findOne({ userId: userId });
+      let profile = await profileModel.findOne({ userId: userId });
 
       return { profile, user };
     } catch (error) {
