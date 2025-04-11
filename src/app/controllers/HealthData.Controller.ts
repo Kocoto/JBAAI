@@ -7,7 +7,11 @@ class HealthDataController {
       const userId = req.user.id;
       const date = req.body.date;
       if (!date) {
-        throw new CustomError(400, "Ngày là bắt buộc");
+        const healthData = await HealthDataService.getOneHealthData(userId);
+        res.status(200).json({
+          message: "Lấy dữ liệu sức khỏe thành công",
+          data: healthData,
+        });
       }
       const healthData = await HealthDataService.getHealthDataByDate(
         userId,
