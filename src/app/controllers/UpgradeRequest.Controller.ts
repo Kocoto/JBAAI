@@ -27,6 +27,7 @@ class UpgradeRequestController {
       );
       res.status(201).json({
         success: true,
+        message: "Tạo yêu cầu nâng cấp thành công",
         data: upgradeRequest,
       });
     } catch (error) {

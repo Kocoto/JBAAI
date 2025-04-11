@@ -23,9 +23,7 @@ class UpgradeRequestService {
   async getUpgradeRequestByUserId(userId: string) {
     try {
       const upgradeRequest = await UpgradeRequestModel.findOne({ userId });
-      if (!upgradeRequest) {
-        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
-      }
+      //cần tìm ra các fix logic chỗ này( trang profile cần gửi về nhưng có những người dùng chưa có request thì sãy ra lỗi )
       return upgradeRequest;
     } catch (error) {
       if (error instanceof CustomError) {
