@@ -34,7 +34,7 @@ interface IHealthData extends Document {
 
   ascvdRisk?: IMetricValue<number>;
   bpValue?: IBpValue; // Huyết áp có cấu trúc riêng
-  heartAge?: number; // Tuổi tim có thể không xác định (optional)
+  heartAge?: IMetricValue<number>; // Tuổi tim có thể không xác định (optional)
   hemoglobin?: IMetricValue<number>;
   hemoglobinA1c?: IMetricValue<number>;
   highBloodPressureRisk?: IMetricValue<number>;
@@ -44,7 +44,7 @@ interface IHealthData extends Document {
   lfhf?: IMetricValue<number>;
   lowHemoglobinRisk?: IMetricValue<number>; // Có thể không xác định
   meanRRi?: IMetricValue<number>;
-  normalizedStressIndex?: number; // Có thể không xác định
+  normalizedStressIndex?: IMetricValue<number>; // Có thể không xác định
   oxygenSaturation?: IMetricValue<number>;
   pnsIndex?: IMetricValue<number>;
   pnsZone?: IMetricValue<number>;
@@ -119,7 +119,7 @@ const HealthDataSchema = new Schema<IHealthData>(
     // Sử dụng NumericMetricValueSchema đã được cập nhật (không còn type)
     ascvdRisk: { type: NumericMetricValueSchema, required: false },
     bpValue: { type: BpValueSchema, required: false },
-    heartAge: { type: Number, required: false },
+    heartAge: { type: NumericMetricValueSchema, required: false },
     hemoglobin: { type: NumericMetricValueSchema, required: false },
     hemoglobinA1c: { type: NumericMetricValueSchema, required: false },
     highBloodPressureRisk: { type: NumericMetricValueSchema, required: false },
@@ -132,7 +132,7 @@ const HealthDataSchema = new Schema<IHealthData>(
     lfhf: { type: NumericMetricValueSchema, required: false },
     lowHemoglobinRisk: { type: NumericMetricValueSchema, required: false },
     meanRRi: { type: NumericMetricValueSchema, required: false },
-    normalizedStressIndex: { type: Number, required: false },
+    normalizedStressIndex: { type: NumericMetricValueSchema, required: false },
     oxygenSaturation: { type: NumericMetricValueSchema, required: false },
     pnsIndex: { type: NumericMetricValueSchema, required: false },
     pnsZone: { type: NumericMetricValueSchema, required: false },

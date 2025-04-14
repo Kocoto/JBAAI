@@ -1,0 +1,1842 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Your Health Scan Results</title>
+    <style>
+      /* Basic Reset */
+      body,
+      table,
+      td,
+      a {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      table,
+      td {
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      img {
+        -ms-interpolation-mode: bicubic;
+        border: 0;
+        height: auto;
+        line-height: 100%;
+        outline: none;
+        text-decoration: none;
+        display: block;
+      }
+      table {
+        border-collapse: collapse !important;
+      }
+      body {
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      /* Main Styles */
+      .container {
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .content {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        max-width: 600px;
+        margin: 0 auto;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 20px;
+      }
+      .header h1 {
+        margin: 0;
+        color: #0d6efd;
+        font-size: 24px;
+      }
+      .metric-table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+      }
+      .metric-table th,
+      .metric-table td {
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        text-align: left;
+        font-size: 14px;
+        line-height: 1.5;
+        vertical-align: top;
+      }
+      .metric-table th {
+        background-color: #e9ecef;
+        color: #212529;
+        font-weight: bold;
+      }
+      .metric-table td:nth-child(1) {
+        font-weight: bold;
+        color: #0d6efd;
+        width: 25%;
+      } /* Metric Name */
+      .metric-table td:nth-child(2) {
+        width: 15%;
+        text-align: center;
+      } /* Measured Value */
+      .metric-table td:nth-child(3) {
+        width: 15%;
+        text-align: center;
+        font-style: italic;
+        color: #495057;
+      } /* Desired Value */
+      .metric-table td:nth-child(4) {
+        width: 45%;
+        color: #495057;
+      } /* Explanation */
+      .metric-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+      } /* Zebra striping */
+      .chart-placeholder {
+        text-align: center;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border: 1px dashed #ccc;
+        color: #777;
+        font-style: italic;
+      }
+      .chart-placeholder img {
+        max-width: 100%;
+        height: auto;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+        font-size: 12px;
+        color: #6c757d;
+      }
+      .footer a {
+        color: #0d6efd;
+        text-decoration: none;
+      }
+      .section-title-like {
+        font-size: 16px;
+        font-weight: bold;
+        color: #0d6efd;
+        padding-top: 15px;
+        padding-bottom: 5px;
+        text-align: left;
+      }
+      .note {
+        font-size: 0.9em;
+        color: #6c757d;
+      } /* Style for notes like 'Under research' */
+    </style>
+  </head>
+  <body
+    style="
+      margin: 0 !important;
+      padding: 0 !important;
+      background-color: #f8f9fa;
+    "
+  >
+    <div class="container" style="padding: 20px; background-color: #f8f9fa">
+      <table
+        align="center"
+        border="0"
+        cellpadding="0"
+        cellspacing="0"
+        role="presentation"
+        style="max-width: 600px; margin: 0 auto"
+      >
+        <tr>
+          <td>
+            <div
+              class="content"
+              style="
+                background-color: #ffffff;
+                padding: 30px;
+                border-radius: 8px;
+                border: 1px solid #dee2e6;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              "
+            >
+              <div
+                class="header"
+                style="
+                  text-align: center;
+                  padding-bottom: 20px;
+                  border-bottom: 1px solid #dee2e6;
+                  margin-bottom: 20px;
+                "
+              >
+                <h1 style="margin: 10px 0 0 0; color: #0d6efd; font-size: 24px">
+                  Your Health Scan Results
+                </h1>
+              </div>
+
+              <p style="margin-bottom: 20px; color: #495057; line-height: 1.6">
+                Hello [Tên người dùng],
+              </p>
+              <p style="margin-bottom: 25px; color: #495057; line-height: 1.6">
+                Below is a detailed summary table of the health indicators from
+                your most recent scan.
+              </p>
+
+              <table
+                class="metric-table"
+                style="width: 100%; margin-top: 20px; border-collapse: collapse"
+              >
+                <thead>
+                  <tr>
+                    <th
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        background-color: #e9ecef;
+                        color: #212529;
+                        font-weight: bold;
+                        vertical-align: top;
+                      "
+                    >
+                      Metric Name
+                    </th>
+                    <th
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        background-color: #e9ecef;
+                        color: #212529;
+                        font-weight: bold;
+                        vertical-align: top;
+                      "
+                    >
+                      Measured
+                    </th>
+                    <th
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        background-color: #e9ecef;
+                        color: #212529;
+                        font-weight: bold;
+                        vertical-align: top;
+                      "
+                    >
+                      Desired (Reference)
+                    </th>
+                    <th
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        background-color: #e9ecef;
+                        color: #212529;
+                        font-weight: bold;
+                        vertical-align: top;
+                      "
+                    >
+                      Explanation
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Wellness Overview
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Wellness Level
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      High (8-10) is best
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Predicts cardiovascular risk over the next 5-10 years
+                      based on vital signs. A higher score indicates lower risk.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Wellness Index
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      High (8-10) is best
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      A composite score (1-10) reflecting general health and
+                      well-being, related to cardiovascular risk.
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Basic Vitals
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Blood Pressure
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] mmHg
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Systolic: 100-129 (Normal)<br />(Consult Doctor)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Pressure of blood on artery walls when the heart contracts
+                      (systolic) and rests (diastolic). Measure at rest.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Pulse Rate
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] bpm
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      60-100 bpm (At Rest)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Number of heartbeats per minute. Reflects cardiovascular
+                      health and fitness.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Oxygen Saturation
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] %
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      95-100% (Healthy Lungs)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Percentage of oxygen-carrying hemoglobin in the blood. Low
+                      levels (<90%) can be due to lung/heart conditions, anemia,
+                      etc.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Respiration Rate
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] breaths/min
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      12-20 breaths/min (At Rest)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Number of breaths per minute. Maintains O2/CO2 balance.
+                      Abnormal changes need medical attention.
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Blood Indicators
+                      <span class="note">(Under research)</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Hemoglobin
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] g/dL
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Men: 14-18<br />Women: 12-16
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Protein in red blood cells that carries oxygen.
+                      <span class="note">(Under research)</span>
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Hemoglobin A1c (HbA1c)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] %
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      < 5.6% (Normal)<br />5.7-6.4% (Prediabetes)<br />> 6.5%
+                      (Diabetes)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Reflects average blood glucose over the past 2-3 months.
+                      <span class="note">(Under research)</span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Risk Assessment
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Hypertension Risk
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Desired: Low
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Indicates if blood pressure exceeds preset thresholds.
+                      Consistently high BP is a major risk factor for heart
+                      disease.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Diabetes Risk (HbA1c)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Desired: Low
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Indicates if HbA1c level exceeds preset threshold. High
+                      HbA1c reflects poor long-term blood sugar control.
+                      <span class="note">(Under research)</span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Heart Rate Variability (HRV) & Autonomic Nervous System
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Mean RRi
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Higher at rest
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Average time between consecutive heartbeats. Longer
+                      interval corresponds to lower heart rate and higher
+                      parasympathetic (PNS) activity.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      RMSSD
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Higher is generally better
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Root mean square of successive RR interval differences.
+                      Reflects beat-to-beat variability, related to
+                      parasympathetic (PNS - rest, recovery) activity.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      SDNN
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      > 50 ms (varies by age/gender)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Standard deviation of all normal RR intervals. Reflects
+                      overall heart rate variability (HRV). Higher HRV often
+                      indicates better fitness and stress resilience.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      SD1
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Higher is generally better
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Poincaré plot standard deviation perpendicular to the line
+                      of identity. Related to short-term HRV, primarily
+                      reflecting parasympathetic (PNS) activity.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      SD2
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Consult Doctor
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Poincaré plot standard deviation along the line of
+                      identity. Related to long-term HRV, reflecting both
+                      sympathetic (SNS) and parasympathetic (PNS) activity.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      LF/HF
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      0.27 - 0.38 (Per PDF)<br />(Consult Further)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Ratio of Low Frequency (LF) to High Frequency (HF) power
+                      bands of HRV. Reflects autonomic balance. Higher ratio
+                      indicates increased sympathetic (stress) activity.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      PNS Index
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Higher is better
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Index assessing parasympathetic nervous system (PNS -
+                      recovery) activity. Calculated from Mean RRi, RMSSD, SD1.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      PNS Zone (Recovery Ability)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Desired: Normal/High
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Reflects the body's ability to recover and conserve energy
+                      after stress ("rest and digest").
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      SNS Index
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Lower is better (at rest)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Index assessing sympathetic nervous system (SNS - stress
+                      response) activity. Calculated from Heart Rate, Stress
+                      Index, SD2.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      SNS Zone (Stress Response)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Desired: Low/Normal (at rest)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Reflects the physiological reaction to danger or stress
+                      ("fight or flight").
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      PRQ
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Around 5
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Pulse Rate / Respiration Rate ratio. Reflects heart-lung
+                      coordination efficiency.
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Stress Assessment
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Stress Level
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Desired: Low/Normal (at rest)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Body's reaction to challenge. Based on Baevsky's Stress
+                      Index (from HRV). Monitor long-term trends.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Stress Index
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Lower is better (at rest)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Score calculated from HRV using Baevsky's method, used to
+                      determine Stress Level.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div
+                class="chart-placeholder"
+                style="
+                  text-align: center;
+                  margin-top: 25px;
+                  margin-bottom: 15px;
+                  padding: 10px;
+                  background-color: #f0f0f0;
+                  border: 1px dashed #ccc;
+                  color: #777;
+                  font-style: italic;
+                "
+              >
+                <h3
+                  style="font-size: 16px; color: #0d6efd; margin-bottom: 10px"
+                >
+                  RR Interval (RRI) Chart
+                </h3>
+                <img
+                  src="placeholder_rri_chart.png"
+                  alt="RRI Chart"
+                  style="max-width: 100%; height: auto"
+                />
+                <p style="margin-top: 5px; font-size: 0.9em">
+                  Chart showing the variation in time between heartbeats (RR
+                  Intervals).
+                </p>
+              </div>
+
+              <p
+                style="
+                  margin-top: 30px;
+                  font-size: 13px;
+                  color: #6c757d;
+                  line-height: 1.6;
+                "
+              >
+                <strong>Important Note:</strong> The information in this email
+                and the "Desired (Reference)" ranges are provided based on
+                reference materials and are for general informational purposes
+                only. They do not substitute for professional medical diagnosis
+                or advice. Some indicators may be under research. Please consult
+                your doctor or a healthcare professional for specific advice
+                regarding your health condition and appropriate indicator ranges
+                for you.
+              </p>
+
+              <div
+                class="footer"
+                style="
+                  text-align: center;
+                  margin-top: 30px;
+                  padding-top: 20px;
+                  border-top: 1px solid #dee2e6;
+                  font-size: 12px;
+                  color: #6c757d;
+                "
+              >
+                JBA AI | Ho Chi Minh City, Vietnam<br />
+                You received this email because you used our service.<br />
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>

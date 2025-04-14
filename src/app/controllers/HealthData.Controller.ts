@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import e, { Request, Response, NextFunction } from "express";
 import CustomError from "../utils/Error.Util";
 import HealthDataService from "../services/HealthData.Service";
 class HealthDataController {
@@ -139,6 +139,26 @@ class HealthDataController {
         data: healthData,
       });
       return healthDataId;
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async senMailHealthData(req: Request, res: Response, next: NextFunction) {
+    try {
+      const email = req.user.email;
+      const rawData = req.body.healthData;
+      if (!email || !rawData) {
+        throw new CustomError(400, "Email và dữ liệu sức khỏe là bắt buộc");
+      }
+      const healthData = await HealthDataService.sentMailHealthData(
+        email,
+        rawData
+      );
+      return res.status(200).json({
+        message: "Gửi email thành công",
+        data: healthData,
+      });
     } catch (error) {
       next(error);
     }

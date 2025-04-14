@@ -1,0 +1,1860 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Kết Quả Quét Sức Khỏe Của Bạn</title>
+    <style>
+      /* Basic Reset */
+      body,
+      table,
+      td,
+      a {
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      table,
+      td {
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      img {
+        -ms-interpolation-mode: bicubic;
+        border: 0;
+        height: auto;
+        line-height: 100%;
+        outline: none;
+        text-decoration: none;
+        display: block;
+      }
+      table {
+        border-collapse: collapse !important;
+      }
+      body {
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+
+      /* Main Styles */
+      .container {
+        padding: 20px;
+        background-color: #f8f9fa;
+      }
+      .content {
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 8px;
+        max-width: 600px;
+        margin: 0 auto;
+        border: 1px solid #dee2e6;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 20px;
+      }
+      .header h1 {
+        margin: 0;
+        color: #0d6efd;
+        font-size: 24px;
+      }
+      .metric-table {
+        width: 100%;
+        margin-top: 20px;
+        border-collapse: collapse;
+      }
+      .metric-table th,
+      .metric-table td {
+        border: 1px solid #dee2e6;
+        padding: 10px;
+        text-align: left;
+        font-size: 14px;
+        line-height: 1.5;
+        vertical-align: top;
+      }
+      .metric-table th {
+        background-color: #e9ecef;
+        color: #212529;
+        font-weight: bold;
+      }
+      .metric-table td:nth-child(1) {
+        font-weight: bold;
+        color: #0d6efd;
+        width: 25%;
+      } /* Metric Name */
+      .metric-table td:nth-child(2) {
+        width: 15%;
+        text-align: center;
+      } /* Measured Value */
+      .metric-table td:nth-child(3) {
+        width: 15%;
+        text-align: center;
+        font-style: italic;
+        color: #495057;
+      } /* Desired Value */
+      .metric-table td:nth-child(4) {
+        width: 45%;
+        color: #495057;
+      } /* Explanation */
+      .metric-table tr:nth-child(even) {
+        background-color: #f8f9fa;
+      } /* Zebra striping */
+      .chart-placeholder {
+        text-align: center;
+        margin-top: 25px;
+        margin-bottom: 15px;
+        padding: 10px;
+        background-color: #f0f0f0;
+        border: 1px dashed #ccc;
+        color: #777;
+        font-style: italic;
+      }
+      .chart-placeholder img {
+        max-width: 100%;
+        height: auto;
+      }
+      .footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #dee2e6;
+        font-size: 12px;
+        color: #6c757d;
+      }
+      .footer a {
+        color: #0d6efd;
+        text-decoration: none;
+      }
+      .section-title-like {
+        font-size: 16px;
+        font-weight: bold;
+        color: #0d6efd;
+        padding-top: 15px;
+        padding-bottom: 5px;
+        text-align: left;
+      }
+      .note {
+        font-size: 0.9em;
+        color: #6c757d;
+      } /* Style for notes like 'Under research' */
+    </style>
+  </head>
+  <body
+    style="
+      margin: 0 !important;
+      padding: 0 !important;
+      background-color: #f8f9fa;
+    "
+  >
+    <div class="container" style="padding: 20px; background-color: #f8f9fa">
+      <table
+        align="center"
+        border="0"
+        cellpadding="0"
+        cellspacing="0"
+        role="presentation"
+        style="max-width: 600px; margin: 0 auto"
+      >
+        <tr>
+          <td>
+            <div
+              class="content"
+              style="
+                background-color: #ffffff;
+                padding: 30px;
+                border-radius: 8px;
+                border: 1px solid #dee2e6;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+              "
+            >
+              <div
+                class="header"
+                style="
+                  text-align: center;
+                  padding-bottom: 20px;
+                  border-bottom: 1px solid #dee2e6;
+                  margin-bottom: 20px;
+                "
+              >
+                <h1 style="margin: 10px 0 0 0; color: #0d6efd; font-size: 24px">
+                  Kết Quả Quét Sức Khỏe
+                </h1>
+              </div>
+
+              <p style="margin-bottom: 20px; color: #495057; line-height: 1.6">
+                Chào [Tên người dùng],
+              </p>
+              <p style="margin-bottom: 25px; color: #495057; line-height: 1.6">
+                Dưới đây là bảng tổng hợp chi tiết các chỉ số sức khỏe từ lần
+                quét gần đây nhất của bạn, cùng với giải thích và phạm vi tham
+                khảo dựa trên tài liệu được cung cấp.
+              </p>
+
+              <table
+                class="metric-table"
+                style="width: 100%; margin-top: 20px; border-collapse: collapse"
+              >
+                <thead>
+                  <tr>
+                    <th
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        background-color: #e9ecef;
+                        color: #212529;
+                        font-weight: bold;
+                        vertical-align: top;
+                      "
+                    >
+                      Tên chỉ số
+                    </th>
+                    <th
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        background-color: #e9ecef;
+                        color: #212529;
+                        font-weight: bold;
+                        vertical-align: top;
+                      "
+                    >
+                      Đo được
+                    </th>
+                    <th
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        background-color: #e9ecef;
+                        color: #212529;
+                        font-weight: bold;
+                        vertical-align: top;
+                      "
+                    >
+                      Mong muốn (Tham khảo)
+                    </th>
+                    <th
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        background-color: #e9ecef;
+                        color: #212529;
+                        font-weight: bold;
+                        vertical-align: top;
+                      "
+                    >
+                      Giải thích (Theo PDF)
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Tổng quan Sức khỏe
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Điểm Sức khỏe (Wellness Score)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE / Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Cao (8-10) là tốt nhất
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Dự đoán nguy cơ tim mạch trong 5-10 năm tới dựa trên các
+                      dấu hiệu sinh tồn. Điểm cao hơn cho thấy nguy cơ thấp hơn.
+                      Bị ảnh hưởng bởi Nhịp tim, Mức độ căng thẳng, SpO2, Huyết
+                      áp.
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Chỉ số Cơ bản
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Huyết áp (Tâm thu/Tâm trương)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] mmHg
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Tâm thu: 100-129 (Bình thường)<br />(Tham khảo bác sĩ)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Áp lực máu lên thành động mạch khi tim co (tâm thu) và
+                      nghỉ (tâm trương). Huyết áp cao kéo dài làm tăng nguy cơ
+                      bệnh tim, đột quỵ. Nên đo khi nghỉ ngơi.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Nhịp tim
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] bpm
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      60-100 bpm (Khi nghỉ ngơi)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Số lần tim đập mỗi phút. Nhịp tim lúc nghỉ ngơi phản ánh
+                      sức khỏe tim mạch và thể chất. Nhịp tim nhanh lúc nghỉ có
+                      thể chỉ ra vấn đề sức khỏe hoặc dự đoán nguy cơ tim mạch
+                      dài hạn.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Độ bão hòa Oxy (SpO2)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] %
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      95-100% (Phổi khỏe mạnh)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Tỷ lệ hemoglobin trong máu mang oxy. Mức thấp (<90%) gọi
+                      là hypoxemia, có thể do bệnh phổi/tim, thiếu máu, độ
+                      cao... Gây triệu chứng như đau đầu, khó thở, tim đập
+                      nhanh.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Nhịp thở
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] lần/phút
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      12-20 lần/phút (Khi nghỉ ngơi)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Số hơi thở mỗi phút. Giữ cân bằng O2/CO2. Tăng khi O2 thấp
+                      hoặc CO2 cao. Bị ảnh hưởng bởi nhiều yếu tố (vận động,
+                      sốt, cảm xúc, bệnh lý...). Thay đổi bất thường cần chú ý y
+                      tế.
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Chỉ số Máu <span class="note">(Đang nghiên cứu)</span>
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Hemoglobin
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] g/dL
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Nam: 14-18<br />Nữ: 12-16
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Protein trong hồng cầu vận chuyển oxy đến mô và CO2 về
+                      phổi. <span class="note">(Đang nghiên cứu)</span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Hemoglobin A1c (HbA1c)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] %
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      < 5.6% (Bình thường)<br />5.7-6.4% (Tiền ĐTĐ)<br />> 6.5%
+                      (ĐTĐ)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Phản ánh mức đường huyết trung bình trong 2-3 tháng qua.
+                      <span class="note">(Đang nghiên cứu)</span>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Đánh giá Nguy cơ
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Nguy cơ Huyết áp cao
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Mong muốn: Thấp
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Cho biết huyết áp có vượt ngưỡng đặt trước hay không.
+                      Huyết áp cao kéo dài gây căng thẳng cho tim và mạch máu,
+                      là yếu tố nguy cơ chính của bệnh tim.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Nguy cơ HbA1c cao
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Mong muốn: Thấp
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Cho biết mức HbA1c có vượt ngưỡng đặt trước hay không.
+                      HbA1c cao phản ánh kiểm soát đường huyết kém trong dài
+                      hạn, có thể là dấu hiệu sớm của vấn đề chuyển hóa.
+                      <span class="note">(Đang nghiên cứu)</span>
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Nguy cơ ASCVD
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] %
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Càng thấp càng tốt (<1% là thấp)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Ước tính khả năng xảy ra biến cố tim mạch do xơ vữa trong
+                      10 năm tới, dựa trên dấu hiệu sinh tồn và thông tin nhân
+                      khẩu học (tuổi, giới tính, BMI, hút thuốc).
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Biến thiên Nhịp tim (HRV) & Hệ Thần kinh Tự chủ
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Khoảng RR trung bình (Mean RRi)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Cao hơn khi nghỉ ngơi
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Thời gian trung bình giữa các nhịp tim liên tiếp (mili
+                      giây). Khoảng RR dài hơn tương ứng với nhịp tim chậm hơn
+                      và hoạt động phó giao cảm (PNS) cao hơn.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      RMSSD
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Cao hơn thường tốt hơn
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Căn bậc hai trung bình của bình phương chênh lệch giữa các
+                      khoảng RR liên tiếp. Phản ánh biến thiên nhịp tim theo
+                      từng nhịp (beat-to-beat), liên quan đến hoạt động phó giao
+                      cảm (PNS - phục hồi, nghỉ ngơi).
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      SDNN
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      > 50 ms (thay đổi theo tuổi/giới)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Độ lệch chuẩn của tất cả các khoảng RR bình thường. Phản
+                      ánh sự biến thiên tổng thể của nhịp tim (HRV). Mức HRV cao
+                      thường cho thấy thể chất tốt và khả năng phục hồi stress
+                      tốt hơn.
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      SD1
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Cao hơn thường tốt hơn
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Độ lệch chuẩn của điểm Poincaré theo trục vuông góc với
+                      đường y=x. Liên quan đến biến thiên HRV ngắn hạn, chủ yếu
+                      phản ánh hoạt động phó giao cảm (PNS).
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      SD2
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE] ms
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Tham khảo bác sĩ
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Độ lệch chuẩn của điểm Poincaré theo trục dọc đường y=x.
+                      Liên quan đến biến thiên HRV dài hạn, phản ánh cả hoạt
+                      động giao cảm (SNS) và phó giao cảm (PNS).
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Tỷ lệ LF/HF
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      0.27 - 0.38 (Theo PDF)<br />(Tham khảo thêm)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Tỷ lệ công suất dải tần số thấp (LF - liên quan SNS) và
+                      tần số cao (HF - liên quan PNS). Phản ánh cân bằng hệ thần
+                      kinh tự chủ. Tỷ lệ cao hơn cho thấy hoạt động giao cảm
+                      tăng (stress).
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Chỉ số PNS
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Cao hơn tốt hơn
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Chỉ số đánh giá hoạt động hệ thần kinh phó giao cảm (PNS -
+                      phục hồi). Tính từ Mean RRi, RMSSD, SD1. Dùng để xác định
+                      Vùng PNS (Khả năng phục hồi).
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Vùng PNS (Khả năng Phục hồi)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Mong muốn: Bình thường/Cao
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Phản ánh khả năng cơ thể phục hồi, tích lũy năng lượng sau
+                      stress ("nghỉ ngơi và tiêu hóa"). Mức Bình thường/Cao cho
+                      thấy cơ thể thư giãn, phục hồi hiệu quả.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Chỉ số SNS
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Thấp hơn tốt hơn (khi nghỉ)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Chỉ số đánh giá hoạt động hệ thần kinh giao cảm (SNS -
+                      phản ứng stress). Tính từ Nhịp tim, Chỉ số Stress Baevsky,
+                      SD2. Dùng để xác định Vùng SNS (Phản ứng Stress).
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Vùng SNS (Phản ứng Stress)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Mong muốn: Thấp/Bình thường (khi nghỉ)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Phản ánh phản ứng sinh lý với nguy hiểm hoặc stress
+                      ("chiến đấu hoặc bỏ chạy"). Mức Thấp/Bình thường khi nghỉ
+                      ngơi cho thấy cơ thể không bị kích hoạt stress quá mức.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      PRQ (Tỷ lệ Nhịp tim/Nhịp thở)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Khoảng 5
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Tỷ lệ giữa nhịp tim (lần/phút) và nhịp thở (lần/phút).
+                      Phản ánh sự phối hợp hiệu quả giữa tim và phổi. Lệch nhiều
+                      so với 5 cần tham khảo bác sĩ.
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td
+                      colspan="4"
+                      class="section-title-like"
+                      style="
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        padding-top: 15px;
+                        padding-bottom: 5px;
+                        text-align: left;
+                        border: none;
+                        background-color: #ffffff;
+                      "
+                    >
+                      Đánh giá Căng thẳng
+                    </td>
+                  </tr>
+                  <tr style="background-color: #f8f9fa">
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Mức độ căng thẳng
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [Mức VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Mong muốn: Thấp/Bình thường (khi nghỉ)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Phản ứng của cơ thể trước thách thức. Dựa trên Chỉ số
+                      Stress Baevsky (từ HRV). Stress có thể tích cực, nhưng kéo
+                      dài sẽ có hại. Cần theo dõi xu hướng dài hạn.
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        font-weight: bold;
+                        color: #0d6efd;
+                        width: 25%;
+                        vertical-align: top;
+                      "
+                    >
+                      Chỉ số căng thẳng (Baevsky)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        vertical-align: top;
+                      "
+                    >
+                      [VALUE]
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: center;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 15%;
+                        font-style: italic;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Thấp hơn tốt hơn (khi nghỉ)
+                    </td>
+                    <td
+                      style="
+                        border: 1px solid #dee2e6;
+                        padding: 10px;
+                        text-align: left;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        width: 45%;
+                        color: #495057;
+                        vertical-align: top;
+                      "
+                    >
+                      Điểm số tính toán từ HRV theo phương pháp Baevsky, được
+                      dùng để xác định Mức độ căng thẳng. Phản ánh trạng thái
+                      sinh lý liên quan đến stress.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <div
+                class="chart-placeholder"
+                style="
+                  text-align: center;
+                  margin-top: 25px;
+                  margin-bottom: 15px;
+                  padding: 10px;
+                  background-color: #f0f0f0;
+                  border: 1px dashed #ccc;
+                  color: #777;
+                  font-style: italic;
+                "
+              >
+                <h3
+                  style="font-size: 16px; color: #0d6efd; margin-bottom: 10px"
+                >
+                  Biểu đồ Khoảng RR (RRI)
+                </h3>
+                <img
+                  src="placeholder_rri_chart.png"
+                  alt="Biểu đồ RRI"
+                  style="max-width: 100%; height: auto"
+                />
+                <p style="margin-top: 5px; font-size: 0.9em">
+                  Biểu đồ thể hiện sự biến thiên của khoảng thời gian giữa các
+                  nhịp tim (RR Intervals).
+                </p>
+              </div>
+
+              <p
+                style="
+                  margin-top: 30px;
+                  font-size: 13px;
+                  color: #6c757d;
+                  line-height: 1.6;
+                "
+              >
+                <strong>Lưu ý quan trọng:</strong> Thông tin trong email này và
+                các phạm vi "Mong muốn" được cung cấp dựa trên tài liệu tham
+                khảo và chỉ mang tính thông tin chung, không thay thế cho chẩn
+                đoán hoặc tư vấn y tế chuyên nghiệp. Một số chỉ số có thể đang
+                trong giai đoạn nghiên cứu. Vui lòng tham khảo ý kiến bác sĩ
+                hoặc chuyên gia y tế để được tư vấn cụ thể về tình trạng sức
+                khỏe và phạm vi chỉ số phù hợp với bạn.
+              </p>
+
+              <div
+                class="footer"
+                style="
+                  text-align: center;
+                  margin-top: 30px;
+                  padding-top: 20px;
+                  border-top: 1px solid #dee2e6;
+                  font-size: 12px;
+                  color: #6c757d;
+                "
+              >
+                JBA AI | Ho Chi Minh City, Vietnam<br />
+                Bạn nhận được email này vì đã sử dụng dịch vụ của chúng tôi.<br />
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </body>
+</html>
