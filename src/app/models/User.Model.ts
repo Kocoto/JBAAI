@@ -16,8 +16,8 @@ export interface IUser {
     | "saler";
   status: "active" | "inactive";
   verify: boolean;
-  address?: string;
   isSubscription: boolean;
+  emailNotificationsEnabled: boolean;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -50,8 +50,8 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
-    address: { type: String },
     isSubscription: { type: Boolean, default: false },
+    emailNotificationsEnabled: { type: Boolean, default: false },
   },
   {
     timestamps: true,

@@ -1,6 +1,7 @@
 import { HealthDataModel } from "../models/HealthData.Model";
 import CustomError from "../utils/Error.Util";
 import { transformIncomingData } from "../utils/FormatData.Util";
+import { renderEmailTemplate, sendMail } from "../utils/Mail.Util";
 
 class HealthDataService {
   async createHealthData(userId: string, rawData: any) {
@@ -66,6 +67,28 @@ class HealthDataService {
       throw new CustomError(500, error as string);
     }
   }
-}
+  async sentMailHealthData(email: string, rawData: any) {
+    try {
+      const data = transformIncomingData(rawData);
+      if (!data) {
+        throw new CustomError(400, "Không thể lấy health data");
+      }
 
+      const htmlContent = await renderEmailTemplate(
+        "en",
+        "user",
+        data,
+        "Đây là chart"
+      );
+      const mailOptions = {
+        from: "JBA AI",
+        to: email,
+        subject: "Health Data",
+        html: htmlContent,
+      };
+      const mail = await sendMail(mailOptions);
+      return mail;
+    } catch (error) {}
+  }
+}
 export default new HealthDataService();
