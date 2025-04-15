@@ -7,3 +7,5 @@ dist/
 *.log
 error.log
 logs/
+
+.env

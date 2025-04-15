@@ -38,8 +38,8 @@ class PaypalService {
           brand_name: "JBAAI",
           landing_page: "LOGIN",
           user_action: "PAY_NOW",
-          return_url: `${process.env.CLIENT_URL}/success`,
-          cancel_url: `${process.env.CLIENT_URL}/cancel`,
+          return_url: `${process.env.CLIENT_URL}`,
+          cancel_url: `${process.env.CLIENT_URL}`,
         },
       });
       console.log("[PayPal Create Order] Đang gửi yêu cầu tạo đơn hàng...");
