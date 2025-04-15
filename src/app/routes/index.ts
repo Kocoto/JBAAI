@@ -6,6 +6,7 @@ import HealthDataRoute from "./HealthData.Route";
 import PackageRoute from "./Package.Route";
 import PaypalRoute from "./Paypal.Route";
 import UpgradeRequestRoute from "./UpgradeRequest.Route";
+import UserRoute from "./User.Route";
 
 export function route(app: Express) {
   app.use("/api/v1/upgrade-request", UpgradeRequestRoute);
@@ -13,6 +14,7 @@ export function route(app: Express) {
   app.use("/api/v1/package", PackageRoute);
   app.use("/api/v1/profile", ProfileRoute);
   app.use("/api/v1/paypal", PaypalRoute);
+  app.use("/api/v1/user", UserRoute);
   app.use("/api/v1/auth", AuthRoute);
   app.use("/", HomeRoute);
 }

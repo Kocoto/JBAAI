@@ -3,6 +3,7 @@ import { transporter } from "../config/nodemailer.config";
 import * as fs from "fs/promises"; // Sử dụng fs.promises để đọc file bất đồng bộ
 import * as path from "path";
 import CustomError from "./Error.Util";
+import { json } from "body-parser";
 
 export const sendMail = async (mailOptions: nodemailer.SendMailOptions) => {
   try {
@@ -28,7 +29,14 @@ export const renderEmailTemplate = async (
       `HealthScanEmailTemplateV1.${language}.html`
     );
 
+    console.log(
+      "đây là log dòng số 31 của trang mail.Util.ts dùng để kiểm tra giá trị của healthData: " +
+        JSON.stringify(healthData, null, 2)
+    );
     let htmlContent = await fs.readFile(templatePath, "utf-8");
+
+    // Username
+    htmlContent = htmlContent.replace(/\s*\[Tên người dùng\]/g, userName);
 
     // Wellness Score/Level
     htmlContent = htmlContent.replace(

@@ -35,93 +35,28 @@ function isValidRriArray(arr: any): arr is IRriPoint[] {
 
 export const transformIncomingData = (rawData: any): Partial<IHealthData> => {
   //   ascvdRisk: { type: 33554432, value: 1 },
-  //   bpValue: { diastolic: 74, systolic: 119 },
-  //   heartAge: undefined,
-  //   hemoglobin: { type: 1048576, value: 15.1 },
-  //   hemoglobinA1c: { type: 2097152, value: 7.6 },
-  //   highBloodPressureRisk: { type: 16777216, value: 1 },
-  //   highFastingGlucoseRisk: undefined,
-  //   highHemoglobinA1cRisk: { type: 8388608, value: 3 },
-  //   highTotalCholesterolRisk: undefined,
-  //   lfhf: { type: 524288, value: 0.647 },
-  //   lowHemoglobinRisk: undefined,
-  //   meanRRi: { confidence: { level: 3 }, type: 256, value: 972 },
-  //   normalizedStressIndex: undefined,
-  //   oxygenSaturation: { type: 4, value: 97 },
-  //   pnsIndex: { type: 8192, value: 1.4 },
-  //   pnsZone: { type: 16384, value: 3 },
-  //   prq: { confidence: { level: 2 }, type: 4096, value: 2.9 },
-  //   pulseRate: { confidence: { level: 3 }, type: 1, value: 62 },
-  //   respirationRate: { confidence: { level: 2 }, type: 2, value: 22 },
-  //   rmssd: { type: 512, value: 75 },
-  //   rri: {
-  //     confidence: { level: 3 },
-  //     type: 32,
-  //     value: [
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //       [Object],
-  //     ],
-  //   },
-  //   sd1: { type: 1024, value: 54 },
-  //   sd2: { type: 2048, value: 60 },
-  //   sdnn: { confidence: { level: 3 }, type: 8, value: 57 },
-  //   snsIndex: { type: 32768, value: -0.7 },
-  //   snsZone: { type: 65536, value: 2 },
-  //   stressIndex: { type: 128, value: 78 },
-  //   stressLevel: { type: 16, value: 1 },
-  //   wellnessIndex: { type: 131072, value: 9 },
-  //   wellnessLevel: { type: 262144, value: 3 },
-  // };
+  console.log(
+    "đây là log dòng số 39 của trang FormatData.Util.ts dùng để kiểm tra giá trị của rawData: " +
+      JSON.stringify(rawData)
+  );
+
+  // Kiểm tra nếu rawData là null hoặc undefined
+  if (!rawData) {
+    console.warn("rawData là null hoặc undefined");
+    return {};
+  }
+
+  // Kiểm tra nếu rawData là chuỗi JSON, thì parse nó thành object
+  if (typeof rawData === "string") {
+    try {
+      rawData = JSON.parse(rawData);
+    } catch (error) {
+      console.error("Lỗi khi parse rawData từ chuỗi JSON:", error);
+      // Nếu không parse được, trả về đối tượng rỗng
+      return {};
+    }
+  }
+
   // const userId = "67ee2a1bd60273ba8d340c42"; // Giả sử userId là một chuỗi
   const transformedData: Partial<IHealthData> = {};
 
@@ -187,7 +122,10 @@ export const transformIncomingData = (rawData: any): Partial<IHealthData> => {
       // Các trường không khớp với các xử lý trên sẽ bị bỏ qua
     }
   }
-
+  console.log(
+    "đây là log dòng số 191 của trang FormatData.Util.ts dùng để kiểm tra giá trị của transformedData: " +
+      JSON.stringify(transformedData)
+  );
   return transformedData;
 };
 
