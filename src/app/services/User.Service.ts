@@ -32,18 +32,14 @@ class UserService {
 
   async switchEmailNotification(userId: string) {
     try {
-      const user = await UserModel.findByIdAndUpdate(
-        userId,
-        {
-          $set: {
-            emailNotificationsEnabled: { $not: "$emailNotificationsEnabled" },
-          },
-        },
-        { new: true }
-      );
+      const user = await UserModel.findById(userId);
       if (!user) {
         throw new CustomError(404, "User not found");
       }
+
+      user.emailNotificationsEnabled = !user.emailNotificationsEnabled;
+      await user.save();
+
       return user;
     } catch (error) {
       if (error instanceof CustomError) throw error;
