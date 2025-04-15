@@ -56,9 +56,7 @@ class HealthDataService {
       const healthData = await HealthDataModel.findOne({ userId })
         .sort({ createdAt: -1 })
         .exec();
-      if (!healthData) {
-        throw new CustomError(400, "Không thể lấy health data");
-      }
+
       return healthData;
     } catch (error) {
       if (error instanceof Error) {
