@@ -17,7 +17,7 @@ export const accessTokenGenerator = (
 
   try {
     return jwt.sign({ userId, clientId }, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "1m",
     });
   } catch (error) {
     console.error("Lỗi tạo access token:", error);
