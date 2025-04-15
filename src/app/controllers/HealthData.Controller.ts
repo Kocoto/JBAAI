@@ -8,6 +8,7 @@ class HealthDataController {
       const date = req.body.date;
       if (!date) {
         const healthData = await HealthDataService.getOneHealthData(userId);
+
         return res.status(200).json({
           message: "Lấy dữ liệu sức khỏe thành công",
           data: healthData,
