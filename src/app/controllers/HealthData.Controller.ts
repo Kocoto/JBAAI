@@ -8,7 +8,7 @@ class HealthDataController {
       const date = req.body.date;
       if (!date) {
         const healthData = await HealthDataService.getOneHealthData(userId);
-        res.status(200).json({
+        return res.status(200).json({
           message: "Lấy dữ liệu sức khỏe thành công",
           data: healthData,
         });
@@ -17,7 +17,7 @@ class HealthDataController {
         userId,
         date
       );
-      res.status(200).json({
+      return res.status(200).json({
         message: "Lấy dữ liệu sức khỏe thành công",
         data: healthData,
       });
@@ -118,7 +118,7 @@ class HealthDataController {
         userId,
         rawData
       );
-      res.status(201).json({
+      return res.status(201).json({
         message: "Tạo dữ liệu sức khỏe thành công",
         data: healthData,
       });
@@ -134,7 +134,7 @@ class HealthDataController {
         throw new CustomError(400, "Id dữ liệu sức khỏe là bắt buộc");
       }
       const healthData = await HealthDataService.deleteHealthDate(healthDataId);
-      res.status(200).json({
+      return res.status(200).json({
         message: "Xóa dữ liệu sức khỏe thành công",
         data: healthData,
       });
