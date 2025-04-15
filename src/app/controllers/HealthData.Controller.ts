@@ -129,7 +129,7 @@ class HealthDataController {
 
   async deleteHealthData(req: Request, res: Response, next: NextFunction) {
     try {
-      const healthDataId = req.body.healthDataI;
+      const healthDataId = req.body.healthDataId;
       if (!healthDataId) {
         throw new CustomError(400, "Id dữ liệu sức khỏe là bắt buộc");
       }
@@ -138,7 +138,6 @@ class HealthDataController {
         message: "Xóa dữ liệu sức khỏe thành công",
         data: healthData,
       });
-      return healthDataId;
     } catch (error) {
       next(error);
     }
@@ -151,8 +150,10 @@ class HealthDataController {
       if (!email || !rawData) {
         throw new CustomError(400, "Email và dữ liệu sức khỏe là bắt buộc");
       }
+      const username = req.user.username;
       const healthData = await HealthDataService.sentMailHealthData(
         email,
+        username,
         rawData
       );
       return res.status(200).json({
