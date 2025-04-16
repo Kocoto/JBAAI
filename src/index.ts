@@ -13,43 +13,82 @@ import multer from "multer";
 import client from "./app/config/paypal.config";
 import { transformIncomingData } from "./app/utils/FormatData.Util";
 import UserHealthDataService from "./app/services/HealthData.Service";
+import mongoose from "mongoose";
 const port = process.env.PORT || 4000;
+async function startApplication() {
+  console.log("Bắt đầu khởi chạy ứng dụng...");
+  try {
+    // Hàm connect() sẽ throw lỗi nếu thất bại, ngăn ứng dụng tiếp tục
+    console.log("Đang kết nối đến cơ sở dữ liệu...");
+    await connect(); // Đợi kết nối DB thành công
 
-const app = express();
-const upload = multer();
-// Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(upload.any());
+    console.log("Đang khởi tạo Express...");
+    const app = express();
+    const upload = multer();
 
-// Database connection
-connect();
+    // Middlewares
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
+    // Nếu bạn vẫn cần bodyParser cho mục đích khác, giữ lại:
+    app.use(bodyParser.urlencoded({ extended: true }));
+    app.use(bodyParser.json());
+    app.use(upload.any()); // Middleware cho multipart/form-data
 
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-// const test = UserHealthDataService.createHealthData();
-// console.log(
-//   "Đây là log dòng số 32 trang index, kiểm tra transformer: " +
-//     JSON.stringify(test)
-// );
-// console.log(
-//   "Đây là log dòng số 32 trang index, kiểm tra chi tiết transformer: " + test
-// );
-client;
-transporter.verify((error, success) => {
-  if (error) {
-    console.log("Nodemailer connection error:", error);
-  } else {
-    console.log("Nodemailer is ready to send emails");
+    // Các cấu hình khác (Swagger, Nodemailer verify, PayPal client)
+    console.log("Đang cấu hình các dịch vụ khác...");
+    app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    client; // Khởi tạo PayPal client (nếu cần)
+    transporter.verify((error, success) => {
+      if (error) {
+        console.error("Lỗi kết nối Nodemailer:", error);
+      } else {
+        console.log("Nodemailer đã sẵn sàng gửi email.");
+      }
+    });
+
+    // Routes
+    console.log("Đang đăng ký các routes...");
+    route(app);
+
+    // Error Handling Middleware (phải đặt cuối cùng)
+    app.use(errorHandler);
+
+    // --- Bước 5: Khởi động Express Server ---
+    app.listen(port, () => {
+      console.log(`Ứng dụng đang lắng nghe tại http://localhost:${port}`);
+      console.log(`API Docs tại http://localhost:${port}/api-docs`);
+      console.log("Ứng dụng đã khởi động thành công!");
+    });
+  } catch (error) {
+    // Bắt lỗi từ connect() hoặc setupAgenda()
+    console.error("Không thể khởi tạo ứng dụng:", error);
+    // Thoát ứng dụng với mã lỗi nếu không thể khởi tạo các thành phần cốt lõi
+    process.exit(1);
   }
-});
-// Routes
-route(app);
+}
+async function gracefulShutdown() {
+  console.log("Nhận tín hiệu tắt ứng dụng. Đang dừng một cách duyên dáng...");
+  try {
+    // Ngắt kết nối Mongoose
+    console.log("Đang đóng kết nối MongoDB...");
+    await mongoose.disconnect();
+    console.log("Kết nối MongoDB đã đóng.");
 
-// Error handling middleware
-app.use(errorHandler);
+    // Thoát tiến trình thành công
+    console.log("Ứng dụng đã tắt thành công.");
+    process.exit(0);
+  } catch (error) {
+    console.error("Lỗi trong quá trình tắt ứng dụng:", error);
+    // Thoát với mã lỗi
+    process.exit(1);
+  }
+}
 
-app.listen(port, () => {
-  console.log(`App listening at http://localhost:${port}`);
-});
+// --- Đăng ký bắt các tín hiệu shutdown ---
+// SIGINT: Thường được gửi khi nhấn Ctrl+C trong terminal
+process.on("SIGINT", gracefulShutdown);
+// SIGTERM: Tín hiệu tắt chuẩn thường được gửi bởi hệ thống quản lý tiến trình (Docker, Kubernetes, PM2 stop)
+process.on("SIGTERM", gracefulShutdown);
+
+// --- Chạy hàm khởi động chính ---
+startApplication();

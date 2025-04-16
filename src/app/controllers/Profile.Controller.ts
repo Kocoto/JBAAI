@@ -10,8 +10,14 @@ class ProfileController {
         throw new CustomError(400, "Không tìm thấy người dùng");
       }
       const profile = req.body;
+      console.log(
+        "Đây là log dòng số 13 của trang profile.controller.ts` dùng để kiểm tra giá trị của profile: " +
+          JSON.stringify(profile, null, 2) +
+          "userId: " +
+          userId
+      );
       if (!profile) {
-        throw new CustomError(400, "Không tìm thấy thông tin người dùng");
+        throw new CustomError(400, "Cần nhập thông tin người dùng ");
       }
       const result = await ProfileService.updateProfile(userId, profile);
       if (!result) {
