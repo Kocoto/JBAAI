@@ -119,7 +119,7 @@ class PaypalService {
       if (!purchaseRecord) {
         throw new CustomError(
           404,
-          `Không tìm thấy lịch sử mua hàng: ${purchaseHistoryId}`
+          `Không tìm thấy lịch sử mua hàng bằng purchaseHistoryId: ${purchaseHistoryId}`
         );
       }
       // Kiểm tra xem paypal orderId có khớp không (tùy chọn nhưng nên có)

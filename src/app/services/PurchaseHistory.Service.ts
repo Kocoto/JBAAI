@@ -65,7 +65,10 @@ class PurchaseHistoryService {
         transactionId: transactionId,
       });
       if (!purchaseHistory) {
-        throw new CustomError(404, "Purchase history not found");
+        throw new CustomError(
+          404,
+          "Khônh tìm thấy lịch sử mua hàng bằng TransactionId: " + transactionId
+        );
       }
       return purchaseHistory;
     } catch (error) {
