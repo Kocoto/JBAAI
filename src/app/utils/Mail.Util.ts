@@ -25,6 +25,8 @@ export const renderEmailTemplate = async (
     const templatePath = path.join(
       __dirname,
       "..",
+      "..",
+      "..",
       "templates",
       `HealthScanEmailTemplateV1.${language}.html`
     );
