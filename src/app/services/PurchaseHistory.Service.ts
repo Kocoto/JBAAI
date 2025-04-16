@@ -31,7 +31,7 @@ class PurchaseHistoryService {
           { new: true }
         );
       if (!updatedPurchaseHistory) {
-        throw new CustomError(404, "Purchase history not found");
+        throw new CustomError(400, "Lỗi khi cập nhật purchase history");
       }
       return updatedPurchaseHistory;
     } catch (error) {
