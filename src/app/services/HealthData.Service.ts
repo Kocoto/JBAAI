@@ -92,6 +92,8 @@ class HealthDataService {
             path: path.join(
               __dirname,
               "..",
+              "..",
+              "..",
               "templates",
               "logo",
               "logo-JBAAI-2.png"
