@@ -224,7 +224,7 @@ class PaypalService {
           UserService.updateUser(String(userId), { isSubscription: true }),
         ]);
 
-        return { purchaseHistory, subscription, user };
+        return { purchaseHistory, subscription, user, captureResult };
       } else {
         console.warn(
           `[PayPal Capture Order] Trạng thái thanh toán không hoàn tất cho đơn hàng ${orderId}:`,
@@ -237,13 +237,16 @@ class PaypalService {
             finalPaypalTxnId,
             captureStatus
           );
-        throw new CustomError(400, "Thanh toán không thành công");
+
+        return { purchaseHistory, captureResult };
       }
     } catch (err: any) {
       console.error(
         `[PayPal Capture Order] Lỗi khi capture đơn hàng ${orderId}:`,
-        err.message
+        err.message // Log raw error message first
       );
+
+      // Check if it's a PayPal structured error
       if (err.statusCode && err.message) {
         try {
           const errorDetails = JSON.parse(err.message);
@@ -251,31 +254,68 @@ class PaypalService {
             `[PayPal Capture Order] Chi tiết lỗi PayPal (${orderId}):`,
             JSON.stringify(errorDetails, null, 2)
           );
-          if (errorDetails.details?.[0]?.issue === "ORDER_ALREADY_CAPTURED") {
+
+          const issue = errorDetails.details?.[0]?.issue;
+
+          if (issue === "ORDER_ALREADY_CAPTURED") {
             console.warn(
               `[PayPal Capture Order] Đơn hàng ${orderId} đã được capture trước đó.`
             );
-            // Có thể trả về 200 OK và thông tin giao dịch cũ nếu bạn lưu nó
-            return { message: "Đơn hàng này đã được thanh toán trước đó." };
+            // Optional: Fetch existing record and return it
+            // const existingPurchase = await PurchaseHistoryService.getPurchaseHistoryByTransactionId(orderId); // Need a way to find it
+            return {
+              message:
+                "Đơn hàng này đã được thanh toán trước đó." /*, purchaseHistory: existingPurchase */,
+            };
+          } else if (issue === "ORDER_NOT_APPROVED") {
+            // <-- XỬ LÝ RIÊNG CHO LỖI NÀY
+            console.warn(
+              `[PayPal Capture Order] Đơn hàng ${orderId} chưa được phê duyệt hoặc đã bị hủy bởi người dùng.`
+            );
+            try {
+              // Cập nhật trạng thái trong DB thành 'cancelled' hoặc 'failed'
+              // Quan trọng: Đảm bảo hàm updatePurchaseHistory có thể xử lý transactionId là null nếu cần
+              await PurchaseHistoryService.updatePurchaseHistory(
+                purchaseHistoryId,
+                "cancelled" // Hoặc 'failed' tùy logic của bạn
+              );
+            } catch (dbError: any) {
+              console.error(
+                `[PayPal Capture Order] Lỗi cập nhật DB (${purchaseHistoryId}) sau khi capture thất bại (ORDER_NOT_APPROVED):`,
+                dbError.message
+              );
+              // Không ném lỗi ở đây để lỗi gốc được trả về
+            }
+            // Ném lỗi 400 rõ ràng cho client biết vấn đề
+            throw new CustomError(
+              400,
+              "Đơn hàng chưa được phê duyệt hoặc đã bị hủy."
+            );
+          } else {
+            // Các lỗi PayPal khác đã được parse
+            throw new CustomError(
+              500,
+              "Lỗi từ PayPal khi xác nhận thanh toán: " +
+                (errorDetails.message || "Unknown PayPal Error")
+            );
           }
-        } catch (error) {
+        } catch (parseError) {
+          // Lỗi khi parse JSON từ err.message
           console.error(
             `[PayPal Capture Order] Không thể parse lỗi JSON (${orderId}):`,
             err.message
           );
           throw new CustomError(
             500,
-            "Lỗi không xác định khi xác nhận thanh toán PayPal." +
-              "rawError: " +
-              err.message // Chỉ gửi message của lỗi gốc
+            "Lỗi không xác định khi xử lý phản hồi lỗi từ PayPal. Raw: " +
+              err.message
           );
         }
       } else {
+        // Lỗi không có cấu trúc như lỗi PayPal (ví dụ: lỗi mạng, lỗi code khác)
         throw new CustomError(
           500,
-          "Lỗi không xác định khi xác nhận thanh toán PayPal." +
-            "rawError: " +
-            err.message // Chỉ gửi message của lỗi gốc
+          "Lỗi hệ thống khi xác nhận thanh toán PayPal. Raw: " + err.message
         );
       }
     }

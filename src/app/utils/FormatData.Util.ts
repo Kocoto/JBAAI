@@ -34,12 +34,6 @@ function isValidRriArray(arr: any): arr is IRriPoint[] {
 }
 
 export const transformIncomingData = (rawData: any): Partial<IHealthData> => {
-  //   ascvdRisk: { type: 33554432, value: 1 },
-  console.log(
-    "đây là log dòng số 39 của trang FormatData.Util.ts dùng để kiểm tra giá trị của rawData: " +
-      JSON.stringify(rawData)
-  );
-
   // Kiểm tra nếu rawData là null hoặc undefined
   if (!rawData) {
     console.warn("rawData là null hoặc undefined");
