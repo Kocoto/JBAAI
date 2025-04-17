@@ -21,7 +21,7 @@ class PurchaseHistoryService {
   async updatePurchaseHistory(
     purchaseHistoryId: string,
     status: string,
-    transactionId: string
+    transactionId?: string
   ) {
     try {
       const updatedPurchaseHistory =
