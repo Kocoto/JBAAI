@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "KQ85N832C6.com.aqpone.JBAbrandsAI",
+        // -----------------------------
+        "paths": [
+          "/paypal/callback*", 
+
+          "/check-payment*",
+          "/products/*",
+          "/orders/*/details"
+          // ------------------------------------------
+        ]
+      }
+    ]
+  }
+}
