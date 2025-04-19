@@ -7,7 +7,7 @@
         // -----------------------------
         "paths": [
           "/paypal/callback*", 
-
+          "/paypal/*",
           "/check-payment*",
           "/products/*",
           "/orders/*/details"
