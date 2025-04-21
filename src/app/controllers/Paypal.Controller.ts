@@ -5,6 +5,7 @@ import PurchaseHistoryService from "../services/PurchaseHistory.Service";
 
 class PaypalController {
   async createOrder(req: Request, res: Response, next: NextFunction) {
+    console.log("createOrDDAAa");
     try {
       const packageId = req.body.packageId;
       if (!packageId) {
