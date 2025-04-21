@@ -18,6 +18,7 @@ export interface IUser {
   verify: boolean;
   isSubscription: boolean;
   emailNotificationsEnabled: boolean;
+  isPayment: boolean;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -52,6 +53,7 @@ const UserSchema = new Schema<IUser>(
     },
     isSubscription: { type: Boolean, default: false },
     emailNotificationsEnabled: { type: Boolean, default: false },
+    isPayment: { type: Boolean, default: false },
   },
   {
     timestamps: true,
