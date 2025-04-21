@@ -27,6 +27,41 @@ async function startApplication() {
 
     // console.log("Đang khởi tạo Express...");
     const app = express();
+
+    const wellKnownPath = path.join(__dirname, "..", "public", ".well-known");
+
+    // Route cho apple-app-site-association (Không có đuôi)
+    app.get("/.well-known/apple-app-site-association", (req, res) => {
+      const filePath = path.join(wellKnownPath, "apple-app-site-association");
+      fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+          console.error("Error reading apple-app-site-association file:", err);
+          res.status(404).send("Not Found");
+          return;
+        }
+        res.setHeader("Content-Type", "application/json"); // Đảm bảo đúng Content-Type
+        // Thêm header Cache-Control để tránh cache quá lâu, giúp việc cập nhật có hiệu lực
+        res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+        res.status(200).send(data);
+      });
+    });
+
+    // Route cho assetlinks.json (Có đuôi .json)
+    app.get("/.well-known/assetlinks.json", (req, res) => {
+      const filePath = path.join(wellKnownPath, "assetlinks.json");
+      fs.readFile(filePath, "utf8", (err, data) => {
+        if (err) {
+          console.error("Error reading assetlinks.json file:", err);
+          res.status(404).send("Not Found");
+          return;
+        }
+        res.setHeader("Content-Type", "application/json"); // Đảm bảo đúng Content-Type
+        // Thêm header Cache-Control tương tự
+        res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
+        res.status(200).send(data);
+      });
+    });
+
     const upload = multer();
 
     app.use(cors());
@@ -38,35 +73,6 @@ async function startApplication() {
     app.use(bodyParser.urlencoded({ extended: true }));
     app.use(bodyParser.json());
     app.use(upload.any()); // Middleware cho multipart/form-data
-
-    app.get("/apple-app-site-association", (req, res, next) => {
-      const filePath = path.join(__dirname, "..", "apple-app-site-association");
-
-      fs.access(filePath, fs.constants.R_OK, (err) => {
-        if (err) {
-          // Nếu file không tồn tại hoặc không đọc được
-          console.error("Lỗi truy cập file apple-app-site-association:", err);
-          // Trả về 404 để iOS biết là không tìm thấy file tại đường dẫn này
-          return res.status(404).type("text/plain").send("Not Found");
-        }
-
-        // Nếu file tồn tại và đọc được:
-        // 1. Đặt Content-Type header là application/json (RẤT QUAN TRỌNG)
-        res.setHeader("Content-Type", "application/json");
-
-        // 2. Gửi nội dung file về cho client (iOS)
-        res.sendFile(filePath, (errSend) => {
-          // Xử lý lỗi nếu việc gửi file gặp vấn đề
-          if (errSend) {
-            console.error("Lỗi gửi file apple-app-site-association:", errSend);
-            // Chỉ gửi lỗi 500 nếu chưa có header nào được gửi đi
-            if (!res.headersSent) {
-              res.status(500).send("Internal Server Error");
-            }
-          }
-        });
-      });
-    });
 
     // Các cấu hình khác (Swagger, Nodemailer verify, PayPal client)
     // console.log("Đang cấu hình các dịch vụ khác...");

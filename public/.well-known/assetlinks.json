@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "com.jbaa",
+      "package_name": "com.jbaa",
+      "sha256_cert_fingerprints": [
+        "03:67:F3:16:22:EB:06:63:FB:76:E5:4D:E0:4A:EB:B2:32:87:C6:D4:97:86:FF:C3:F6:50:8D:88:95:34:D0:C2"
+      ]
+    }
+  }
+]
