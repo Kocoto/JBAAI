@@ -13,6 +13,7 @@ import multer from "multer";
 import client from "./app/config/paypal.config";
 import { transformIncomingData } from "./app/utils/FormatData.Util";
 import UserHealthDataService from "./app/services/HealthData.Service";
+import cors from "cors";
 import mongoose from "mongoose";
 import path from "path";
 import fs from "fs";
@@ -27,6 +28,8 @@ async function startApplication() {
     // console.log("Đang khởi tạo Express...");
     const app = express();
     const upload = multer();
+
+    app.use(cors());
 
     // Middlewares
     app.use(express.json());

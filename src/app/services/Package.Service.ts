@@ -49,11 +49,11 @@ class PackageService {
 
   async getPackageById(id: string) {
     try {
-      const packages = await PackageModel.findById(id);
-      if (!packages) {
+      const packageData = await PackageModel.findById(id);
+      if (!packageData) {
         throw new CustomError(404, "Package not found");
       }
-      return packages;
+      return packageData;
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;

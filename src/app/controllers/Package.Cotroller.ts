@@ -69,6 +69,22 @@ class PackageController {
       next(error);
     }
   }
+
+  async getPackageById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const packageId = req.params.id;
+      if (!packageId) {
+        throw new CustomError(400, "Id gói là bắt buộc");
+      }
+      const result = await PackageService.getPackageById(packageId);
+      res.status(200).json({
+        success: true,
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new PackageController();
