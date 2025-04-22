@@ -34,6 +34,13 @@ class HomeController {
   async paymentCancel(req: Request, res: Response) {
     res.send("Payment Cancel");
   }
+
+  async hideScore(req: Request, res: Response) {
+    res.status(200).json({
+      status: "success",
+      check: true,
+    });
+  }
 }
 
 export default new HomeController();
