@@ -61,7 +61,16 @@ async function startApplication() {
         res.status(200).send(data);
       });
     });
-
+    app.get("/api/payment-success-redirect", (req, res) => {
+      const deepLinkUrl = `https://jbaai-y7mb.onrender.com/payment-success`;
+      console.log(`Redirecting to Deep Link URL: ${deepLinkUrl}`);
+      res.redirect(303, deepLinkUrl);
+    });
+    app.get("/api/payment-failed-redirect", (req, res) => {
+      const deepLinkUrl = `https://jbaai-y7mb.onrender.com/payment-failed`;
+      console.log(`Redirecting to Deep Link URL: ${deepLinkUrl}`);
+      res.redirect(303, deepLinkUrl);
+    });
     const upload = multer();
 
     app.use(cors());
