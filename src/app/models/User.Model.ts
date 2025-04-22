@@ -55,7 +55,7 @@ const UserSchema = new Schema<IUser>(
     isSubscription: { type: Boolean, default: false },
     emailNotificationsEnabled: { type: Boolean, default: false },
     isPayment: { type: Boolean, default: false },
-    isHideScore: { type: Boolean, default: false },
+    isHideScore: { type: Boolean, default: true },
   },
   {
     timestamps: true,
