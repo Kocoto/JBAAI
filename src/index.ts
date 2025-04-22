@@ -55,6 +55,7 @@ async function startApplication() {
           res.status(404).send("Not Found");
           return;
         }
+        console.log("Đã đọc file assetlinks.json:", data);
         res.setHeader("Content-Type", "application/json"); // Đảm bảo đúng Content-Type
         // Thêm header Cache-Control tương tự
         res.setHeader("Cache-Control", "public, max-age=0, must-revalidate");
