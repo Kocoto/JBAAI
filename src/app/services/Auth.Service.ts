@@ -107,17 +107,25 @@ class AuthService {
       });
 
       if (currentTime <= new Date(demoEndTime)) {
+        console.log("Đang trong thời gian demo");
         const subscription = await SubscriptionModel.create({
           userId: user._id,
           packageId: process.env.DEMO_PACKAGE_ID,
         });
-        const updateUser = await UserModel.findOneAndUpdate(
-          { _id: user._id },
-          {
-            isSubscription: true,
-          },
-          { new: true }
-        );
+        // const updateUser = await UserModel.findOneAndUpdate(
+        //   { _id: user._id },
+        //   {
+        //     isSubscription: true,
+        //   },
+        //   { new: true }
+        // );
+        user.isSubscription = true;
+        await user.save();
+        console.log("Đã tạo subscription");
+
+        if (!subscription) {
+          throw new CustomError(500, "Tạo subscription thất bại");
+        }
       }
       return user;
     } catch (error) {
