@@ -1,11 +1,15 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.jba.ai",
       "sha256_cert_fingerprints": [
-        "5C:CE:B8:4A:BC:CE:1C:01:27:AC:8E:5B:A5:80:EB:4D:22:89:3E:97:49:08:72:91:14:71:56:5E:C4:77:0F:B7"
+        "5C:CE:B8:4A:BC:CE:1C:01:27:AC:8E:5B:A5:80:EB:4D:22:89:3E:97:49:08:72:91:14:71:56:5E:C4:77:0F:B7",
+        "05:50:92:B5:50:74:8F:8C:B7:A1:6C:5E:D4:CC:E8:3C:67:0A:8B:ED:8F:84:E5:91:9A:47:E5:B3:1D:C9:22:DA"
       ]
     }
   }
