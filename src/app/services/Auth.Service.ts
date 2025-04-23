@@ -6,6 +6,7 @@ import CustomError from "../utils/Error.Util";
 import { sendMail } from "../utils/Mail.Util";
 import { compareOtp, generateOTP, hashOtp } from "../utils/OTP.Util";
 import { hashPassword, comparePasswords } from "../utils/Password.Util";
+import { parseISO } from "date-fns";
 import {
   accessTokenGenerator,
   refreshTokenGenerator,
@@ -15,6 +16,7 @@ import {
 import InvitationService from "./Invitation.Service";
 import InvitationCodeService from "./InvitationCode.Service";
 import ProfileService from "./Profile.Service";
+import SubscriptionModel from "../models/Subscription.Model";
 
 class AuthService {
   async register(
@@ -27,6 +29,10 @@ class AuthService {
     invitationCode?: string
   ) {
     try {
+      const currentTime = new Date();
+      const demoEndTimeStr = process.env.DEMO_END_TIME;
+      const demoEndTime = parseISO(demoEndTimeStr!); // Đảm bảo demoEndTimeStr không là null hoặc undefined
+
       const [existingEmail, existingUsername, existingPhone] =
         await Promise.all([
           UserModel.findOne({ email: email }),
@@ -99,6 +105,20 @@ class AuthService {
         gender: "",
         smokingStatus: 0,
       });
+
+      if (currentTime <= new Date(demoEndTime)) {
+        const subscription = await SubscriptionModel.create({
+          userId: user._id,
+          packageId: process.env.DEMO_PACKAGE_ID,
+        });
+        const updateUser = await UserModel.findOneAndUpdate(
+          { _id: user._id },
+          {
+            isSubscription: true,
+          },
+          { new: true }
+        );
+      }
       return user;
     } catch (error) {
       if (error instanceof CustomError) throw error;
