@@ -211,7 +211,11 @@ class AuthService {
 
       await TokenModel.findOneAndUpdate(
         { userId: user._id, clientId: clientId },
-        { token: refreshToken, status: "active" },
+        {
+          token: refreshToken,
+          status: "active",
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
         { new: true, upsert: true }
       );
 
@@ -251,7 +255,11 @@ class AuthService {
       // Update refresh token in database
       await TokenModel.findOneAndUpdate(
         { userId: decoded.userId, clientId: clientId },
-        { token: refreshTokenNew, status: "active" },
+        {
+          token: refreshTokenNew,
+          status: "active",
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
         { upsert: true, new: true }
       );
 
