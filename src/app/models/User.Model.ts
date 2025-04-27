@@ -38,6 +38,7 @@ const UserSchema = new Schema<IUser>(
         "pharmacy",
         "school",
         "hospital",
+        "saler",
       ],
       default: "user",
       required: true,
