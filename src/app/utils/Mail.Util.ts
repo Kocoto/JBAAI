@@ -92,7 +92,7 @@ export const renderEmailTemplate = async (
 
     // High BP Risk
     htmlContent = htmlContent.replace(
-      /\s*\[Hypertension Risk VALUE\]/g,
+      /\s*\[High Blood Pressure Risk VALUE\]/g,
       `${
         healthData.highBloodPressureRisk?.value === 1
           ? "Low"
