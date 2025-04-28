@@ -55,6 +55,23 @@ class UserService {
       throw new CustomError(500, error as string);
     }
   }
+
+  async changeLanguage(userId: string, language: "vn" | "en" | "in" | "cn") {
+    try {
+      const user = await UserModel.findById(userId);
+      if (!user) {
+        throw new CustomError(404, "User not found");
+      }
+
+      user.language = language;
+      await user.save();
+
+      return user;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, error as string);
+    }
+  }
 }
 
 export default new UserService();

@@ -16,6 +16,7 @@ export interface IUser {
     | "saler";
   status: "active" | "inactive";
   verify: boolean;
+  language: "in" | "cn" | "en" | "vn";
   isSubscription: boolean;
   emailNotificationsEnabled: boolean;
   isPayment: boolean;
@@ -52,6 +53,12 @@ const UserSchema = new Schema<IUser>(
     verify: {
       type: Boolean,
       default: false,
+    },
+    language: {
+      type: String,
+      enum: ["in", "cn", "en", "vn"],
+      default: "en",
+      required: true,
     },
     isSubscription: { type: Boolean, default: false },
     emailNotificationsEnabled: { type: Boolean, default: false },

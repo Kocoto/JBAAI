@@ -19,5 +19,37 @@ class UserController {
       next(error);
     }
   }
+
+  async changeLanguage(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = req.user;
+      const userId = user._id;
+      const language = req.body.language;
+      if (!language) {
+        throw new CustomError(400, "Vui lòng nhập ngôn ngữ");
+      }
+      if (
+        language !== "vn" &&
+        language !== "en" &&
+        language !== "in" &&
+        language !== "cn"
+      ) {
+        throw new CustomError(400, "Ngôn ngữ không hợp lệ");
+      }
+      const isChangeLanguage = await UserService.changeLanguage(
+        userId,
+        language
+      );
+      if (!isChangeLanguage) {
+        throw new CustomError(400, "Không thể cập nhật thông tin người dùng");
+      }
+      return res.status(200).json({
+        message: "Cập nhật thông tin người dùng thành công",
+        isChangeLanguage,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 export default new UserController();
