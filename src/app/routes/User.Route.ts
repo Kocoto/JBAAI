@@ -5,5 +5,6 @@ const router = Router();
 
 router.use(checkLogin);
 router.post("/switch-notification", UserController.swtichNotification);
+router.post("/change-language", UserController.changeLanguage);
 
 export default router;
