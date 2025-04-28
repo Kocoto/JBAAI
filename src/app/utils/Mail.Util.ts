@@ -38,7 +38,7 @@ export const renderEmailTemplate = async (
     let htmlContent = await fs.readFile(templatePath, "utf-8");
 
     // Username
-    htmlContent = htmlContent.replace(/\s*\[Tên người dùng\]/g, userName);
+    htmlContent = htmlContent.replace(/\[Tên người dùng\]/g, userName);
 
     // Wellness Level
     htmlContent = htmlContent.replace(
