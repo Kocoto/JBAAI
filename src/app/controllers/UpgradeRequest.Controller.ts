@@ -34,6 +34,49 @@ class UpgradeRequestController {
       next(error);
     }
   }
+  async getUpgradeRequestsByStatus(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    console.log("Đã tới đây, endpoint: /upgrade-requests/:status");
+
+    try {
+      const status = req.params.status;
+      const upgradeRequests =
+        await UpgradeRequestService.getUpgradeRequestsByStatus(
+          status as string
+        );
+      res.status(200).json({
+        success: true,
+        message: "Lấy danh sách yêu cầu nâng cấp thành công",
+        data: upgradeRequests,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async acceptUpgradeRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const upgradeRequestId = req.params.id;
+      const salerId = req.user?._id;
+      if (!upgradeRequestId) {
+        throw new CustomError(400, "Không tìm thấy id");
+      }
+      const upgradeRequest = await UpgradeRequestService.acceptUpgradeRequest(
+        upgradeRequestId,
+        salerId
+      );
+      res.status(200).json({
+        success: true,
+        message: "Chấp nhận yêu cầu nâng cấp thành công",
+        data: upgradeRequest,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new UpgradeRequestController();
