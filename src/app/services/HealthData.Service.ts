@@ -1,7 +1,19 @@
+import {
+  endOfDay,
+  endOfMonth,
+  endOfWeek,
+  getYear,
+  parse,
+  setWeek,
+  startOfDay,
+  startOfMonth,
+  startOfWeek,
+} from "date-fns";
 import { HealthDataModel } from "../models/HealthData.Model";
 import CustomError from "../utils/Error.Util";
 import { transformIncomingData } from "../utils/FormatData.Util";
 import { renderEmailTemplate, sendMail } from "../utils/Mail.Util";
+import * as path from "path";
 
 class HealthDataService {
   async createHealthData(userId: string, rawData: any) {
@@ -106,6 +118,71 @@ class HealthDataService {
       return mail;
     } catch (error) {}
   }
+
+  async getHealthDataByDateRange(
+    userId: string,
+    type: "week" | "month" | "day",
+    value: string
+  ) {
+    let startDate: Date | null = null;
+    let endDate: Date | null = null;
+    const currentYear = getYear(new Date());
+    try {
+      switch (type) {
+        case "day": {
+          const date = parse(value, "dd/MM/yyyy", new Date());
+          if (!date) {
+            throw new CustomError(400, "Không tìm thấy ngày yêu cầu");
+          }
+          startDate = startOfDay(date);
+          endDate = endOfDay(date);
+          break;
+        }
+        case "week": {
+          const dateInYear = new Date(currentYear, 0, 1);
+          const dateInWeek = setWeek(dateInYear, +value, {
+            weekStartsOn: 1,
+            firstWeekContainsDate: 4,
+          });
+          if (!dateInWeek) {
+            throw new CustomError(400, "Không tìm thấy tuần yêu cầu");
+          }
+          startDate = startOfWeek(dateInWeek, { weekStartsOn: 1 });
+          endDate = endOfWeek(dateInWeek, { weekStartsOn: 1 });
+          break;
+        }
+        case "month": {
+          const monthNum = parseInt(value, 10);
+          if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+            throw new CustomError(400, "Không tìm thấy tháng yêu cầu");
+          }
+          const dateInTargetMonth = new Date(currentYear, monthNum - 1, 1);
+
+          startDate = startOfMonth(dateInTargetMonth);
+          endDate = endOfMonth(dateInTargetMonth);
+          break;
+        }
+        default:
+          throw new CustomError(400, "Không xử lý được loại dữ liệu yêu cầu");
+      }
+
+      const aggregationPipeline = [
+        {
+          $match: {
+            userId,
+            createdAt: { $gte: startDate, $lte: endDate },
+          },
+        },
+        {
+          $group: {
+            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            avgAscvdRisk: { $avg: "$ascvdRisk.value" },
+            avgBpValue: { $avg: "$bpValue.systolic" },
+            avgHeartAge: { $avg: "$heartAge.value" },
+          },
+        },
+      ];
+    } catch (error) {}
+  }
 }
-import * as path from "path";
 export default new HealthDataService();

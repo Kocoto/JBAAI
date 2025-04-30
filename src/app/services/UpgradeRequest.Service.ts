@@ -1,3 +1,4 @@
+import { Types } from "mongoose";
 import UpgradeRequestModel from "../models/UpgradeRequest.Model";
 import CustomError from "../utils/Error.Util";
 
@@ -75,6 +76,32 @@ class UpgradeRequestService {
       if (!upgradeRequest) {
         throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
       }
+      return upgradeRequest;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(500, error as string);
+    }
+  }
+
+  async acceptUpgradeRequest(upgradeRequestId: string, salerId: string) {
+    try {
+      const upgradeRequest = await UpgradeRequestModel.findById(
+        upgradeRequestId
+      );
+      if (!upgradeRequest) {
+        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+      }
+      if (upgradeRequest?.status === "reviewing") {
+        throw new CustomError(
+          400,
+          "Yêu cầu này đã được giao cho saler khác xử lý"
+        );
+      }
+      upgradeRequest.status = "reviewing";
+      upgradeRequest.salerId = new Types.ObjectId(salerId);
+      await upgradeRequest.save();
       return upgradeRequest;
     } catch (error) {
       if (error instanceof CustomError) {
