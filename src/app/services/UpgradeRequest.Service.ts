@@ -85,7 +85,7 @@ class UpgradeRequestService {
     }
   }
 
-  async acceptUpgradeRequest(upgradeRequestId: string, salerId: string) {
+  async acceptUpgradeRequest(upgradeRequestId: string, sellerId: string) {
     try {
       const upgradeRequest = await UpgradeRequestModel.findById(
         upgradeRequestId
@@ -96,11 +96,11 @@ class UpgradeRequestService {
       if (upgradeRequest?.status === "reviewing") {
         throw new CustomError(
           400,
-          "Yêu cầu này đã được giao cho saler khác xử lý"
+          "Yêu cầu này đã được giao cho seller khác xử lý"
         );
       }
       upgradeRequest.status = "reviewing";
-      upgradeRequest.salerId = new Types.ObjectId(salerId);
+      upgradeRequest.sellerId = new Types.ObjectId(sellerId);
       await upgradeRequest.save();
       return upgradeRequest;
     } catch (error) {

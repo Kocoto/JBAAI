@@ -20,10 +20,10 @@ export const checkLogin = async (
     let authHeader;
     if (req.body.authorization) {
       authHeader = req.body.authorization;
-      console.log("Có token trong body");
+      // console.log("Có token trong body");
     } else {
       authHeader = req.headers.authorization;
-      console.log("Có token trong header");
+      // console.log("Có token trong header");
     }
     // const authHeader = req.body.authorization;
     if (!authHeader) {

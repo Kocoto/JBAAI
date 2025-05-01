@@ -39,7 +39,7 @@ class UpgradeRequestController {
     res: Response,
     next: NextFunction
   ) {
-    console.log("Đã tới đây, endpoint: /upgrade-requests/:status");
+    // console.log("Đã tới đây, endpoint: /upgrade-requests/:status");
 
     try {
       const status = req.params.status;
@@ -60,13 +60,13 @@ class UpgradeRequestController {
   async acceptUpgradeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const upgradeRequestId = req.params.id;
-      const salerId = req.user?._id;
+      const sellerId = req.user?._id;
       if (!upgradeRequestId) {
         throw new CustomError(400, "Không tìm thấy id");
       }
       const upgradeRequest = await UpgradeRequestService.acceptUpgradeRequest(
         upgradeRequestId,
-        salerId
+        sellerId
       );
       res.status(200).json({
         success: true,

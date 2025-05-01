@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 interface IUpgradeRequest {
   userId: mongoose.Types.ObjectId;
-  salerId: mongoose.Types.ObjectId;
+  sellerId: mongoose.Types.ObjectId;
   phone: string;
   email: string;
   fullname: string;
@@ -18,7 +18,7 @@ const UpgradeRequestSchema = new Schema<IUpgradeRequest>(
       ref: "User",
       required: true,
     },
-    salerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    sellerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     phone: { type: String, required: true },
     email: { type: String, required: true },
     fullname: { type: String, required: true },

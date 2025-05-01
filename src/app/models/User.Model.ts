@@ -13,7 +13,7 @@ export interface IUser {
     | "pharmacy"
     | "school"
     | "hospital"
-    | "saler";
+    | "seller";
   status: "active" | "inactive";
   verify: boolean;
   language: "in" | "cn" | "en" | "vn";
@@ -39,7 +39,7 @@ const UserSchema = new Schema<IUser>(
         "pharmacy",
         "school",
         "hospital",
-        "saler",
+        "seller",
       ],
       default: "user",
       required: true,
