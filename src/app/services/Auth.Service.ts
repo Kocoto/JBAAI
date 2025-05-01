@@ -81,7 +81,7 @@ class AuthService {
       if (
         user.role !== "user" &&
         user.role !== "admin" &&
-        user.role !== "saler"
+        user.role !== "seller"
       ) {
         const [updatedUser, invitationCode] = await Promise.all([
           UserModel.findOneAndUpdate(
