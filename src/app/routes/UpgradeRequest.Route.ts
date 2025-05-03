@@ -6,8 +6,12 @@ const router = Router();
 
 router.use(checkLogin);
 
+router.get(
+  "/get-by-seller-id",
+  UpgradeRequestController.getUpgradeRequestBySellerId
+);
 router.put(
-  "accept/:upgradeRequestId",
+  "/accept/:upgradeRequestId",
   UpgradeRequestController.acceptUpgradeRequest
 );
 router.get(

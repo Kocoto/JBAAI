@@ -110,6 +110,21 @@ class UpgradeRequestService {
       throw new CustomError(500, error as string);
     }
   }
+
+  async getUpgradeRequestBySellerId(sellerId: string) {
+    try {
+      const upgradeRequest = await UpgradeRequestModel.find({ sellerId });
+      if (!upgradeRequest) {
+        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+      }
+      return upgradeRequest;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(500, error as string);
+    }
+  }
 }
 
 export default new UpgradeRequestService();

@@ -1,3 +1,4 @@
+import { log } from "console";
 import UpgradeRequestService from "../services/UpgradeRequest.Service";
 import CustomError from "../utils/Error.Util";
 import { Request, Response, NextFunction } from "express";
@@ -58,8 +59,9 @@ class UpgradeRequestController {
   }
 
   async acceptUpgradeRequest(req: Request, res: Response, next: NextFunction) {
+    log("Đã tới đây, endpoint: /upgrade-requests/:id/accept");
     try {
-      const upgradeRequestId = req.params.id;
+      const upgradeRequestId = req.params.upgradeRequestId;
       const sellerId = req.user?._id;
       if (!upgradeRequestId) {
         throw new CustomError(400, "Không tìm thấy id");
@@ -71,6 +73,28 @@ class UpgradeRequestController {
       res.status(200).json({
         success: true,
         message: "Chấp nhận yêu cầu nâng cấp thành công",
+        data: upgradeRequest,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getUpgradeRequestBySellerId(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const sellerId = req.user?._id;
+      if (!sellerId) {
+        throw new CustomError(400, "Không tìm thấy id");
+      }
+      const upgradeRequest =
+        await UpgradeRequestService.getUpgradeRequestBySellerId(sellerId);
+      res.status(200).json({
+        success: true,
+        message: "Lấy danh sách yêu cầu nâng cấp thành công",
         data: upgradeRequest,
       });
     } catch (error) {
