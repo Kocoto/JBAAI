@@ -74,8 +74,15 @@ class AuthService {
           invitationCode,
           user._id.toString()
         );
-        if (!invitation) {
-          throw new CustomError(500, "Tạo mời thất bại");
+        if (invitationCode === "FREE15" || invitation) {
+          await Promise.all([
+            SubscriptionModel.create({
+              userId: user._id,
+              packageId: process.env.DEMO_PACKAGE_ID,
+            }),
+            (user.isSubscription = true),
+          ]);
+          await user.save();
         }
       }
       if (
@@ -112,13 +119,6 @@ class AuthService {
           userId: user._id,
           packageId: process.env.DEMO_PACKAGE_ID,
         });
-        // const updateUser = await UserModel.findOneAndUpdate(
-        //   { _id: user._id },
-        //   {
-        //     isSubscription: true,
-        //   },
-        //   { new: true }
-        // );
         user.isSubscription = true;
         await user.save();
         console.log("Đã tạo subscription");
@@ -138,7 +138,10 @@ class AuthService {
     try {
       // Find user
       const user = await UserModel.findOne({
-        $or: [{ email: email }, { username: email }],
+        $or: [
+          { email: { $regex: new RegExp(`^${email}$`, "i") } },
+          { username: { $regex: new RegExp(`^${email}$`, "i") } },
+        ],
       });
 
       if (!user) {
