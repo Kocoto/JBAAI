@@ -17,13 +17,14 @@ export const checkLogin = async (
   next: NextFunction
 ) => {
   try {
+    console.log("tới được đây");
     let authHeader;
     if (req.body.authorization) {
       authHeader = req.body.authorization;
-      // console.log("Có token trong body");
+      console.log("Có token trong body");
     } else {
       authHeader = req.headers.authorization;
-      // console.log("Có token trong header");
+      console.log("Có token trong header");
     }
     // const authHeader = req.body.authorization;
     if (!authHeader) {
@@ -31,7 +32,9 @@ export const checkLogin = async (
     }
 
     const token = authHeader.split(" ")[1];
+    console.log("Token sau khi tách: ", token);
     if (!token) {
+      console.log("Không có token sau khi tách");
       throw new CustomError(401, "Token không tồn tại");
     }
 

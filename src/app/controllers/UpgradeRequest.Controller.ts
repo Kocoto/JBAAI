@@ -101,6 +101,25 @@ class UpgradeRequestController {
       next(error);
     }
   }
+
+  async approveUpgradeRequest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const upgradeRequestId = req.params.upgradeRequestId;
+      if (!upgradeRequestId) {
+        throw new CustomError(400, "Không tìm thấy id");
+      }
+      const upgradeRequest = await UpgradeRequestService.approveUpgradeRequest(
+        upgradeRequestId
+      );
+      res.status(200).json({
+        success: true,
+        message: "Xác nhận yêu cầu nâng cấp thành công",
+        data: upgradeRequest,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new UpgradeRequestController();

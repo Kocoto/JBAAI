@@ -11,9 +11,17 @@ class PaypalService {
     try {
       const packageId = data.packageId;
       const userId = data.userId;
-      const packageData = await PackageService.getPackageById(packageId);
-      const packagePrice = String(packageData.price);
+      const [user, packageData] = await Promise.all([
+        UserService.getUserById(userId),
+        PackageService.getPackageById(packageId),
+      ]);
+      const originalPackagePrice = packageData.price; // Giá gốc
+      const discountPercentage = user.discount || 0; // Lấy % giảm giá từ user, mặc định là 0
+      // Tính giá sau khi áp dụng giảm giá
+      const discountAmount = (originalPackagePrice * discountPercentage) / 100;
+      const finalPrice = Math.max(0, originalPackagePrice - discountAmount);
       const request = new paypal.orders.OrdersCreateRequest();
+      const packagePrice = String(packageData.price);
       request.prefer("return=representation");
 
       request.requestBody({
@@ -24,7 +32,39 @@ class PaypalService {
 
             amount: {
               currency_code: "USD",
-              value: packagePrice,
+              value: String(finalPrice.toFixed(2)),
+              breakdown: {
+                handling: {
+                  currency_code: "USD",
+                  value: "0.00",
+                },
+                insurance: {
+                  currency_code: "USD",
+                  value: "0.00",
+                },
+                shipping_discount: {
+                  currency_code: "USD",
+                  value: "0.00",
+                },
+                shipping: {
+                  currency_code: "USD",
+                  value: "0.00",
+                },
+                tax_total: {
+                  currency_code: "USD",
+                  value: "0.00",
+                },
+                item_total: {
+                  // Tổng giá trị gốc
+                  currency_code: "USD",
+                  value: String(originalPackagePrice.toFixed(2)),
+                },
+                discount: {
+                  // Số tiền giảm giá cụ thể
+                  currency_code: "USD",
+                  value: String(discountAmount.toFixed(2)),
+                },
+              },
               // breakdown: {
               //   item_total: {
               //     currency_code: "USD",
@@ -66,7 +106,6 @@ class PaypalService {
         err.message
       );
       if (err.statusCode && err.message) {
-        throw new CustomError(err.statusCode, err.message);
         // Lỗi có vẻ từ PayPal HTTP
         console.error(
           "[PayPal Create Order] Chi tiết lỗi PayPal (nếu có trong err.details hoặc err.response):",
@@ -110,7 +149,7 @@ class PaypalService {
 
   async captureOrder(
     orderId: string,
-    userId: string,
+    userId: string, // userId được truyền vào hàm
     purchaseHistoryId: string
   ) {
     try {
@@ -197,17 +236,36 @@ class PaypalService {
         const capturedCurrency = captureDetails.amount.currency_code;
         const finalPaypalTxnId = captureDetails.id; // ID transaction cuối cùng từ PayPal
 
-        // Lấy giá và tiền tệ mong đợi từ bản ghi purchase
-        const expectedPrice = purchaseRecord.price;
-        const expectedCurrency = "USD"; // Hoặc lấy từ cấu hình/DB
+        // --- Bắt đầu thay đổi ---
+        // Lấy thông tin user và package để tính lại giá cuối cùng (sau giảm giá)
+        const [user, packageData] = await Promise.all([
+          UserService.getUserById(userId), // Sử dụng userId được truyền vào
+          PackageService.getPackageById(String(purchaseRecord.packageId)),
+        ]);
 
-        // Kiểm tra số tiền và loại tiền tệ có khớp không
+        if (!user || !packageData) {
+            throw new CustomError(404, "Không tìm thấy thông tin người dùng hoặc gói dịch vụ để xác thực giá.");
+        }
+
+        const originalPackagePrice = packageData.price; // Giá gốc từ DB
+        const discountPercentage = user.discount || 0; // Lấy % giảm giá từ user
+        const discountAmount = (originalPackagePrice * discountPercentage) / 100;
+        const expectedFinalPrice = Math.max(0, originalPackagePrice - discountAmount); // Giá cuối cùng mong đợi
+        const expectedCurrency = "USD"; // Hoặc lấy từ cấu hình/DB
+        // --- Kết thúc thay đổi ---
+
+
+        // Kiểm tra số tiền và loại tiền tệ có khớp không (sử dụng expectedFinalPrice)
+        // So sánh với sai số nhỏ để tránh lỗi làm tròn dấu phẩy động
+        const priceDifference = Math.abs(Number(capturedAmount) - expectedFinalPrice);
+        const tolerance = 0.01; // Chấp nhận sai số 0.01 USD
+
         if (
-          Number(capturedAmount) !== expectedPrice ||
+          priceDifference > tolerance || // So sánh giá cuối cùng mong đợi
           capturedCurrency !== expectedCurrency
         ) {
           console.error(
-            `[PayPal Capture Order] !!SAI LỆCH SỐ TIỀN!! Đơn hàng ${orderId}, Purchase ${purchaseHistoryId}. Mong đợi: ${expectedPrice} ${expectedCurrency}. Thực tế: ${capturedAmount} ${capturedCurrency}`
+            `[PayPal Capture Order] !!SAI LỆCH SỐ TIỀN!! Đơn hàng ${orderId}, Purchase ${purchaseHistoryId}. Mong đợi: ${expectedFinalPrice.toFixed(2)} ${expectedCurrency}. Thực tế: ${capturedAmount} ${capturedCurrency}`
           );
           // !! XỬ LÝ NGHIÊM TRỌNG: Cập nhật DB với trạng thái lỗi và có thể cần hoàn tiền !!
           await PurchaseHistoryService.updatePurchaseHistory(
@@ -218,7 +276,7 @@ class PaypalService {
           // Lỗi 400 báo cho client biết số tiền không khớp
           throw new CustomError(
             400,
-            "Số tiền thanh toán không khớp với đơn hàng."
+            "Số tiền thanh toán không khớp với đơn hàng sau khi đã áp dụng giảm giá." // Cập nhật thông báo lỗi
           );
         }
 
@@ -235,7 +293,7 @@ class PaypalService {
           );
 
         // Tạo subscription và cập nhật user
-        const [subscription, user] = await Promise.all([
+        const [subscription, updatedUser] = await Promise.all([ // Đổi tên biến user thành updatedUser để tránh trùng lặp
           SubscriptionService.createSubscription(
             String(userId),
             String(purchaseRecord.packageId)
@@ -246,7 +304,7 @@ class PaypalService {
         return {
           purchaseHistory: updatedPurchaseHistory,
           subscription,
-          user,
+          user: updatedUser, // Trả về user đã được cập nhật
           captureResult,
         };
       } else {

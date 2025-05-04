@@ -5,7 +5,7 @@ const router = Router();
 
 router.post("/get-by-type", PackageCotroller.getPackageByType);
 router.post("/create", checkLogin, PackageCotroller.createPackage);
-router.get("/:id", PackageCotroller.getPackageById);
+router.post("/:id", PackageCotroller.getPackageById);
 router.post("/", PackageCotroller.getAllPackages);
 
 export default router;
