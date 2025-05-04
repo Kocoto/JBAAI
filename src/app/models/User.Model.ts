@@ -1,5 +1,21 @@
 import mongoose, { Schema } from "mongoose";
 
+export interface IUserOutput {
+  _id: string;
+  username: string;
+  email: string;
+  phone: string;
+  role: string;
+  status: string;
+  discount: number;
+  verify: boolean;
+  isSubscription: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  __v: number;
+  emailNotificationsEnabled: boolean;
+}
+
 export interface IUser {
   username: string;
   password: string;
@@ -17,6 +33,7 @@ export interface IUser {
   status: "active" | "inactive";
   verify: boolean;
   language: "in" | "cn" | "en" | "vn";
+  discount: number;
   isSubscription: boolean;
   emailNotificationsEnabled: boolean;
   isPayment: boolean;
@@ -60,6 +77,7 @@ const UserSchema = new Schema<IUser>(
       default: "en",
       required: true,
     },
+    discount: { type: Number, default: 0 },
     isSubscription: { type: Boolean, default: false },
     emailNotificationsEnabled: { type: Boolean, default: false },
     isPayment: { type: Boolean, default: false },

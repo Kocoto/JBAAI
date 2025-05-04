@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 import UpgradeRequestModel from "../models/UpgradeRequest.Model";
 import CustomError from "../utils/Error.Util";
+import InvitationCodeService from "./InvitationCode.Service";
 
 class UpgradeRequestService {
   async createUpgradeRequest(userId: string, data: any) {
@@ -117,6 +118,39 @@ class UpgradeRequestService {
       if (!upgradeRequest) {
         throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
       }
+      return upgradeRequest;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(500, error as string);
+    }
+  }
+
+  async approveUpgradeRequest(upgradeRequestId: string) {
+    try {
+      const upgradeRequest = await UpgradeRequestModel.findById(
+        upgradeRequestId
+      ).populate("userId");
+      if (!upgradeRequest) {
+        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+      }
+      if (!upgradeRequest.userId) {
+        // Hoặc kiểm tra kiểu cụ thể hơn nếu bạn dùng interface/type cho User
+        throw new CustomError(
+          500,
+          "Không thể lấy thông tin người dùng từ yêu cầu nâng cấp."
+        );
+      }
+      upgradeRequest.status = "approved";
+      const userToUpdate = upgradeRequest.userId as any;
+      userToUpdate.role = upgradeRequest.role;
+      await Promise.all([
+        userToUpdate.save(),
+        upgradeRequest.save(),
+        InvitationCodeService.createInvitationCode(userToUpdate._id),
+      ]);
+
       return upgradeRequest;
     } catch (error) {
       if (error instanceof CustomError) {
