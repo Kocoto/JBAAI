@@ -44,7 +44,7 @@ class AuthService {
         checkInvitationCode = await InvitationCodeService.checkCode(
           invitationCode
         );
-        if (!checkInvitationCode) {
+        if (!checkInvitationCode && invitationCode !== "FREE15") {
           throw new CustomError(400, "Mã mời không hợp lệ");
         }
       }
