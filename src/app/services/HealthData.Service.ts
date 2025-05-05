@@ -83,10 +83,7 @@ class HealthDataService {
       if (!data) {
         throw new CustomError(400, "Không thể lấy health data");
       }
-      console.log(
-        "Đây là log dòng số 76 của trang HealthData.Service.ts dùng để kiểm tra giá trị của data: " +
-          JSON.stringify(data, null, 2)
-      );
+
       const htmlContent = await renderEmailTemplate(
         "en",
         username,
