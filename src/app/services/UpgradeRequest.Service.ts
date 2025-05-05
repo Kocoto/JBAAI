@@ -112,12 +112,17 @@ class UpgradeRequestService {
     }
   }
 
-  async getUpgradeRequestBySellerId(sellerId: string) {
+  async getUpgradeRequestBySellerId(sellerId: string, status?: string) {
     try {
-      const upgradeRequest = await UpgradeRequestModel.find({ sellerId });
-      if (!upgradeRequest) {
-        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+      const filter: { sellerId: Types.ObjectId; status?: string } = {
+        sellerId: new Types.ObjectId(sellerId), // Đảm bảo sellerId là ObjectId
+      };
+
+      if (status) {
+        filter.status = status;
       }
+      const upgradeRequest = await UpgradeRequestModel.find(filter);
+
       return upgradeRequest;
     } catch (error) {
       if (error instanceof CustomError) {
