@@ -31,10 +31,6 @@ export const renderEmailTemplate = async (
       `HealthScanEmailTemplateV1.${language}.html`
     );
 
-    console.log(
-      "đây là log dòng số 31 của trang mail.Util.ts dùng để kiểm tra giá trị của healthData: " +
-        JSON.stringify(healthData, null, 2)
-    );
     let htmlContent = await fs.readFile(templatePath, "utf-8");
 
     // Username

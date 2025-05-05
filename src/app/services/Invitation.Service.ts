@@ -7,8 +7,10 @@ class InvitationService {
     try {
       const inviter = await InvitationCodeModel.findOne({ code });
       const codeSplit = code.slice(-6);
+      console.log("codeSplit: ", codeSplit);
       if (!inviter) {
-        if (codeSplit !== "FREE15") {
+        if (codeSplit == "FREE15") {
+          console.log("codeSplit: ", codeSplit);
           return true;
         }
         throw new CustomError(400, "Lỗi khi xác thực mã mời");
