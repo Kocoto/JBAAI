@@ -116,10 +116,7 @@ export const transformIncomingData = (rawData: any): Partial<IHealthData> => {
       // Các trường không khớp với các xử lý trên sẽ bị bỏ qua
     }
   }
-  console.log(
-    "đây là log dòng số 191 của trang FormatData.Util.ts dùng để kiểm tra giá trị của transformedData: " +
-      JSON.stringify(transformedData)
-  );
+
   return transformedData;
 };
 

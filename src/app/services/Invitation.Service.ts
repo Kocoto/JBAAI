@@ -6,7 +6,11 @@ class InvitationService {
   async createInvitation(code: string, invitedUserId: string) {
     try {
       const inviter = await InvitationCodeModel.findOne({ code });
+      const codeSplit = code.slice(-6);
       if (!inviter) {
+        if (codeSplit !== "FREE15") {
+          return true;
+        }
         throw new CustomError(400, "Lỗi khi xác thực mã mời");
       }
       const inviterUserId = inviter.userId;
