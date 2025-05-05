@@ -40,11 +40,13 @@ class AuthService {
           UserModel.findOne({ phone: phone }),
         ]);
       let checkInvitationCode;
+      const splitInvitationCode = invitationCode?.slice(-6);
       if (invitationCode) {
         checkInvitationCode = await InvitationCodeService.checkCode(
           invitationCode
         );
-        if (!checkInvitationCode && invitationCode !== "FREE15") {
+
+        if (!checkInvitationCode && splitInvitationCode !== "FREE15") {
           throw new CustomError(400, "Mã mời không hợp lệ");
         }
       }
@@ -74,7 +76,7 @@ class AuthService {
           invitationCode,
           user._id.toString()
         );
-        if (invitationCode === "FREE15" || invitation) {
+        if (splitInvitationCode === "FREE15" || invitation) {
           await Promise.all([
             SubscriptionModel.create({
               userId: user._id,
