@@ -90,8 +90,12 @@ class UpgradeRequestController {
       if (!sellerId) {
         throw new CustomError(400, "Không tìm thấy id");
       }
+      const status = req.params.status;
       const upgradeRequest =
-        await UpgradeRequestService.getUpgradeRequestBySellerId(sellerId);
+        await UpgradeRequestService.getUpgradeRequestBySellerId(
+          sellerId,
+          status
+        );
       res.status(200).json({
         success: true,
         message: "Lấy danh sách yêu cầu nâng cấp thành công",

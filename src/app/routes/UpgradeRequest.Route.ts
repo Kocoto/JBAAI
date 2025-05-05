@@ -11,7 +11,7 @@ router.post(
   UpgradeRequestController.approveUpgradeRequest
 );
 router.get(
-  "/get-by-seller-id",
+  "/get-by-seller-id/:status",
   UpgradeRequestController.getUpgradeRequestBySellerId
 );
 router.put(
