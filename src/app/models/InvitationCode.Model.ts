@@ -4,6 +4,7 @@ export interface IInvitationCode extends Document {
   code: string;
   userId: Types.ObjectId;
   status: "active" | "inactive";
+  numberOfUses: number;
 }
 
 const InvitationCodeSchema = new Schema<IInvitationCode>(
@@ -12,7 +13,6 @@ const InvitationCodeSchema = new Schema<IInvitationCode>(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
       unique: true,
     },
     status: {
@@ -20,6 +20,10 @@ const InvitationCodeSchema = new Schema<IInvitationCode>(
       enum: ["active", "inactive"],
       default: "active",
       required: true,
+    },
+    numberOfUses: {
+      type: Number,
+      default: 0,
     },
   },
   {
