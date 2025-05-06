@@ -14,6 +14,7 @@ import CustomError from "../utils/Error.Util";
 import { transformIncomingData } from "../utils/FormatData.Util";
 import { renderEmailTemplate, sendMail } from "../utils/Mail.Util";
 import * as path from "path";
+import { Types } from "mongoose";
 
 class HealthDataService {
   async createHealthData(userId: string, rawData: any) {
@@ -124,8 +125,13 @@ class HealthDataService {
   ) {
     let startDate: Date | null = null;
     let endDate: Date | null = null;
-    const currentYear = getYear(new Date());
     try {
+      const currentYear = parseInt(year, 10);
+
+      if (isNaN(currentYear) || year.length !== 4) {
+        throw new CustomError(400, "Không tìm thấy năm yêu cầu");
+      }
+
       switch (type) {
         case "day": {
           const date = parse(value, "dd/MM/yyyy", new Date());
@@ -151,6 +157,7 @@ class HealthDataService {
         }
         case "month": {
           const monthNum = parseInt(value, 10);
+
           if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
             throw new CustomError(400, "Không tìm thấy tháng yêu cầu");
           }
@@ -167,20 +174,34 @@ class HealthDataService {
       const aggregationPipeline = [
         {
           $match: {
-            userId,
+            userId: new Types.ObjectId(userId),
             createdAt: { $gte: startDate, $lte: endDate },
           },
         },
         {
           $group: {
             _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
-            avgAscvdRisk: { $avg: "$ascvdRisk.value" },
-            avgBpValue: { $avg: "$bpValue.systolic" },
-            avgHeartAge: { $avg: "$heartAge.value" },
+            count: { $sum: 1 },
+            data: { $push: "$$ROOT" },
+          },
+        },
+        {
+          $sort: {
+            _id: 1 as const, // Sort by date string in ascending order (oldest to newest)
           },
         },
       ];
-    } catch (error) {}
+
+      const result = await HealthDataModel.aggregate(aggregationPipeline);
+      return result;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error("CustomError caught:", error.message);
+        throw error;
+      }
+      console.error("Lỗi trong getHealthDataByDateRange:", error); // Ghi log lỗi chi tiết
+      throw new CustomError(500, "Lỗi máy chủ khi lấy dữ liệu sức khỏe.");
+    }
   }
 }
 export default new HealthDataService();

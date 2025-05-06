@@ -84,5 +84,31 @@ class HealthDataController {
       next(error);
     }
   }
+
+  async getHealthDataByDateRange(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const userId = req.user.id;
+      const { type, year, data } = req.body;
+      if (!type || !year || !data) {
+        throw new CustomError(400, "Thiếu thông tin");
+      }
+      const healthData = await HealthDataService.getHealthDataByDateRange(
+        userId,
+        type,
+        year,
+        data
+      );
+      return res.status(200).json({
+        message: "Lấy dữ liệu sức khỏe thành công",
+        data: healthData,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 export default new HealthDataController();
