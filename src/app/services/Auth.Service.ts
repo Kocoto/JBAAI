@@ -279,12 +279,13 @@ class AuthService {
     }
   }
 
-  async logout(refreshToken: string) {
+  async logout(refreshToken: string, clientId: string) {
     try {
       const decoded = verifyToken(refreshToken, true) as TokenPayload;
       await TokenModel.deleteOne({
         userId: decoded.userId,
         token: refreshToken,
+        clientId: clientId,
       });
       return { message: "Đăng xuất thành công" };
     } catch (error) {
