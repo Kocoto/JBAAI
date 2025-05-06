@@ -8,6 +8,7 @@ interface IUpgradeRequest {
   fullname: string;
   address: string;
   role: string;
+  franchiseName: string;
   status: "pending" | "approved" | "rejected" | "reviewing";
 }
 
@@ -24,6 +25,7 @@ const UpgradeRequestSchema = new Schema<IUpgradeRequest>(
     fullname: { type: String, required: true },
     role: { type: String, required: true, default: "franchise" },
     address: { type: String, required: true },
+    franchiseName: { type: String, required: true },
     status: { type: String, default: "pending" },
   },
   {

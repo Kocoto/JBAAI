@@ -6,6 +6,10 @@ import InvitationCodeService from "./InvitationCode.Service";
 class UpgradeRequestService {
   async createUpgradeRequest(userId: string, data: any) {
     try {
+      const check = await InvitationCodeService.checkCode(data.franchiseName);
+      if (!check) {
+        throw new CustomError(400, "Mã franchise không hợp lệ");
+      }
       const newUpgradeRequest = await UpgradeRequestModel.create({
         userId,
         ...data,
@@ -150,10 +154,14 @@ class UpgradeRequestService {
       upgradeRequest.status = "approved";
       const userToUpdate = upgradeRequest.userId as any;
       userToUpdate.role = upgradeRequest.role;
+      userToUpdate.isSubscription = true;
       await Promise.all([
         userToUpdate.save(),
         upgradeRequest.save(),
-        InvitationCodeService.createInvitationCode(userToUpdate._id),
+        InvitationCodeService.createInvitationCode(
+          userToUpdate._id,
+          upgradeRequest.franchiseName
+        ),
       ]);
 
       return upgradeRequest;
