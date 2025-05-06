@@ -33,6 +33,15 @@ class InvitationCodeService {
       throw new CustomError(500, error as string);
     }
   }
+  async getCodeByUserId(userId: string) {
+    try {
+      const code = await InvitationCodeModel.findOne({ userId: userId });
+      return code;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, error as string);
+    }
+  }
 }
 
 export default new InvitationCodeService();

@@ -9,8 +9,8 @@ class UpgradeRequestController {
       const userId = req.user?._id;
       const email = req.user?.email;
       if (!userId) throw new CustomError(400, "Không tìm thấy userId");
-      const { phone, fullname, address, role } = req.body;
-      if (!phone || !fullname || !address || !role) {
+      const { phone, fullname, address } = req.body;
+      if (!phone || !fullname || !address) {
         throw new CustomError(400, "Vui lòng nhập đầy đủ thông tin");
       }
       const data = {
@@ -19,7 +19,6 @@ class UpgradeRequestController {
         phone,
         fullname,
         address,
-        role,
       };
 
       const upgradeRequest = await UpgradeRequestService.createUpgradeRequest(

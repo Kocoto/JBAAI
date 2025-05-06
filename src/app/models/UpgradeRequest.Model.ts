@@ -7,7 +7,7 @@ interface IUpgradeRequest {
   email: string;
   fullname: string;
   address: string;
-  role: "spa" | "doctor" | "pharmacy" | "school" | "hospital";
+  role: string;
   status: "pending" | "approved" | "rejected" | "reviewing";
 }
 
@@ -22,7 +22,7 @@ const UpgradeRequestSchema = new Schema<IUpgradeRequest>(
     phone: { type: String, required: true },
     email: { type: String, required: true },
     fullname: { type: String, required: true },
-    role: { type: String, required: true },
+    role: { type: String, required: true, default: "franchise" },
     address: { type: String, required: true },
     status: { type: String, default: "pending" },
   },

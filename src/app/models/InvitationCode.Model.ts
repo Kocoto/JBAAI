@@ -14,6 +14,7 @@ const InvitationCodeSchema = new Schema<IInvitationCode>(
       type: Schema.Types.ObjectId,
       ref: "User",
       unique: true,
+      index: true,
     },
     status: {
       type: String,

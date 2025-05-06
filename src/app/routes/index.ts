@@ -7,8 +7,10 @@ import PackageRoute from "./Package.Route";
 import PaypalRoute from "./Paypal.Route";
 import UpgradeRequestRoute from "./UpgradeRequest.Route";
 import UserRoute from "./User.Route";
+import InvitationCodeRoute from "./InvitationCode.Route";
 
 export function route(app: Express) {
+  app.use("/api/v1/invitation-code", InvitationCodeRoute);
   app.use("/api/v1/upgrade-request", UpgradeRequestRoute);
   app.use("/api/v1/health-data", HealthDataRoute);
   app.use("/api/v1/package", PackageRoute);
