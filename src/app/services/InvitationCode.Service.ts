@@ -3,17 +3,12 @@ import CustomError from "../utils/Error.Util";
 import { generateInviteCode } from "../utils/OTP.Util";
 
 class InvitationCodeService {
-  async createInvitationCode(userId: string) {
+  async createInvitationCode(userId: string, code: string) {
     try {
-      let code = generateInviteCode();
-      let checkCode = await InvitationCodeModel.findOne({ code: code });
-      while (checkCode) {
-        code = generateInviteCode();
-        checkCode = await InvitationCodeModel.findOne({ code: code });
-        if (!checkCode) break;
-      }
-      const newCode = new InvitationCodeModel({ code: code, userId: userId });
-      await newCode.save();
+      const newCode = InvitationCodeModel.create({
+        code: code,
+        userId: userId,
+      });
       return code;
     } catch (error) {
       if (error instanceof CustomError) throw error;

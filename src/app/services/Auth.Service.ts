@@ -89,26 +89,7 @@ class AuthService {
           await user.save();
         }
       }
-      if (
-        user.role !== "user" &&
-        user.role !== "admin" &&
-        user.role !== "seller"
-      ) {
-        const [updatedUser, invitationCode] = await Promise.all([
-          UserModel.findOneAndUpdate(
-            { _id: user._id },
-            { address: address },
-            { new: true }
-          ),
-          InvitationCodeService.createInvitationCode(user._id.toString()),
-        ]);
-        if (!updatedUser) {
-          throw new CustomError(500, "Cập nhật địa chỉ thất bại");
-        }
-        if (!invitationCode) {
-          throw new CustomError(500, "Tạo mã mời thất bại");
-        }
-      }
+
       await ProfileService.createProfile(user._id.toString(), {
         height: 0,
         weight: 0,

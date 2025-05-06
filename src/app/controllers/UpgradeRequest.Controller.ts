@@ -2,14 +2,21 @@ import { log } from "console";
 import UpgradeRequestService from "../services/UpgradeRequest.Service";
 import CustomError from "../utils/Error.Util";
 import { Request, Response, NextFunction } from "express";
+import InvitationCodeService from "../services/InvitationCode.Service";
 
 class UpgradeRequestController {
   async createUpgradeRequest(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user?._id;
       const email = req.user?.email;
+
       if (!userId) throw new CustomError(400, "Không tìm thấy userId");
-      const { phone, fullname, address } = req.body;
+      const { phone, fullname, address, franchiseName } = req.body;
+      const check = await InvitationCodeService.checkCode(franchiseName);
+      if (!check) {
+        throw new CustomError(400, "Mã franchise không hợp lệ");
+      }
+
       if (!phone || !fullname || !address) {
         throw new CustomError(400, "Vui lòng nhập đầy đủ thông tin");
       }
@@ -19,6 +26,7 @@ class UpgradeRequestController {
         phone,
         fullname,
         address,
+        franchiseName,
       };
 
       const upgradeRequest = await UpgradeRequestService.createUpgradeRequest(
