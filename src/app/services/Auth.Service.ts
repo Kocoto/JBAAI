@@ -12,6 +12,7 @@ import {
   refreshTokenGenerator,
   TokenPayload,
   verifyToken,
+  verifyTokenToLogout,
 } from "../utils/Token.Util";
 import InvitationService from "./Invitation.Service";
 import InvitationCodeService from "./InvitationCode.Service";
@@ -281,7 +282,7 @@ class AuthService {
 
   async logout(refreshToken: string, clientId: string) {
     try {
-      const decoded = verifyToken(refreshToken, true) as TokenPayload;
+      const decoded = verifyTokenToLogout(refreshToken, true) as TokenPayload;
       await TokenModel.deleteOne({
         userId: decoded.userId,
         token: refreshToken,
