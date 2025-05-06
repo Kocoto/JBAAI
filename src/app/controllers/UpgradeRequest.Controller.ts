@@ -12,7 +12,8 @@ class UpgradeRequestController {
 
       if (!userId) throw new CustomError(400, "Không tìm thấy userId");
       const { phone, fullname, address, franchiseName } = req.body;
-      const check = await InvitationCodeService.checkCode(franchiseName);
+      const franchiseName15 = franchiseName + "15";
+      const check = await InvitationCodeService.checkCode(franchiseName15);
       if (!check) {
         throw new CustomError(400, "Mã franchise không hợp lệ");
       }
@@ -26,7 +27,7 @@ class UpgradeRequestController {
         phone,
         fullname,
         address,
-        franchiseName,
+        franchiseName: franchiseName15,
       };
 
       const upgradeRequest = await UpgradeRequestService.createUpgradeRequest(
