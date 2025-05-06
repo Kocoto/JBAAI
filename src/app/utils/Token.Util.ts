@@ -17,7 +17,7 @@ export const accessTokenGenerator = (
 
   try {
     return jwt.sign({ userId, clientId }, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "1h",
+      expiresIn: "1m",
     });
   } catch (error) {
     console.error("Lỗi tạo access token:", error);
@@ -35,7 +35,7 @@ export const refreshTokenGenerator = (
 
   try {
     return jwt.sign({ userId, clientId }, process.env.REFRESH_TOKEN_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "1m",
     });
   } catch (error) {
     console.error("Lỗi tạo refresh token:", error);
