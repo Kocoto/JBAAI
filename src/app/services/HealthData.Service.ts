@@ -119,6 +119,7 @@ class HealthDataService {
   async getHealthDataByDateRange(
     userId: string,
     type: "week" | "month" | "day",
+    year: string,
     value: string
   ) {
     let startDate: Date | null = null;
