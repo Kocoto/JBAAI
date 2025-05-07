@@ -28,6 +28,18 @@ class InvitationCodeService {
       throw new CustomError(500, error as string);
     }
   }
+  async checkCodeIsInvalid(code: string) {
+    try {
+      const checkCode = await InvitationCodeModel.findOne({ code: code });
+      if (checkCode) {
+        throw new CustomError(400, "Mã mời đã tồn tại");
+      }
+      return true;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, error as string);
+    }
+  }
   async getCodeByUserId(userId: string) {
     try {
       const code = await InvitationCodeModel.findOne({ userId: userId });

@@ -6,7 +6,9 @@ import InvitationCodeService from "./InvitationCode.Service";
 class UpgradeRequestService {
   async createUpgradeRequest(userId: string, data: any) {
     try {
-      const check = await InvitationCodeService.checkCode(data.franchiseName);
+      const check = await InvitationCodeService.checkCodeIsInvalid(
+        data.franchiseName
+      );
       if (!check) {
         throw new CustomError(400, "Mã franchise không hợp lệ");
       }
