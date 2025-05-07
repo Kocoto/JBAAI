@@ -49,10 +49,7 @@ class AuthController {
   async login(req: Request, res: Response, next: NextFunction) {
     try {
       const acceptLanguage = req.headers["accept-language"];
-      console.log(
-        "Đây là là dòng số 10 của trang authcontroller để kiếm tra acceptLanguage: " +
-          acceptLanguage
-      );
+
       const { email, password, clientId } = req.body;
       // Validate input
       if (!email || !password || !clientId) {
