@@ -8,6 +8,8 @@ import {
   startOfDay,
   startOfMonth,
   startOfWeek,
+  eachDayOfInterval,
+  format as formatDateFns,
 } from "date-fns";
 import { HealthDataModel } from "../models/HealthData.Model";
 import CustomError from "../utils/Error.Util";
@@ -135,8 +137,12 @@ class HealthDataService {
       switch (type) {
         case "day": {
           const date = parse(value, "dd/MM/yyyy", new Date());
-          if (!date) {
-            throw new CustomError(400, "Không tìm thấy ngày yêu cầu");
+
+          if (isNaN(date.getTime())) {
+            throw new CustomError(
+              400,
+              "Định dạng ngày không hợp lệ hoặc ngày không tồn tại."
+            );
           }
           startDate = startOfDay(date);
           endDate = endOfDay(date);
@@ -144,12 +150,21 @@ class HealthDataService {
         }
         case "week": {
           const dateInYear = new Date(currentYear, 0, 1);
+          const weekNum = parseInt(value, 10);
+
+          if (isNaN(weekNum) || weekNum < 1 || weekNum > 53) {
+            throw new CustomError(400, "Số tuần không hợp lệ.");
+          }
           const dateInWeek = setWeek(dateInYear, +value, {
             weekStartsOn: 1,
             firstWeekContainsDate: 4,
           });
-          if (!dateInWeek) {
-            throw new CustomError(400, "Không tìm thấy tuần yêu cầu");
+
+          if (isNaN(dateInWeek.getTime())) {
+            throw new CustomError(
+              400,
+              "Không tìm thấy tuần yêu cầu từ giá trị đã cho."
+            );
           }
           startDate = startOfWeek(dateInWeek, { weekStartsOn: 1 });
           endDate = endOfWeek(dateInWeek, { weekStartsOn: 1 });
@@ -171,6 +186,18 @@ class HealthDataService {
           throw new CustomError(400, "Không xử lý được loại dữ liệu yêu cầu");
       }
 
+      if (
+        !startDate ||
+        !endDate ||
+        isNaN(startDate.getTime()) ||
+        isNaN(endDate.getTime())
+      ) {
+        throw new CustomError(
+          500,
+          "Không thể xác định khoảng ngày hợp lệ để xử lý."
+        );
+      }
+
       const aggregationPipeline = [
         {
           $match: {
@@ -180,26 +207,154 @@ class HealthDataService {
         },
         {
           $group: {
-            _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } },
+            _id: { $dateToString: { format: "%d-%m-%Y", date: "$createdAt" } },
             count: { $sum: 1 },
             data: { $push: "$$ROOT" },
           },
         },
         {
           $sort: {
-            _id: 1 as const, // Sort by date string in ascending order (oldest to newest)
+            _id: 1 as const,
           },
         },
       ];
 
       const result = await HealthDataModel.aggregate(aggregationPipeline);
-      return result;
+      const resultMap = new Map(result.map((item) => [item._id, item]));
+      const allDatesInPeriod = eachDayOfInterval({
+        start: startDate,
+        end: endDate,
+      });
+
+      const formattedResult = allDatesInPeriod.map((dateInLoop) => {
+        const dateString = formatDateFns(dateInLoop, "dd-MM-yyyy");
+
+        if (resultMap.has(dateString)) {
+          return resultMap.get(dateString);
+        } else {
+          return {
+            _id: dateString,
+            count: 0,
+            data: [
+              {
+                _id: null,
+                userId: userId,
+                bpValue: {
+                  diastolic: 0,
+                  systolic: 0,
+                },
+                hemoglobin: {
+                  value: 0,
+                },
+                hemoglobinA1c: {
+                  value: 0,
+                },
+                highBloodPressureRisk: {
+                  value: 0,
+                },
+                highFastingGlucoseRisk: {
+                  value: 0,
+                },
+                highHemoglobinA1cRisk: {
+                  value: 0,
+                },
+                highTotalCholesterolRisk: {
+                  value: 0,
+                },
+                lfhf: {
+                  value: 0,
+                },
+                lowHemoglobinRisk: {
+                  value: 0,
+                },
+                meanRRi: {
+                  value: 0,
+                  confidence: {
+                    level: 0,
+                  },
+                },
+                normalizedStressIndex: {
+                  value: 0,
+                },
+                oxygenSaturation: {
+                  value: 0,
+                },
+                pnsIndex: {
+                  value: 0,
+                },
+                pnsZone: {
+                  value: 0,
+                },
+                prq: {
+                  value: 0,
+                  confidence: {
+                    level: 0,
+                  },
+                },
+                pulseRate: {
+                  value: 0,
+                  confidence: {
+                    level: 0,
+                  },
+                },
+                respirationRate: {
+                  value: 0,
+                  confidence: {
+                    level: 0,
+                  },
+                },
+                rmssd: {
+                  value: 0,
+                },
+                rri: {
+                  confidence: {
+                    level: 0,
+                  },
+                  value: [],
+                },
+                sd1: {
+                  value: 0,
+                },
+                sd2: {
+                  value: 0,
+                },
+                sdnn: {
+                  value: 0,
+                  confidence: {
+                    level: 0,
+                  },
+                },
+                snsIndex: {
+                  value: 0,
+                },
+                snsZone: {
+                  value: 0,
+                },
+                stressIndex: {
+                  value: 0,
+                },
+                stressLevel: {
+                  value: 0,
+                },
+                wellnessIndex: {
+                  value: 0,
+                },
+                wellnessLevel: {
+                  value: 0,
+                },
+                createdAt: new Date(),
+                __v: 0,
+              },
+            ],
+          };
+        }
+      });
+
+      return formattedResult;
     } catch (error) {
       if (error instanceof CustomError) {
-        console.error("CustomError caught:", error.message);
         throw error;
       }
-      console.error("Lỗi trong getHealthDataByDateRange:", error); // Ghi log lỗi chi tiết
       throw new CustomError(500, "Lỗi máy chủ khi lấy dữ liệu sức khỏe.");
     }
   }
