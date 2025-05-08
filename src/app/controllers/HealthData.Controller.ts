@@ -10,6 +10,7 @@ class HealthDataController {
         const healthData = await HealthDataService.getOneHealthData(userId);
 
         return res.status(200).json({
+          success: true,
           message: "Lấy dữ liệu sức khỏe thành công",
           data: healthData,
         });
@@ -19,6 +20,7 @@ class HealthDataController {
         date
       );
       return res.status(200).json({
+        success: true,
         message: "Lấy dữ liệu sức khỏe thành công",
         data: healthData,
       });
@@ -39,6 +41,7 @@ class HealthDataController {
         rawData
       );
       return res.status(201).json({
+        success: true,
         message: "Tạo dữ liệu sức khỏe thành công",
         data: healthData,
       });
@@ -55,6 +58,7 @@ class HealthDataController {
       }
       const healthData = await HealthDataService.deleteHealthDate(healthDataId);
       return res.status(200).json({
+        success: true,
         message: "Xóa dữ liệu sức khỏe thành công",
         data: healthData,
       });
@@ -83,11 +87,13 @@ class HealthDataController {
       );
       if (user.emailNotificationsEnabled === false) {
         return res.status(200).json({
+          success: true,
           message: "Người dùng không cho phép nhận email",
           data: healthData,
         });
       }
       return res.status(200).json({
+        success: true,
         message: "Gửi email thành công",
         data: healthData,
       });
@@ -114,6 +120,7 @@ class HealthDataController {
         data
       );
       return res.status(200).json({
+        success: true,
         message: "Lấy dữ liệu sức khỏe thành công",
         data: healthData,
       });
