@@ -15,6 +15,13 @@ export const sendMail = async (mailOptions: nodemailer.SendMailOptions) => {
   }
 };
 
+const sendMultiMail = async (mailOptions: nodemailer.SendMailOptions[]) => {
+  try {
+  } catch (error) {
+    console.error("Lỗi:" + error);
+  }
+};
+
 export const renderEmailTemplate = async (
   language: string,
   userName: string,
@@ -50,7 +57,7 @@ export const renderEmailTemplate = async (
 
     // Blood Pressure
     htmlContent = htmlContent.replace(
-      /\s*\[Blood Pressure VALUE\] mmHg/g,
+      /\s*\[Blood Pressure VALUE\]/g,
       `${healthData.bpValue?.systolic ?? "N/A"}/${
         healthData.bpValue?.diastolic ?? "N/A"
       } mmHg`
@@ -58,13 +65,13 @@ export const renderEmailTemplate = async (
 
     // Heart Rate
     htmlContent = htmlContent.replace(
-      /\s*\[Pulse Rate VALUE\] bpm/g,
+      /\s*\[Pulse Rate VALUE\]/g,
       `${healthData.pulseRate?.value ?? "N/A"} bpm`
     );
 
     // Oxygen Saturation
     htmlContent = htmlContent.replace(
-      /\s*\[Oxygen Saturation VALUE\] %/g,
+      /\s*\[Oxygen Saturation VALUE\]/g,
       `${healthData.oxygenSaturation?.value ?? "N/A"} %`
     );
 
@@ -76,13 +83,13 @@ export const renderEmailTemplate = async (
 
     // Hemoglobin
     htmlContent = htmlContent.replace(
-      /\s*\[Hemoglobin VALUE\] g\/dL/g,
+      /\s*\[Hemoglobin VALUE\]/g,
       `${healthData.hemoglobin?.value ?? "N/A"} g/dL`
     );
 
     // HbA1c
     htmlContent = htmlContent.replace(
-      /\s*\[Hemoglobin A1c VALUE\] %/g,
+      /\s*\[Hemoglobin A1c VALUE\]/g,
       `${healthData.hemoglobinA1c?.value?.toFixed(2) ?? "N/A"} %` // Làm tròn 2 chữ số thập phân
     );
 
@@ -116,37 +123,37 @@ export const renderEmailTemplate = async (
 
     // ASCVD Risk
     htmlContent = htmlContent.replace(
-      /\s*\[ASCVD Risk VALUE\] %/g,
+      /\s*\[ASCVD Risk VALUE\]/g,
       `${healthData.ascvdRisk?.value ?? "N/A"} %`
     );
 
     // Mean RRi
     htmlContent = htmlContent.replace(
-      /\s*\[Mean RRi VALUE\] ms/g,
+      /\s*\[Mean RRi VALUE\]/g,
       `${healthData.meanRRi?.value ?? "N/A"} ms`
     );
 
     // RMSSD
     htmlContent = htmlContent.replace(
-      /\s*\[RMSSD VALUE\] ms/g,
+      /\s*\[RMSSD VALUE\]/g,
       `${healthData.rmssd?.value ?? "N/A"} ms`
     );
 
     // SDNN
     htmlContent = htmlContent.replace(
-      /\s*\[SDNN VALUE\] ms/g,
+      /\s*\[SDNN VALUE\]/g,
       `${healthData.sdnn?.value ?? "N/A"} ms`
     );
 
     // SD1
     htmlContent = htmlContent.replace(
-      /\s*\[SD1 VALUE\] ms/g,
+      /\s*\[SD1 VALUE\]/g,
       `${healthData.sd1?.value ?? "N/A"} ms`
     );
 
     // SD2
     htmlContent = htmlContent.replace(
-      /\s*\[SD2 VALUE\] ms/g,
+      /\s*\[SD2 VALUE\]/g,
       `${healthData.sd2?.value ?? "N/A"} ms`
     );
 

@@ -70,12 +70,23 @@ class HealthDataController {
       if (!email || !rawData) {
         throw new CustomError(400, "Email và dữ liệu sức khỏe là bắt buộc");
       }
+      const user = req.user;
+      if (!user) {
+        throw new CustomError(400, "Người dùng không tồn tại");
+      }
+
       const username = req.user.username;
       const healthData = await HealthDataService.sentMailHealthData(
         email,
         username,
         rawData
       );
+      if (user.emailNotificationsEnabled === false) {
+        return res.status(200).json({
+          message: "Người dùng không cho phép nhận email",
+          data: healthData,
+        });
+      }
       return res.status(200).json({
         message: "Gửi email thành công",
         data: healthData,
