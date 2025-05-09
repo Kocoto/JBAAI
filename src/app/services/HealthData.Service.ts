@@ -80,7 +80,12 @@ class HealthDataService {
       throw new CustomError(500, error as string);
     }
   }
-  async sentMailHealthData(email: string, username: string, rawData: any) {
+  async sentMailHealthData(
+    email: string,
+    username: string,
+    rawData: any,
+    language: string
+  ) {
     try {
       const data = transformIncomingData(rawData);
       if (!data) {
@@ -88,7 +93,7 @@ class HealthDataService {
       }
 
       const htmlContent = await renderEmailTemplate(
-        "en",
+        language,
         username,
         data,
         "Đây là chart"

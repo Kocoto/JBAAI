@@ -71,6 +71,9 @@ class HealthDataController {
     try {
       const email = req.user.email;
       const rawData = req.body.healthData;
+      const language = req.headers["accept-language"]
+        ? req.headers["accept-language"]
+        : "en"; // Get language from accept-language header
       if (!email || !rawData) {
         throw new CustomError(400, "Email và dữ liệu sức khỏe là bắt buộc");
       }
@@ -78,20 +81,21 @@ class HealthDataController {
       if (!user) {
         throw new CustomError(400, "Người dùng không tồn tại");
       }
-
-      const username = req.user.username;
-      const healthData = await HealthDataService.sentMailHealthData(
-        email,
-        username,
-        rawData
-      );
       if (user.emailNotificationsEnabled === false) {
         return res.status(200).json({
           success: true,
           message: "Người dùng không cho phép nhận email",
-          data: healthData,
+          data: null,
         });
       }
+      const username = req.user.username;
+      const healthData = await HealthDataService.sentMailHealthData(
+        email,
+        username,
+        rawData,
+        language
+      );
+
       return res.status(200).json({
         success: true,
         message: "Gửi email thành công",
