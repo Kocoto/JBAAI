@@ -109,14 +109,13 @@ class HealthDataController {
   ) {
     try {
       const userId = req.user.id;
-      const { type, year, data } = req.body;
-      if (!type || !year || !data) {
+      const { type, data } = req.body;
+      if (!type || !data) {
         throw new CustomError(400, "Thiếu thông tin");
       }
       const healthData = await HealthDataService.getHealthDataByDateRange(
         userId,
         type,
-        year,
         data
       );
       return res.status(200).json({
