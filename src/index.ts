@@ -13,6 +13,7 @@ import multer from "multer";
 import client from "./app/config/paypal.config";
 import { transformIncomingData } from "./app/utils/FormatData.Util";
 import UserHealthDataService from "./app/services/HealthData.Service";
+import { logAllHeadersMiddleware } from "./app/middlewares/LogHeaders.Middleware";
 import cors from "cors";
 import mongoose from "mongoose";
 import path from "path";
@@ -27,6 +28,8 @@ async function startApplication() {
 
     // console.log("Đang khởi tạo Express...");
     const app = express();
+
+    app.use(logAllHeadersMiddleware);
 
     const wellKnownPath = path.join(__dirname, "..", "public", ".well-known");
 
