@@ -25,13 +25,38 @@ const translations: LocaleData = {
     errorCreatingEmail: "Lỗi khi tạo nội dung email. Vui lòng thử lại sau.",
     // Thêm các chuỗi dịch khác cho tiếng Việt ở đây
   },
-  // Thêm các ngôn ngữ khác nếu cần
-  // fr: {
-  //   low: "Bas",
-  //   normal: "Normal",
-  //   high: "Élevé",
-  //   na: "N/D",
-  // },
+  ja: {
+    low: "低",
+    normal: "普通",
+    high: "高",
+    na: "該当なし",
+    errorCreatingEmail:
+      "メール作成中にエラーが発生しました。後でもう一度お試しください。",
+  },
+  ko: {
+    low: "낮음",
+    normal: "보통",
+    high: "높음",
+    na: "해당 없음",
+    errorCreatingEmail:
+      "이메일 내용 생성 중 오류가 발생했습니다. 나중에 다시 시도해 주세요.",
+  },
+  es: {
+    low: "Bajo",
+    normal: "Normal",
+    high: "Alto",
+    na: "N/D",
+    errorCreatingEmail:
+      "Error al crear el contenido del correo electrónico. Por favor, inténtelo de nuevo más tarde.",
+  },
+  fr: {
+    low: "Bas",
+    normal: "Normal",
+    high: "Élevé",
+    na: "N/D",
+    errorCreatingEmail:
+      "Erreur lors de la création du contenu de l'email. Veuillez réessayer plus tard.",
+  },
 };
 
 /**

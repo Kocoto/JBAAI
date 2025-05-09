@@ -4,6 +4,7 @@ import * as fs from "fs/promises"; // Sử dụng fs.promises để đọc file 
 import * as path from "path";
 import CustomError from "./Error.Util";
 import { json } from "body-parser";
+import { getLocalizedString } from "./Localization.Util"; // Thêm import này
 
 export const sendMail = async (mailOptions: nodemailer.SendMailOptions) => {
   try {
@@ -46,51 +47,49 @@ export const renderEmailTemplate = async (
     // Wellness Level
     htmlContent = htmlContent.replace(
       /\s*\[Wellness Level VALUE\]/g,
-      `${healthData.wellnessLevel?.value}`
+      `${healthData.wellnessLevel?.value ?? getLocalizedString(language, "na")}`
     );
 
     // Wellness Index
     htmlContent = htmlContent.replace(
       /\s*\[Wellness Index VALUE\]/g,
-      `${healthData.wellnessIndex?.value}`
+      `${healthData.wellnessIndex?.value ?? getLocalizedString(language, "na")}`
     );
 
     // Blood Pressure
     htmlContent = htmlContent.replace(
       /\s*\[Blood Pressure VALUE\]/g,
-      `${healthData.bpValue?.systolic ?? "N/A"}/${
-        healthData.bpValue?.diastolic ?? "N/A"
-      } mmHg`
+      `${healthData.bpValue?.systolic ?? getLocalizedString(language, "na")}/${healthData.bpValue?.diastolic ?? getLocalizedString(language, "na")} mmHg`
     );
 
     // Heart Rate
     htmlContent = htmlContent.replace(
       /\s*\[Pulse Rate VALUE\]/g,
-      `${healthData.pulseRate?.value ?? "N/A"} bpm`
+      `${healthData.pulseRate?.value ?? getLocalizedString(language, "na")} bpm`
     );
 
     // Oxygen Saturation
     htmlContent = htmlContent.replace(
       /\s*\[Oxygen Saturation VALUE\]/g,
-      `${healthData.oxygenSaturation?.value ?? "N/A"} %`
+      `${healthData.oxygenSaturation?.value ?? getLocalizedString(language, "na")} %`
     );
 
     // Respiration Rate
     htmlContent = htmlContent.replace(
       /\s*\[Respiration Rate VALUE\]/g,
-      `${healthData.respirationRate?.value ?? "N/A"}`
+      `${healthData.respirationRate?.value ?? getLocalizedString(language, "na")}`
     );
 
     // Hemoglobin
     htmlContent = htmlContent.replace(
       /\s*\[Hemoglobin VALUE\]/g,
-      `${healthData.hemoglobin?.value ?? "N/A"} g/dL`
+      `${healthData.hemoglobin?.value ?? getLocalizedString(language, "na")} g/dL`
     );
 
     // HbA1c
     htmlContent = htmlContent.replace(
       /\s*\[Hemoglobin A1c VALUE\]/g,
-      `${healthData.hemoglobinA1c?.value?.toFixed(2) ?? "N/A"} %` // Làm tròn 2 chữ số thập phân
+      `${healthData.hemoglobinA1c?.value?.toFixed(2) ?? getLocalizedString(language, "na")} %` // Làm tròn 2 chữ số thập phân
     );
 
     // High BP Risk
@@ -98,12 +97,12 @@ export const renderEmailTemplate = async (
       /\s*\[High Blood Pressure Risk VALUE\]/g,
       `${
         healthData.highBloodPressureRisk?.value === 1
-          ? "Low"
+          ? getLocalizedString(language, "low")
           : healthData.highBloodPressureRisk?.value === 2
-          ? "Normal"
+          ? getLocalizedString(language, "normal")
           : healthData.highBloodPressureRisk?.value === 3
-          ? "High"
-          : "N/A"
+          ? getLocalizedString(language, "high")
+          : getLocalizedString(language, "na")
       }` // Có thể thêm logic diễn giải mức ở đây
     );
 
@@ -112,61 +111,61 @@ export const renderEmailTemplate = async (
       /\s*\[High HbA1c Risk VALUE\]/g,
       `${
         healthData.highHemoglobinA1cRisk?.value === 1
-          ? "Low"
-          : healthData.highHemoglobinA1cRisk?.value === 1
-          ? "Normal"
+          ? getLocalizedString(language, "low")
+          : healthData.highHemoglobinA1cRisk?.value === 2 // Sửa lỗi logic ở đây, trước đó là 1
+          ? getLocalizedString(language, "normal")
           : healthData.highHemoglobinA1cRisk?.value === 3
-          ? "High"
-          : "N/A"
+          ? getLocalizedString(language, "high")
+          : getLocalizedString(language, "na")
       }`
     );
 
     // ASCVD Risk
     htmlContent = htmlContent.replace(
       /\s*\[ASCVD Risk VALUE\]/g,
-      `${healthData.ascvdRisk?.value ?? "N/A"} %`
+      `${healthData.ascvdRisk?.value ?? getLocalizedString(language, "na")} %`
     );
 
     // Mean RRi
     htmlContent = htmlContent.replace(
       /\s*\[Mean RRi VALUE\]/g,
-      `${healthData.meanRRi?.value ?? "N/A"} ms`
+      `${healthData.meanRRi?.value ?? getLocalizedString(language, "na")} ms`
     );
 
     // RMSSD
     htmlContent = htmlContent.replace(
       /\s*\[RMSSD VALUE\]/g,
-      `${healthData.rmssd?.value ?? "N/A"} ms`
+      `${healthData.rmssd?.value ?? getLocalizedString(language, "na")} ms`
     );
 
     // SDNN
     htmlContent = htmlContent.replace(
       /\s*\[SDNN VALUE\]/g,
-      `${healthData.sdnn?.value ?? "N/A"} ms`
+      `${healthData.sdnn?.value ?? getLocalizedString(language, "na")} ms`
     );
 
     // SD1
     htmlContent = htmlContent.replace(
       /\s*\[SD1 VALUE\]/g,
-      `${healthData.sd1?.value ?? "N/A"} ms`
+      `${healthData.sd1?.value ?? getLocalizedString(language, "na")} ms`
     );
 
     // SD2
     htmlContent = htmlContent.replace(
       /\s*\[SD2 VALUE\]/g,
-      `${healthData.sd2?.value ?? "N/A"} ms`
+      `${healthData.sd2?.value ?? getLocalizedString(language, "na")} ms`
     );
 
     // LF/HF
     htmlContent = htmlContent.replace(
       /\s*\[LF\/HF VALUE\]/g,
-      `${healthData.lfhf?.value?.toFixed(3) ?? "N/A"}` // Làm tròn 3 chữ số thập phân
+      `${healthData.lfhf?.value?.toFixed(3) ?? getLocalizedString(language, "na")}` // Làm tròn 3 chữ số thập phân
     );
 
     // PNS Index
     htmlContent = htmlContent.replace(
       /\s*\[PNS Index VALUE\]/g,
-      `${healthData.pnsIndex?.value ?? "N/A"}`
+      `${healthData.pnsIndex?.value ?? getLocalizedString(language, "na")}`
     );
 
     // PNS Zone
@@ -174,19 +173,19 @@ export const renderEmailTemplate = async (
       /\s*\[PNS Zone VALUE\]/g,
       `${
         healthData.pnsZone?.value === 1
-          ? "Low"
+          ? getLocalizedString(language, "low")
           : healthData.pnsZone?.value === 2
-          ? "Normal"
+          ? getLocalizedString(language, "normal")
           : healthData.pnsZone?.value === 3
-          ? "High"
-          : "N/A"
+          ? getLocalizedString(language, "high")
+          : getLocalizedString(language, "na")
       }`
     );
 
     // SNS Index
     htmlContent = htmlContent.replace(
       /\s*\[SNS Index VALUE\]/g,
-      `${healthData.snsIndex?.value ?? "N/A"}`
+      `${healthData.snsIndex?.value ?? getLocalizedString(language, "na")}`
     );
 
     // SNS Zone
@@ -194,19 +193,19 @@ export const renderEmailTemplate = async (
       /\s*\[SNS Zone VALUE\]/g,
       `${
         healthData.snsZone?.value === 1
-          ? "Low"
+          ? getLocalizedString(language, "low")
           : healthData.snsZone?.value === 2
-          ? "Normal"
+          ? getLocalizedString(language, "normal")
           : healthData.snsZone?.value === 3
-          ? "High"
-          : "N/A"
+          ? getLocalizedString(language, "high")
+          : getLocalizedString(language, "na")
       }`
     );
 
     // PRQ
     htmlContent = htmlContent.replace(
       /\s*\[PRQ VALUE\]/g,
-      `${healthData.prq?.value ?? "N/A"}`
+      `${healthData.prq?.value ?? getLocalizedString(language, "na")}`
     );
 
     // Stress Level
@@ -214,19 +213,19 @@ export const renderEmailTemplate = async (
       /\s*\[Stress Level VALUE\]/g,
       `${
         healthData.stressLevel?.value === 1
-          ? "Low"
+          ? getLocalizedString(language, "low")
           : healthData.stressLevel?.value === 2
-          ? "Normal"
+          ? getLocalizedString(language, "normal")
           : healthData.stressLevel?.value === 3
-          ? "High"
-          : "N/A"
+          ? getLocalizedString(language, "high")
+          : getLocalizedString(language, "na")
       }`
     );
 
     // Stress Index
     htmlContent = htmlContent.replace(
       /\s*\[Stress Index VALUE\]/g,
-      `${healthData.stressIndex?.value ?? "N/A"}`
+      `${healthData.stressIndex?.value ?? getLocalizedString(language, "na")}`
     );
 
     // RRI Chart Image
@@ -244,7 +243,7 @@ export const renderEmailTemplate = async (
     // return `<p>Lỗi khi tạo nội dung email. Vui lòng thử lại sau.</p>`;
     throw new CustomError(
       500,
-      "Lỗi khi tạo nội dung email. Vui lòng thử lại sau."
+      getLocalizedString(language, "errorCreatingEmail")
     );
   }
 };
