@@ -122,11 +122,13 @@ class HealthDataService {
   async getHealthDataByDateRange(
     userId: string,
     type: "week" | "month" | "day",
-    year: string,
     value: string
   ) {
     let startDate: Date | null = null;
     let endDate: Date | null = null;
+    const splitValue = value.split("/");
+    const year = splitValue[splitValue.length - 1];
+    const dayValue = splitValue[0];
     try {
       const currentYear = parseInt(year, 10);
 
@@ -150,12 +152,12 @@ class HealthDataService {
         }
         case "week": {
           const dateInYear = new Date(currentYear, 0, 1);
-          const weekNum = parseInt(value, 10);
+          const weekNum = parseInt(dayValue, 10);
 
           if (isNaN(weekNum) || weekNum < 1 || weekNum > 53) {
             throw new CustomError(400, "Số tuần không hợp lệ.");
           }
-          const dateInWeek = setWeek(dateInYear, +value, {
+          const dateInWeek = setWeek(dateInYear, +dayValue, {
             weekStartsOn: 1,
             firstWeekContainsDate: 4,
           });
@@ -171,7 +173,7 @@ class HealthDataService {
           break;
         }
         case "month": {
-          const monthNum = parseInt(value, 10);
+          const monthNum = parseInt(dayValue, 10);
 
           if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
             throw new CustomError(400, "Không tìm thấy tháng yêu cầu");
