@@ -219,7 +219,7 @@ class AuthService {
   async refreshAccessToken(refreshToken: string, clientId: string) {
     try {
       // Verify refresh token
-      const decoded = verifyToken(refreshToken, true) as TokenPayload;
+      const decoded = verifyTokenToLogout(refreshToken, true) as TokenPayload;
 
       // Check if refresh token exists and is active in database
       const tokenDoc = await TokenModel.findOne({
