@@ -47,7 +47,15 @@ export const renderEmailTemplate = async (
     // Wellness Level
     htmlContent = htmlContent.replace(
       /\s*\[Wellness Level VALUE\]/g,
-      `${healthData.wellnessLevel?.value ?? getLocalizedString(language, "na")}`
+      `${
+        healthData.wellnessLevel?.value === 1
+          ? getLocalizedString(language, "low")
+          : healthData.wellnessLevel?.value === 2
+          ? getLocalizedString(language, "normal")
+          : healthData.wellnessLevel?.value === 3
+          ? getLocalizedString(language, "high")
+          : getLocalizedString(language, "na")
+      }`
     );
 
     // Wellness Index
@@ -59,7 +67,9 @@ export const renderEmailTemplate = async (
     // Blood Pressure
     htmlContent = htmlContent.replace(
       /\s*\[Blood Pressure VALUE\]/g,
-      `${healthData.bpValue?.systolic ?? getLocalizedString(language, "na")}/${healthData.bpValue?.diastolic ?? getLocalizedString(language, "na")} mmHg`
+      `${healthData.bpValue?.systolic ?? getLocalizedString(language, "na")}/${
+        healthData.bpValue?.diastolic ?? getLocalizedString(language, "na")
+      } mmHg`
     );
 
     // Heart Rate
@@ -71,25 +81,34 @@ export const renderEmailTemplate = async (
     // Oxygen Saturation
     htmlContent = htmlContent.replace(
       /\s*\[Oxygen Saturation VALUE\]/g,
-      `${healthData.oxygenSaturation?.value ?? getLocalizedString(language, "na")} %`
+      `${
+        healthData.oxygenSaturation?.value ?? getLocalizedString(language, "na")
+      } %`
     );
 
     // Respiration Rate
     htmlContent = htmlContent.replace(
       /\s*\[Respiration Rate VALUE\]/g,
-      `${healthData.respirationRate?.value ?? getLocalizedString(language, "na")}`
+      `${
+        healthData.respirationRate?.value ?? getLocalizedString(language, "na")
+      }`
     );
 
     // Hemoglobin
     htmlContent = htmlContent.replace(
       /\s*\[Hemoglobin VALUE\]/g,
-      `${healthData.hemoglobin?.value ?? getLocalizedString(language, "na")} g/dL`
+      `${
+        healthData.hemoglobin?.value ?? getLocalizedString(language, "na")
+      } g/dL`
     );
 
     // HbA1c
     htmlContent = htmlContent.replace(
       /\s*\[Hemoglobin A1c VALUE\]/g,
-      `${healthData.hemoglobinA1c?.value?.toFixed(2) ?? getLocalizedString(language, "na")} %` // Làm tròn 2 chữ số thập phân
+      `${
+        healthData.hemoglobinA1c?.value?.toFixed(2) ??
+        getLocalizedString(language, "na")
+      } %` // Làm tròn 2 chữ số thập phân
     );
 
     // High BP Risk
@@ -159,7 +178,9 @@ export const renderEmailTemplate = async (
     // LF/HF
     htmlContent = htmlContent.replace(
       /\s*\[LF\/HF VALUE\]/g,
-      `${healthData.lfhf?.value?.toFixed(3) ?? getLocalizedString(language, "na")}` // Làm tròn 3 chữ số thập phân
+      `${
+        healthData.lfhf?.value?.toFixed(3) ?? getLocalizedString(language, "na")
+      }` // Làm tròn 3 chữ số thập phân
     );
 
     // PNS Index
