@@ -18,6 +18,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import path from "path";
 import fs from "fs";
+import { redisConnection } from "./app/config/redis.config";
 const port = process.env.PORT || 4000;
 async function startApplication() {
   console.log("Bắt đầu khởi chạy ứng dụng...");
@@ -30,7 +31,7 @@ async function startApplication() {
     const app = express();
 
     app.use(logAllHeadersMiddleware);
-
+    redisConnection;
     const wellKnownPath = path.join(__dirname, "..", "public", ".well-known");
 
     // Route cho apple-app-site-association (Không có đuôi)
