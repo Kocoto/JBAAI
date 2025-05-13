@@ -13,7 +13,7 @@ export const processEmailJob = async (
   job: Job<IHealthDataEmailJobPayload, any, string>
 ) => {
   console.log(`[Worker] Processing email job: ${job.id}`);
-  console.log(`[Worker] Payload: ${JSON.stringify(job.name)}`);
+  console.log(`[Worker] Job name: ${JSON.stringify(job.name)}`);
 
   switch (job.name) {
     case "sendHealthReportEmail":

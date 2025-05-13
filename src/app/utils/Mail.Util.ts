@@ -23,23 +23,17 @@ export const renderEmailTemplate = async (
   rriChartImageUrl: string
 ) => {
   try {
+    // Define base template directory path
+    const templateBaseDir = path.join(__dirname, "..", "..", "..", "templates");
+
+    // Define template file names
+    const requestedTemplate = `HealthScanEmailTemplateV1.${language}.html`;
+    const fallbackTemplate = "HealthScanEmailTemplateV1.en.html";
+
+    // Get full template path with fallback to English if requested language not found
     const templatePath =
-      path.join(
-        __dirname,
-        "..",
-        "..",
-        "..",
-        "templates",
-        `HealthScanEmailTemplateV1.${language}.html`
-      ) ??
-      path.join(
-        __dirname,
-        "..",
-        "..",
-        "..",
-        "templates",
-        `HealthScanEmailTemplateV1.en.html`
-      );
+      path.join(templateBaseDir, requestedTemplate) ??
+      path.join(templateBaseDir, fallbackTemplate);
 
     let htmlContent = await fs.readFile(templatePath, "utf-8");
 
