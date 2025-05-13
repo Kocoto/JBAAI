@@ -5,6 +5,7 @@ import { redisOptions } from "../config/redis.config"; // 2. Import cấu hình 
 import { IHealthDataEmailJobPayload } from "../services/HealthData.Service"; // 3. Import interface payload (quan trọng!)
 import { renderEmailTemplate, sendMail } from "../utils/Mail.Util"; // 4. Import các hàm tiện ích cần thiết
 import * as path from "path"; // 5. Import path để xử lý đường dẫn attachment
+import CustomError from "../utils/Error.Util";
 
 console.log(`[Worker] Starting email worker for queue: ${EMAIL_QUEUE_NAME}...`);
 
@@ -12,7 +13,6 @@ export const processEmailJob = async (
   job: Job<IHealthDataEmailJobPayload, any, string>
 ) => {
   console.log(`[Worker] Processing email job: ${job.id}`);
-  console.log(`[Worker] Payload: ${JSON.stringify(job.data)}`);
   console.log(`[Worker] Payload: ${JSON.stringify(job.name)}`);
 
   switch (job.name) {
@@ -56,8 +56,8 @@ export const processEmailJob = async (
           `[Worker] Sending email to ${healthDataPayload.emailTo}...`
         );
 
-        const mailInfo = await sendMail(mailOptions);
-        console.log(`[Worker] Email sent: ${JSON.stringify(mailInfo)}`);
+        await sendMail(mailOptions);
+        console.log(`[Worker] Email sent successfully`);
       } catch (error) {
         console.error(
           `[Worker] Error processing job ${job.id} (sendHealthReportEmail) for ${healthDataPayload.emailTo}:`,

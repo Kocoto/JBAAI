@@ -93,7 +93,8 @@ class HealthDataService {
     email: string,
     username: string,
     rawData: any,
-    language: string
+    language: string,
+    optionEmail?: string
   ): Promise<void> {
     try {
       const transformedData = transformIncomingData(rawData);
@@ -112,27 +113,19 @@ class HealthDataService {
       console.log(
         `[Service] Job 'sendHealthReportEmail' cho ${email} đã được thêm vào hàng đợi.`
       );
-      // const mailOptions = {
-      //   from: "JBA AI",
-      //   to: email,
-      //   subject: "Health Data",
-      //   html: htmlContent,
-      //   attachments: [
-      //     {
-      //       filename: "logo-JBAAI-2.png",
-      //       path: path.join(
-      //         __dirname,
-      //         "..",
-      //         "..",
-      //         "..",
-      //         "templates",
-      //         "logo",
-      //         "logo-JBAAI-2.png"
-      //       ),
-      //       cid: "logo-JBAAI-2.png", //same cid value as in the html img src
-      //     },
-      //   ],
-      // };
+      if (optionEmail) {
+        const jobPayload: IHealthDataEmailJobPayload = {
+          emailTo: optionEmail,
+          targetUsername: username,
+          healthReportData: transformedData,
+          language: language,
+        };
+
+        await emailQueue.add("sendHealthReportEmail", jobPayload);
+        console.log(
+          `[Service] Job'sendHealthReportEmail' cho ${optionEmail} đã được thêm vào hàng đợi.`
+        );
+      }
     } catch (error) {
       // << Xử lý lỗi trong catch block >>
       console.error(

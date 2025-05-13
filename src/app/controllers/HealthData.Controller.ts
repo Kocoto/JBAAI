@@ -71,6 +71,7 @@ class HealthDataController {
     try {
       const email = req.user.email;
       const rawData = req.body.healthData;
+      const optionEmail = req.user.optionEmail;
       const language = req.headers["accept-language"]
         ? req.headers["accept-language"]
         : "en"; // Get language from accept-language header
@@ -89,11 +90,13 @@ class HealthDataController {
         });
       }
       const username = req.user.username;
+      // Send health data email with or without optional email settings
       const healthData = await HealthDataService.sentMailHealthData(
         email,
         username,
         rawData,
-        language
+        language,
+        optionEmail || undefined
       );
 
       return res.status(200).json({
