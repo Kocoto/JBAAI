@@ -16,8 +16,6 @@ const emailQueue = new Queue(EMAIL_QUEUE_NAME, {
     removeOnFail: 1000,
   },
 });
-console.log(
-  `Email queue "${EMAIL_QUEUE_NAME}" is ready and connected to Redis.`
-);
+console.log(`[Queue] ${EMAIL_QUEUE_NAME} is ready to process jobs`);
 
 export { emailQueue, EMAIL_QUEUE_NAME };

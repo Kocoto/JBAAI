@@ -11,11 +11,11 @@ const redisOptions: RedisOptions = {
 const redisConnection = new IORedis(redisOptions);
 
 redisConnection.on("connect", () => {
-  console.log("Connected to Redis");
+  console.log("[Redis] Connected to Redis");
 });
 
 redisConnection.on("error", (error) => {
-  console.error("Redis connection error:", error);
+  console.error("[Redis] Error connecting to Redis:", error);
 });
 
 export { redisConnection, redisOptions };

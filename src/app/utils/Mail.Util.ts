@@ -9,17 +9,10 @@ import { getLocalizedString } from "./Localization.Util"; // Thêm import này
 export const sendMail = async (mailOptions: nodemailer.SendMailOptions) => {
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email đã gửi:" + info.response);
+    console.log("[Mail] Mail sent successfully: %s", info.response);
     return info;
   } catch (error) {
-    console.error("Lỗi:" + error);
-  }
-};
-
-const sendMultiMail = async (mailOptions: nodemailer.SendMailOptions[]) => {
-  try {
-  } catch (error) {
-    console.error("Lỗi:" + error);
+    console.error("[Mail] Error sending email:", error);
   }
 };
 
