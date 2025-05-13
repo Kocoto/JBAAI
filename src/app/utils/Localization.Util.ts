@@ -1,5 +1,3 @@
-// e:\JBAAI\src\app\utils\Localization.Util.ts
-
 interface Translations {
   [key: string]: string;
 }
@@ -57,11 +55,21 @@ const translations: LocaleData = {
     errorCreatingEmail:
       "Erreur lors de la création du contenu de l'email. Veuillez réessayer plus tard.",
   },
+  ru: {
+    // Phần dịch tiếng Nga được thêm vào
+    low: "Низкий",
+    normal: "Нормальный",
+    high: "Высокий",
+    na: "Н/Д", // Нет данных (Không có dữ liệu)
+    errorCreatingEmail:
+      "Ошибка при создании содержимого письма. Пожалуйста, попробуйте позже.",
+    // Thêm các chuỗi dịch khác cho tiếng Nga ở đây (nếu cần)
+  },
 };
 
 /**
  * Lấy chuỗi dịch dựa trên ngôn ngữ và khóa.
- * @param language Mã ngôn ngữ (ví dụ: 'en', 'vi').
+ * @param language Mã ngôn ngữ (ví dụ: 'en', 'vi', 'ru').
  * @param key Khóa của chuỗi cần dịch.
  * @returns Chuỗi đã dịch hoặc khóa nếu không tìm thấy bản dịch.
  */
@@ -74,7 +82,6 @@ export const getLocalizedString = (language: string, key: string): string => {
   if (translations.en && translations.en[key]) {
     return translations.en[key];
   }
-  // Fallback to the key itself if not found in English either
   return key;
 };
 
