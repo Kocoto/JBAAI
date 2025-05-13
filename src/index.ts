@@ -18,6 +18,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import path from "path";
 import fs from "fs";
+import { initializeEmailWorker } from "./app/workers/Mail.Worker";
 import { redisConnection } from "./app/config/redis.config";
 const port = process.env.PORT || 4000;
 async function startApplication() {
@@ -30,7 +31,7 @@ async function startApplication() {
     // console.log("Đang khởi tạo Express...");
     const app = express();
 
-    app.use(logAllHeadersMiddleware);
+    // app.use(logAllHeadersMiddleware);
     redisConnection;
     const wellKnownPath = path.join(__dirname, "..", "public", ".well-known");
 
@@ -88,6 +89,8 @@ async function startApplication() {
     app.use(bodyParser.json());
     app.use(upload.any()); // Middleware cho multipart/form-data
 
+    // Khởi tạo worker
+    await initializeEmailWorker();
     // Các cấu hình khác (Swagger, Nodemailer verify, PayPal client)
     // console.log("Đang cấu hình các dịch vụ khác...");
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
@@ -126,7 +129,8 @@ async function gracefulShutdown() {
     // console.log("Đang đóng kết nối MongoDB...");
     await mongoose.disconnect();
     // console.log("Kết nối MongoDB đã đóng.");
-
+    console.log("[Shutdown] Closing BullMQ workers...");
+    initializeEmailWorker().close;
     // console.log("Ứng dụng đã tắt thành công.");
     process.exit(0);
   } catch (error) {

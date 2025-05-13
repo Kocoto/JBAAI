@@ -1,8 +1,11 @@
 import IORedis, { RedisOptions } from "ioredis";
 
+const host = process.env.REDIS_HOST || "localhost";
+const port = parseInt(process.env.REDIS_PORT || "6379");
+
 const redisOptions: RedisOptions = {
-  host: "localhost",
-  port: 6379,
+  host: host,
+  port: port,
 };
 
 const redisConnection = new IORedis(redisOptions);

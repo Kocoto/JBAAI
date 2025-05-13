@@ -30,14 +30,23 @@ export const renderEmailTemplate = async (
   rriChartImageUrl: string
 ) => {
   try {
-    const templatePath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "..",
-      "templates",
-      `HealthScanEmailTemplateV1.${language}.html`
-    );
+    const templatePath =
+      path.join(
+        __dirname,
+        "..",
+        "..",
+        "..",
+        "templates",
+        `HealthScanEmailTemplateV1.${language}.html`
+      ) ??
+      path.join(
+        __dirname,
+        "..",
+        "..",
+        "..",
+        "templates",
+        `HealthScanEmailTemplateV1.en.html`
+      );
 
     let htmlContent = await fs.readFile(templatePath, "utf-8");
 
