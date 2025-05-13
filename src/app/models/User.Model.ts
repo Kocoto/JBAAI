@@ -14,6 +14,7 @@ export interface IUserOutput {
   updatedAt: Date;
   __v: number;
   emailNotificationsEnabled: boolean;
+  optionEmail?: string;
 }
 
 export interface IUser {
@@ -30,6 +31,7 @@ export interface IUser {
   emailNotificationsEnabled: boolean;
   isPayment: boolean;
   isHideScore: boolean;
+  optionEmail?: string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -65,6 +67,7 @@ const UserSchema = new Schema<IUser>(
     emailNotificationsEnabled: { type: Boolean, default: false },
     isPayment: { type: Boolean, default: false },
     isHideScore: { type: Boolean, default: true },
+    optionEmail: { type: String },
   },
   {
     timestamps: true,
