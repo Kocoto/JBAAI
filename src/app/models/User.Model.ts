@@ -30,6 +30,8 @@ export interface IUser {
   emailNotificationsEnabled: boolean;
   isPayment: boolean;
   isHideScore: boolean;
+  type?: "normal" | "standard" | "premium";
+  franchiseName?: string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -65,6 +67,12 @@ const UserSchema = new Schema<IUser>(
     emailNotificationsEnabled: { type: Boolean, default: false },
     isPayment: { type: Boolean, default: false },
     isHideScore: { type: Boolean, default: true },
+    type: {
+      type: String,
+      enum: ["normal", "standard", "premium"],
+      default: "normal",
+    },
+    franchiseName: { type: String },
   },
   {
     timestamps: true,
