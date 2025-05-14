@@ -27,7 +27,8 @@ class AuthService {
     phone: string,
     role?: string,
     address?: string,
-    invitationCode?: string
+    invitationCode?: string,
+    optionEmail?: string
   ) {
     try {
       const currentTime = new Date();
@@ -62,13 +63,22 @@ class AuthService {
         throw new CustomError(400, "Số điện thoại đã tồn tại");
       }
       const hashedPassword = await hashPassword(password);
-      const user = await UserModel.create({
+      // Create base user data object
+      const userData = {
         username: username,
         email: email,
         phone: phone,
         role: role || "user",
         password: hashedPassword,
-      });
+      };
+
+      // Add optional email if provided
+      if (optionEmail) {
+        (userData as any).optionEmail = optionEmail;
+      }
+
+      // Create new user with prepared data
+      const user = await UserModel.create(userData);
       if (!user) {
         throw new CustomError(500, "lỗi xảy ra khi tạo người dùng");
       }
