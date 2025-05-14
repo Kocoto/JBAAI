@@ -69,7 +69,21 @@ class UserService {
       return user;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new CustomError(500, error as string);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new CustomError(500, errorMessage);
+    }
+  }
+
+  async updateManyUser(data: any, filter?: any) {
+    try {
+      const users = await UserModel.updateMany(filter ?? {}, data);
+      return users;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      throw new CustomError(500, errorMessage);
     }
   }
 }
