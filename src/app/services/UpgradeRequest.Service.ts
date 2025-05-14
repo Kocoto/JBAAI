@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import UpgradeRequestModel from "../models/UpgradeRequest.Model";
 import CustomError from "../utils/Error.Util";
 import InvitationCodeService from "./InvitationCode.Service";
+import UserService from "./User.Service";
 
 class UpgradeRequestService {
   async createUpgradeRequest(userId: string, data: any) {
@@ -157,6 +158,8 @@ class UpgradeRequestService {
       const userToUpdate = upgradeRequest.userId as any;
       userToUpdate.role = upgradeRequest.role;
       userToUpdate.isSubscription = true;
+      userToUpdate.franchiseName = upgradeRequest.franchiseName;
+      userToUpdate.type = "premium";
       await Promise.all([
         userToUpdate.save(),
         upgradeRequest.save(),

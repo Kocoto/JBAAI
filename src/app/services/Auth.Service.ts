@@ -85,6 +85,7 @@ class AuthService {
             }),
             (user.isSubscription = true),
             (user.discount = 30),
+            (user.type = "standard"),
           ]);
           await user.save();
         }

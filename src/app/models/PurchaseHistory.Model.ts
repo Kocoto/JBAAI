@@ -7,7 +7,9 @@ export interface IPurchaseHistoryInput {
   purchaseDate: Date;
   transactionId: string;
   paymentMethod: string;
+  type: "premium" | "standard";
   status: "success" | "failed" | "pending" | "refunded";
+  discount: number;
 }
 export interface IPurchaseHistory {
   userId: Schema.Types.ObjectId;
@@ -17,6 +19,8 @@ export interface IPurchaseHistory {
   transactionId: string;
   paymentMethod: string;
   status: string;
+  type: "premium" | "standard";
+  discount: number;
 }
 
 const purchaseHistorySchema = new Schema<IPurchaseHistory>({
@@ -51,7 +55,17 @@ const purchaseHistorySchema = new Schema<IPurchaseHistory>({
   },
   status: {
     type: String,
+    enum: ["success", "failed", "pending", "refunded"],
     required: true,
+  },
+  type: {
+    type: String,
+    enum: ["premium", "standard"],
+    required: true,
+  },
+  discount: {
+    type: Number,
+    default: 0,
   },
 });
 

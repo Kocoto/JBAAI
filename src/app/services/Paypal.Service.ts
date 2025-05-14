@@ -96,6 +96,9 @@ class PaypalService {
       purchase.transactionId = order.result.id;
       purchase.status = "pending";
       purchase.price = Number(packagePrice);
+      purchase.type = packageData.type;
+      purchase.discount = discountAmount; // Lưu số tiền giảm giá vào purchase
+
       const newPurchase = await PurchaseHistoryService.createPurchaseHistory(
         purchase
       );
@@ -244,20 +247,28 @@ class PaypalService {
         ]);
 
         if (!user || !packageData) {
-            throw new CustomError(404, "Không tìm thấy thông tin người dùng hoặc gói dịch vụ để xác thực giá.");
+          throw new CustomError(
+            404,
+            "Không tìm thấy thông tin người dùng hoặc gói dịch vụ để xác thực giá."
+          );
         }
 
         const originalPackagePrice = packageData.price; // Giá gốc từ DB
         const discountPercentage = user.discount || 0; // Lấy % giảm giá từ user
-        const discountAmount = (originalPackagePrice * discountPercentage) / 100;
-        const expectedFinalPrice = Math.max(0, originalPackagePrice - discountAmount); // Giá cuối cùng mong đợi
+        const discountAmount =
+          (originalPackagePrice * discountPercentage) / 100;
+        const expectedFinalPrice = Math.max(
+          0,
+          originalPackagePrice - discountAmount
+        ); // Giá cuối cùng mong đợi
         const expectedCurrency = "USD"; // Hoặc lấy từ cấu hình/DB
         // --- Kết thúc thay đổi ---
 
-
         // Kiểm tra số tiền và loại tiền tệ có khớp không (sử dụng expectedFinalPrice)
         // So sánh với sai số nhỏ để tránh lỗi làm tròn dấu phẩy động
-        const priceDifference = Math.abs(Number(capturedAmount) - expectedFinalPrice);
+        const priceDifference = Math.abs(
+          Number(capturedAmount) - expectedFinalPrice
+        );
         const tolerance = 0.01; // Chấp nhận sai số 0.01 USD
 
         if (
@@ -265,7 +276,9 @@ class PaypalService {
           capturedCurrency !== expectedCurrency
         ) {
           console.error(
-            `[PayPal Capture Order] !!SAI LỆCH SỐ TIỀN!! Đơn hàng ${orderId}, Purchase ${purchaseHistoryId}. Mong đợi: ${expectedFinalPrice.toFixed(2)} ${expectedCurrency}. Thực tế: ${capturedAmount} ${capturedCurrency}`
+            `[PayPal Capture Order] !!SAI LỆCH SỐ TIỀN!! Đơn hàng ${orderId}, Purchase ${purchaseHistoryId}. Mong đợi: ${expectedFinalPrice.toFixed(
+              2
+            )} ${expectedCurrency}. Thực tế: ${capturedAmount} ${capturedCurrency}`
           );
           // !! XỬ LÝ NGHIÊM TRỌNG: Cập nhật DB với trạng thái lỗi và có thể cần hoàn tiền !!
           await PurchaseHistoryService.updatePurchaseHistory(
@@ -293,12 +306,16 @@ class PaypalService {
           );
 
         // Tạo subscription và cập nhật user
-        const [subscription, updatedUser] = await Promise.all([ // Đổi tên biến user thành updatedUser để tránh trùng lặp
+        const [subscription, updatedUser] = await Promise.all([
+          // Đổi tên biến user thành updatedUser để tránh trùng lặp
           SubscriptionService.createSubscription(
             String(userId),
             String(purchaseRecord.packageId)
           ),
-          UserService.updateUser(String(userId), { isSubscription: true }),
+          UserService.updateUser(String(userId), {
+            isSubscription: true,
+            type: purchaseRecord.type,
+          }),
         ]);
 
         return {
