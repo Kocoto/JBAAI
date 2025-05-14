@@ -15,19 +15,28 @@ class AuthController {
         role,
         address,
         invitationCode,
+        optionEmail,
       } = req.body;
+
+      // Validate required fields
       if (!email || !password || !username || !phone) {
         throw new CustomError(
           400,
           "Email, mật khẩu, tên người dùng và số điện thoại là bắt buộc"
         );
       }
-      if (role && role !== "user" && role !== "admin" && !address) {
-        throw new CustomError(
-          400,
-          "Địa chỉ là bắt buộc cho các vai trò khác user"
-        );
+
+      // Validate address for non-standard roles
+      if (role && role !== "user" && role !== "admin") {
+        if (!address) {
+          throw new CustomError(
+            400,
+            "Địa chỉ là bắt buộc cho các vai trò khác user"
+          );
+        }
       }
+
+      // Register user and handle subscription
       const user = await AuthService.register(
         email,
         password,
@@ -35,14 +44,17 @@ class AuthController {
         phone,
         role,
         address,
-        invitationCode
+        invitationCode,
+        optionEmail
       );
-      res.status(201).json({
+
+      // Return success response
+      return res.status(201).json({
         success: true,
         data: user,
       });
     } catch (error) {
-      next(error);
+      return next(error);
     }
   }
 
