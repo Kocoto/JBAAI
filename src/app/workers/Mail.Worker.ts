@@ -1,7 +1,7 @@
 // src/app/workers/email.worker.ts
 import { Worker, Job } from "bullmq";
 import { EMAIL_QUEUE_NAME } from "../queues/Mail.Queue"; // 1. Import tên queue
-import { redisOptions } from "../config/redis.config"; // 2. Import cấu hình Redis
+import { redisConnection } from "../config/redis.config"; // 2. Import cấu hình Redis
 import { IHealthDataEmailJobPayload } from "../services/HealthData.Service"; // 3. Import interface payload (quan trọng!)
 import { renderEmailTemplate, sendMail } from "../utils/Mail.Util"; // 4. Import các hàm tiện ích cần thiết
 import * as path from "path"; // 5. Import path để xử lý đường dẫn attachment
@@ -86,7 +86,7 @@ export const initializeEmailWorker = (): Worker => {
     EMAIL_QUEUE_NAME,
     processEmailJob, // Sử dụng hàm xử lý job đã định nghĩa ở trên
     {
-      connection: redisOptions,
+      connection: redisConnection,
       concurrency: 5, // Điều chỉnh concurrency nếu cần
     }
   );
