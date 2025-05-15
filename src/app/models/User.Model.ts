@@ -65,7 +65,7 @@ const UserSchema = new Schema<IUser>(
     discount: { type: Number, default: 0 },
     isSubscription: { type: Boolean, default: false },
     emailNotificationsEnabled: { type: Boolean, default: false },
-    isPayment: { type: Boolean, default: false },
+    isPayment: { type: Boolean, default: true },
     isHideScore: { type: Boolean, default: true },
     type: {
       type: String,
