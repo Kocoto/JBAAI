@@ -17,6 +17,15 @@ import { transformIncomingData } from "../utils/FormatData.Util";
 import { renderEmailTemplate, sendMail } from "../utils/Mail.Util";
 import * as path from "path";
 import { Types } from "mongoose";
+import { emailQueue } from "../queues/Mail.Queue";
+
+export interface IHealthDataEmailJobPayload {
+  emailTo: string;
+  targetUsername: string;
+  healthReportData: any;
+  language: string;
+  chart?: string;
+}
 
 class HealthDataService {
   async createHealthData(userId: string, rawData: any) {
@@ -84,44 +93,58 @@ class HealthDataService {
     email: string,
     username: string,
     rawData: any,
-    language: string
-  ) {
+    language: string,
+    optionEmail?: string
+  ): Promise<void> {
     try {
-      const data = transformIncomingData(rawData);
-      if (!data) {
+      const transformedData = transformIncomingData(rawData);
+      if (!transformedData) {
         throw new CustomError(400, "Không thể lấy health data");
       }
 
-      const htmlContent = await renderEmailTemplate(
-        language,
-        username,
-        data,
-        "Đây là chart"
-      );
-      const mailOptions = {
-        from: "JBA AI",
-        to: email,
-        subject: "Health Data",
-        html: htmlContent,
-        attachments: [
-          {
-            filename: "logo-JBAAI-2.png",
-            path: path.join(
-              __dirname,
-              "..",
-              "..",
-              "..",
-              "templates",
-              "logo",
-              "logo-JBAAI-2.png"
-            ),
-            cid: "logo-JBAAI-2.png", //same cid value as in the html img src
-          },
-        ],
+      const jobPayload: IHealthDataEmailJobPayload = {
+        emailTo: email,
+        targetUsername: username,
+        healthReportData: transformedData,
+        language: language,
       };
-      const mail = await sendMail(mailOptions);
-      return mail;
-    } catch (error) {}
+
+      await emailQueue.add("sendHealthReportEmail", jobPayload);
+      console.log(
+        `[Service] Job 'sendHealthReportEmail' cho ${email} đã được thêm vào hàng đợi.`
+      );
+      if (optionEmail) {
+        const jobPayload: IHealthDataEmailJobPayload = {
+          emailTo: optionEmail,
+          targetUsername: username,
+          healthReportData: transformedData,
+          language: language,
+        };
+
+        await emailQueue.add("sendHealthReportEmail", jobPayload);
+        console.log(
+          `[Service] Job'sendHealthReportEmail' cho ${optionEmail} đã được thêm vào hàng đợi.`
+        );
+      }
+    } catch (error) {
+      // << Xử lý lỗi trong catch block >>
+      console.error(
+        `[Service] Lỗi khi chuẩn bị hoặc thêm job gửi health data email cho ${email} vào queue:`,
+        error
+      );
+
+      // Ném lỗi ra ngoài để controller có thể bắt và xử lý
+      if (error instanceof CustomError) {
+        // Nếu là lỗi đã biết (như lỗi transform), ném lại nó
+        throw error;
+      } else {
+        // Nếu là lỗi khác (ví dụ: lỗi kết nối Redis khi .add()), ném lỗi chung
+        throw new CustomError(
+          500,
+          `Không thể xếp hàng tác vụ gửi email health data. Lỗi hệ thống.`
+        );
+      }
+    }
   }
 
   async getHealthDataByDateRange(

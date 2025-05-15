@@ -3,8 +3,12 @@ import * as mongoose from "mongoose";
 export async function connect() {
   const mongoUri = process.env.MONGODB_URI;
   if (!mongoUri) {
-    console.error("Lỗi: Biến môi trường MONGODB_URI chưa được định nghĩa.");
-    throw new Error("MONGODB_URI is not defined in environment variables.");
+    console.error(
+      "[Error] MONGODB_URI is not defined in environment variables."
+    );
+    throw new Error(
+      "[Error] MONGODB_URI is not defined in environment variables."
+    );
   }
   try {
     await mongoose.connect(mongoUri, {
@@ -18,10 +22,10 @@ export async function connect() {
     // connection.on("disconnected", () => {
     //   console.log("Mất kết nối đến MongoDB.");
     // });
-    console.log(`Truy cập DB thành công !!!`);
+    console.log(`[DB] Connected to MongoDB`);
     return connection;
   } catch (error) {
-    console.error("Truy cập DB thất bại ban đầu!!!!", error);
+    console.error("[Error] Failed to connect to MongoDB:", error);
     // Ném lỗi ra ngoài để dừng tiến trình nếu cần
     throw error;
   }

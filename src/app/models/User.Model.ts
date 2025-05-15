@@ -14,6 +14,7 @@ export interface IUserOutput {
   updatedAt: Date;
   __v: number;
   emailNotificationsEnabled: boolean;
+  optionEmail?: string;
 }
 
 export interface IUser {
@@ -32,6 +33,7 @@ export interface IUser {
   isHideScore: boolean;
   type?: "normal" | "standard" | "premium";
   franchiseName?: string;
+  optionEmail?: string;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -73,6 +75,7 @@ const UserSchema = new Schema<IUser>(
       default: "normal",
     },
     franchiseName: { type: String },
+    optionEmail: { type: String },
   },
   {
     timestamps: true,

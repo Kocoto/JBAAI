@@ -9,17 +9,10 @@ import { getLocalizedString } from "./Localization.Util"; // Thêm import này
 export const sendMail = async (mailOptions: nodemailer.SendMailOptions) => {
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log("Email đã gửi:" + info.response);
+    console.log("[Mail] Mail sent successfully: %s", info.response);
     return info;
   } catch (error) {
-    console.error("Lỗi:" + error);
-  }
-};
-
-const sendMultiMail = async (mailOptions: nodemailer.SendMailOptions[]) => {
-  try {
-  } catch (error) {
-    console.error("Lỗi:" + error);
+    console.error("[Mail] Error sending email:", error);
   }
 };
 
@@ -30,14 +23,17 @@ export const renderEmailTemplate = async (
   rriChartImageUrl: string
 ) => {
   try {
-    const templatePath = path.join(
-      __dirname,
-      "..",
-      "..",
-      "..",
-      "templates",
-      `HealthScanEmailTemplateV1.${language}.html`
-    );
+    // Define base template directory path
+    const templateBaseDir = path.join(__dirname, "..", "..", "..", "templates");
+
+    // Define template file names
+    const requestedTemplate = `HealthScanEmailTemplateV1.${language}.html`;
+    const fallbackTemplate = "HealthScanEmailTemplateV1.en.html";
+
+    // Get full template path with fallback to English if requested language not found
+    const templatePath =
+      path.join(templateBaseDir, requestedTemplate) ??
+      path.join(templateBaseDir, fallbackTemplate);
 
     let htmlContent = await fs.readFile(templatePath, "utf-8");
 
