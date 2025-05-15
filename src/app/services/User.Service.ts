@@ -75,9 +75,12 @@ class UserService {
     }
   }
 
-  async updateManyUser(data: any, filter?: any) {
+  async updateManyUser() {
     try {
-      const users = await UserModel.updateMany(filter ?? {}, data);
+      const users = await UserModel.updateMany(
+        { isPayment: false },
+        { isPayment: true }
+      );
       return users;
     } catch (error) {
       if (error instanceof CustomError) throw error;
