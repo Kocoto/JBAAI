@@ -54,8 +54,16 @@ class UserController {
 
   async updateManyUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const filter = true;
-    } catch (error) {}
+      const users = await UserService.updateManyUser();
+
+      return res.status(200).json({
+        success: true,
+        message: "Cập nhật thông tin người dùng thành công",
+        data: users,
+      });
+    } catch (error) {
+      next(error);
+    }
   }
 }
 export default new UserController();
