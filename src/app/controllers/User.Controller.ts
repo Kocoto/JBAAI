@@ -51,5 +51,11 @@ class UserController {
       next(error);
     }
   }
+
+  async updateManyUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const filter = true;
+    } catch (error) {}
+  }
 }
 export default new UserController();
