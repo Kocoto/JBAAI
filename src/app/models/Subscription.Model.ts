@@ -1,6 +1,6 @@
 import mongoose, { Schema, model } from "mongoose";
 
-interface ISubscription {
+export interface ISubscription {
   userId: Schema.Types.ObjectId;
   packageId: Schema.Types.ObjectId;
   price: number;

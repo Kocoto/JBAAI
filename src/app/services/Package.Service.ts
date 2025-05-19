@@ -4,6 +4,41 @@ import CustomError from "../utils/Error.Util";
 class PackageService {
   async createPackage(packageData: any) {
     try {
+      // Validate required fields
+      if (
+        !packageData.userId ||
+        !packageData.name ||
+        !packageData.description ||
+        !packageData.price ||
+        !packageData.duration ||
+        !packageData.type ||
+        !packageData.location ||
+        !packageData.currency
+      ) {
+        throw new CustomError(400, "Missing required package fields");
+      }
+
+      // Validate price and duration are positive numbers
+      if (packageData.price < 0 || packageData.duration < 0) {
+        throw new CustomError(
+          400,
+          "Price and duration must be positive numbers"
+        );
+      }
+
+      // Validate type is either standard or premium
+      if (!["standard", "premium"].includes(packageData.type)) {
+        throw new CustomError(400, "Invalid package type");
+      }
+
+      // Validate location is either VN or other
+      if (
+        packageData.location &&
+        !["VN", "other"].includes(packageData.location)
+      ) {
+        throw new CustomError(400, "Invalid location");
+      }
+
       const newPackage = await PackageModel.create(packageData);
       if (!newPackage) {
         throw new CustomError(400, "Package creation failed");
@@ -17,9 +52,12 @@ class PackageService {
     }
   }
 
-  async getAllPackages() {
+  async getAllPackages(isoCode: string) {
     try {
-      const packages = await PackageModel.find({ status: true });
+      const packages = await PackageModel.find({
+        status: true,
+        location: isoCode,
+      });
       if (!packages) {
         throw new CustomError(404, "Packages not found");
       }
@@ -32,9 +70,13 @@ class PackageService {
     }
   }
 
-  async getPackageByType(type: string) {
+  async getPackageByType(type: string, isoCode: string) {
     try {
-      const packages = await PackageModel.find({ type, status: true });
+      const packages = await PackageModel.find({
+        type,
+        status: true,
+        location: isoCode,
+      });
       if (!packages) {
         throw new CustomError(404, "Packages not found");
       }

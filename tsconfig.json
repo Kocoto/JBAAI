@@ -5,6 +5,7 @@
     "strict": true,
     "outDir": "./dist",
     "esModuleInterop": true,
+    "declaration": true,
     "rootDir": "./src"
   },
   "exclude": ["node_modules"],

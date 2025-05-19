@@ -69,12 +69,21 @@ function configurePaymentRedirects(app: Application) {
   app.get("/api/payment-failed-redirect", handlePaymentRedirect("failed"));
 }
 
+// async function initializeGepIP(app: Application) {
+//   app.get("/api/ip", (req, res) => {
+//     const ip = req.ip;
+//     console.log(ip);
+//     res.send("địa chỉ ip của bạn là: " + ip);
+//   });
+// }
+
 async function startApplication() {
   console.log("[Application] Starting...");
   try {
     await connect();
     const app: Application = express();
 
+    app.set("trust proxy", true);
     // Initialize Redis
     redisConnection;
 
@@ -116,7 +125,7 @@ async function startApplication() {
 
     // Start server
     app.listen(PORT, () => {
-      console.log(`[Server] Server is running on port ${PORT}`);
+      console.log(`[Server] Server is running at:  http://localhost:${PORT}`);
     });
   } catch (error) {
     console.error("[Application] Error starting application:", error);

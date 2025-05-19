@@ -5,9 +5,8 @@ const port = parseInt(process.env.REDIS_PORT || "6379");
 
 const isProduction = process.env.NODE_ENV === "production";
 const redisUrl = isProduction
-  ? process.env.REDIS_URL_PROD || "redis://red-d0hgvf3uibrs739e1gdg:6379"
-  : process.env.REDIS_URL_DEV ||
-    "rediss://red-d0hgv13uibrs739o1gdg:7kEBp1JIKFvVUJI3h8I1ZDIIJ3LmOeVJ@virginia-keyvalue.render.com:6379";
+  ? process.env.REDIS_URL_PROD
+  : process.env.REDIS_URL_DEV;
 
 let redisConnection: Redis;
 const redisOptions: RedisOptions = {
@@ -20,6 +19,9 @@ const redisOptions: RedisOptions = {
 };
 
 try {
+  if (!redisUrl) {
+    throw new Error("REDIS_URL is not defined");
+  }
   redisConnection = new IORedis(redisUrl, redisOptions);
 } catch (error) {
   console.error(
