@@ -7,7 +7,7 @@ export interface IUserOutput {
   phone: string;
   role: string;
   status: string;
-  discount: number;
+  discount: boolean;
   verify: boolean;
   isSubscription: boolean;
   createdAt: Date;
@@ -26,7 +26,7 @@ export interface IUser {
   status: "active" | "inactive";
   verify: boolean;
   language: "in" | "cn" | "en" | "vn";
-  discount: number;
+  discount: boolean;
   isSubscription: boolean;
   emailNotificationsEnabled: boolean;
   isPayment: boolean;
@@ -64,7 +64,7 @@ const UserSchema = new Schema<IUser>(
       default: "en",
       required: true,
     },
-    discount: { type: Number, default: 0 },
+    discount: { type: Boolean, default: false },
     isSubscription: { type: Boolean, default: false },
     emailNotificationsEnabled: { type: Boolean, default: false },
     isPayment: { type: Boolean, default: true },

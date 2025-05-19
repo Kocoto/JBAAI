@@ -94,7 +94,7 @@ class AuthService {
               packageId: process.env.DEMO_PACKAGE_ID,
             }),
             (user.isSubscription = true),
-            (user.discount = 30),
+            (user.discount = true),
             (user.type = "standard"),
           ]);
           await user.save();

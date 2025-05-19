@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 
-interface IUpgradeRequest {
+export interface IUpgradeRequest {
   userId: mongoose.Types.ObjectId;
   sellerId: mongoose.Types.ObjectId;
   phone: string;
