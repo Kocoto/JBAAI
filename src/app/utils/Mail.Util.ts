@@ -251,6 +251,40 @@ export const renderEmailTemplate = async (
       `"${rriChartImageUrl}"`
     );
 
+    //lowHemoglobinRisk
+    htmlContent = htmlContent.replace(
+      /\s*\[Low Hemoglobin Risk VALUE\]/g,
+      `${
+        healthData.lowHemoglobinRisk?.value === 1
+          ? getLocalizedString(language, "low")
+          : healthData.lowHemoglobinRisk?.value === 2
+          ? getLocalizedString(language, "normal")
+          : healthData.lowHemoglobinRisk?.value === 3
+          ? getLocalizedString(language, "high")
+          : getLocalizedString(language, "na")
+      }`
+    );
+
+    //Heart Age
+    htmlContent = htmlContent.replace(
+      /\s*\[Heart Age VALUE\]/g,
+      `${healthData.heartAge?.value ?? getLocalizedString(language, "na")}`
+    );
+
+    //High Total Cholesterol Risk
+    htmlContent = htmlContent.replace(
+      /\s*\[Hight Total Cholesterol Risk VALUE\]/g,
+      `${
+        healthData.highTotalCholesterolRisk?.value === 1
+          ? getLocalizedString(language, "low")
+          : healthData.highTotalCholesterolRisk?.value === 2
+          ? getLocalizedString(language, "normal")
+          : healthData.highTotalCholesterolRisk?.value === 3
+          ? getLocalizedString(language, "high")
+          : getLocalizedString(language, "na")
+      }`
+    );
+
     return htmlContent;
   } catch (error) {
     console.error(
