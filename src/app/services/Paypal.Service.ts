@@ -16,9 +16,12 @@ class PaypalService {
         PackageService.getPackageById(packageId),
       ]);
       const originalPackagePrice = packageData.price; // Giá gốc
-      const discountPercentage = user.discount || 0; // Lấy % giảm giá từ user, mặc định là 0
-      // Tính giá sau khi áp dụng giảm giá
-      const discountAmount = (originalPackagePrice * discountPercentage) / 100;
+
+      // Calculate discount amount based on user eligibility and package discount
+      let discountAmount = 0;
+      if (user.discount === true && packageData.discount != null) {
+        discountAmount = packageData.discount;
+      }
       const finalPrice = Math.max(0, originalPackagePrice - discountAmount);
       const request = new paypal.orders.OrdersCreateRequest();
       const packagePrice = String(packageData.price);
@@ -254,9 +257,10 @@ class PaypalService {
         }
 
         const originalPackagePrice = packageData.price; // Giá gốc từ DB
-        const discountPercentage = user.discount || 0; // Lấy % giảm giá từ user
-        const discountAmount =
-          (originalPackagePrice * discountPercentage) / 100;
+        let discountAmount = 0;
+        if (user.discount === true && packageData.discount != null) {
+          discountAmount = packageData.discount;
+        } // Lấy số tiền giảm giá từ purchaseRecord
         const expectedFinalPrice = Math.max(
           0,
           originalPackagePrice - discountAmount
