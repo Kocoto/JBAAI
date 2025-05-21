@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>健康扫描结果</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 20px;
+      background-color: #f7f9fb;
+      font-family: Arial, sans-serif;
+      color: #333;
+    "
+  >
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td align="center">
+          <table
+            width="600"
+            cellpadding="0"
+            cellspacing="0"
+            border="0"
+            style="
+              background: #ffffff;
+              padding: 30px 20px;
+              max-width: 800px;
+              width: 100%;
+              border-radius: 8px;
+              box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            "
+          >
+            <tr>
+              <td align="center" style="padding-bottom: 20px">
+                <img
+                  src="cid:logo-JBAAI-2.png"
+                  alt="JBAAI 徽标"
+                  width="80"
+                  style="display: block; margin-bottom: 10px"
+                />
+                <h1 style="margin: 0; color: #0d6efd; font-size: 24px">
+                  您的健康扫描结果
+                </h1>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="font-size: 16px; font-weight: bold; padding-bottom: 10px"
+              >
+                你好 [Tên người dùng],
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="font-size: 14px; line-height: 1.6; padding-bottom: 20px"
+              >
+                感谢您使用 JBAAI 应用程序。<br />
+                我们很高兴陪伴您踏上改善健康和福祉的旅程。<br />
+                请在下方查找您最新的健康扫描结果。
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  border-top: 2px solid #dee2e6;
+                  padding-top: 20px;
+                  font-size: 16px;
+                  color: #0d6efd;
+                  font-weight: bold;
+                  padding-bottom: 5px;
+                "
+              >
+                健康概览
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table
+                  width="100%"
+                  cellpadding="8"
+                  cellspacing="0"
+                  border="1"
+                  style="
+                    border-collapse: collapse;
+                    font-size: 13px;
+                    border-color: #ddd;
+                  "
+                >
+                  <tr>
+                    <th
+                      align="left"
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      指标
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      值
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      期望值 (参考)
+                    </th>
+                    <th
+                      style="
+                        width: 55%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      解释
+                    </th>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      健康指数
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Wellness Index VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      大于 6
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      综合评分 (1-10)，反映总体健康和福祉，与心血管风险相关。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      健康水平
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Wellness Level VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      高
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      综合评分 (1-10)，反映总体健康和福祉，与心血管风险相关。
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  border-top: 2px solid #dee2e6;
+                  padding-top: 20px;
+                  font-size: 16px;
+                  color: #0d6efd;
+                  font-weight: bold;
+                  padding-bottom: 5px;
+                "
+              >
+                基本生命体征
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table
+                  width="100%"
+                  cellpadding="8"
+                  cellspacing="0"
+                  border="1"
+                  style="
+                    border-collapse: collapse;
+                    font-size: 13px;
+                    border-color: #ddd;
+                  "
+                >
+                  <tr>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      指标
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      值
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      期望值 (参考)
+                    </th>
+                    <th
+                      style="
+                        width: 55%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      解释
+                    </th>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      血压 (mmHg)
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Blood Pressure VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      &lt;129/90
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      血压 – 指血液对动脉壁的压力。它用两个数字记录：收缩压（第一个数字）测量心脏跳动时的压力，而舒张压（第二个数字）反映心脏在两次跳动之间休息时的压力。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      心率
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Pulse Rate VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      60–100 次/分钟
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      健康成年人的正常静息心率在 60-100 次/分钟之间。心率是您每分钟心跳的次数。这个数字在一天中会波动。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      血氧饱和度 (%)
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Oxygen Saturation VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      &gt;95%
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      血氧饱和度 (SpO2) 是衡量红细胞从肺部携带到身体其他部位的氧气量的指标。健康肺部的正常 SpO2 范围在 95%-100% 之间。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      呼吸频率
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Respiration Rate VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      12–20 次/分钟
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      成年人静息时的正常呼吸频率在每分钟 12-20 次之间。呼吸频率是一个人每分钟呼吸的次数。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      PRQ
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [PRQ VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      ~5
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      PRQ 反映了心肺协同工作的效率。
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  border-top: 2px solid #dee2e6;
+                  padding-top: 20px;
+                  font-size: 16px;
+                  color: #0d6efd;
+                  font-weight: bold;
+                  padding-bottom: 5px;
+                "
+              >
+                血液指标
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table
+                  width="100%"
+                  cellpadding="8"
+                  cellspacing="0"
+                  border="1"
+                  style="
+                    border-collapse: collapse;
+                    font-size: 13px;
+                    border-color: #ddd;
+                  "
+                >
+                  <tr>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      指标
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      值
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      期望值 (参考)
+                    </th>
+                    <th
+                      style="
+                        width: 55%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      解释
+                    </th>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      血红蛋白 (g/dL)
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Hemoglobin VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      男性：14-18，女性：12-16
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      血红蛋白将您吸入的氧气输送到全身的肌肉和组织。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      糖化血红蛋白 (%)
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Hemoglobin A1c VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      &lt;5.7%
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      糖化血红蛋白显示您过去 2-3 个月的平均血糖水平。它有助于检测糖尿病前期和糖尿病。
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  border-top: 2px solid #dee2e6;
+                  padding-top: 20px;
+                  font-size: 16px;
+                  color: #0d6efd;
+                  font-weight: bold;
+                  padding-bottom: 5px;
+                "
+              >
+                风险评估
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table
+                  width="100%"
+                  cellpadding="8"
+                  cellspacing="0"
+                  border="1"
+                  style="
+                    border-collapse: collapse;
+                    font-size: 13px;
+                    border-color: #ddd;
+                  "
+                >
+                  <tr>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      指标
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      值
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      期望值 (参考)
+                    </th>
+                    <th
+                      style="
+                        width: 55%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      解释
+                    </th>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      高血压风险
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [High Blood Pressure Risk VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      低
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      高血压风险 – 此结果表明您的血压是否超过预定义的收缩压和舒张压阈值。风险等级分为低、中、高。结果越高，意味着您的血压高于建议限值，可能表明高血压风险增加。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      高糖化血红蛋白风险
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [High HbA1c Risk VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      低
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      高糖化血红蛋白风险 – 此结果显示您的糖化血红蛋白水平是否超过预定义阈值。可能的风险等级为低、中或高。结果越高，表明您的 HbA1c 水平高于建议限值，这可能意味着血糖控制不佳的风险增加。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      低血红蛋白风险
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      [Low Hemoglobin Risk VALUE]
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      低
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 55%;
+    "
+                    >
+                      低血红蛋白风险表明您的血红蛋白水平是否低于健康阈值，这可能预示着贫血。血红蛋白是红细胞中的一种蛋白质，负责在全身运输氧气。
+                      <ul>
+                        <li>可能的结果：低或高</li>
+                        <li>高结果意味着血红蛋白低于正常水平</li>
+                        <li>低水平会减少氧气输送，导致疲劳、头晕或气短</li>
+                        <li>监测有助于及早发现贫血迹象，并支持更好的精力和整体健康</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      心脏年龄
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      [Heart Age VALUE]
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      等于或小于实际年龄
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 55%;
+    "
+                    >
+                      弗雷明汉心脏年龄通过将您的心血管风险因素与同性别理想健康个体的风险因素进行比较，来估算您心脏的生理年龄。它有助于以易于理解的方式传达心脏健康状况。
+
+                      <ul>
+                        <li>基于弗雷明汉心脏研究</li>
+                        <li>将您的风险与健康状况最佳（不吸烟、血压正常、胆固醇健康）的人进行比较</li>
+                        <li>心脏年龄反映了与您风险水平相同的健康人的年龄</li>
+                      </ul>
+
+                      解读：
+                      <ul>
+                        <li>心脏年龄 = 实际年龄：心血管健康状况一般</li>
+                        <li>心脏年龄 &lt; 实际年龄：心血管健康状况优于平均水平</li>
+                        <li>心脏年龄 &gt; 实际年龄：心血管风险较高；考虑改变生活方式</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      ASCVD 风险 (%)
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      [ASCVD Risk VALUE]
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      低<br>/中<br>/高
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 55%;
+    "
+                    >
+                      ASCVD（动脉粥样硬化性心血管疾病）风险估算 10 年内发生动脉粥样硬化性心血管事件的可能性。ASCVD 评分是使用我们 SDK 的生命体征数据结合用户人口统计信息计算得出的，包括：
+                      <ul>
+                        <li>年龄 – 在弗雷明汉支持的范围内</li>
+                        <li>性别 – 男性/女性</li>
+                        <li>BMI（身高和体重）</li>
+                        <li>吸烟者 – 是/否</li>
+                      </ul>
+                      该评分与用于预测 10 年风险的弗雷明汉 ASCVD 评分密切相关。
+                      ASCVD 风险评分将属于以下类别之一：
+                      <ul>
+                        <li>低：低于 1%</li>
+                        <li>中：介于 1%–30% 之间</li>
+                        <li>高：高于 30%</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      总胆固醇高
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      [High Total Cholesterol Risk VALUE]
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 15%;
+      text-align: center;
+    "
+                    >
+                      低
+                    </td>
+                    <td
+                            style="
+      line-height: 1.5;
+      background-color: #f7f7f7;
+      width: 55%;
+    "
+                    >
+                      高总胆固醇风险 – 表明您的总胆固醇水平是否高于建议阈值。较高的水平可能会增加动脉狭窄（动脉粥样硬化）和心血管疾病的风险。由于高胆固醇通常没有症状，定期监测有助于指导改变生活方式以保护心脏健康。
+                    </td>
+                  </tr>
+
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  border-top: 2px solid #dee2e6;
+                  padding-top: 20px;
+                  font-size: 16px;
+                  color: #0d6efd;
+                  font-weight: bold;
+                  padding-bottom: 5px;
+                "
+              >
+                HRV 与自主神经系统
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table
+                  width="100%"
+                  cellpadding="8"
+                  cellspacing="0"
+                  border="1"
+                  style="
+                    border-collapse: collapse;
+                    font-size: 13px;
+                    border-color: #ddd;
+                  "
+                >
+                  <tr>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      指标
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      值
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      期望值 (参考)
+                    </th>
+                    <th
+                      style="
+                        width: 55%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      解释
+                    </th>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      HRV SDNN (ms)
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [SDNN VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      &#8805;50 ms
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      SDNN 是心率变异性 (HRV) 的一个计算参数，用于量化连续心跳之间时间间隔的变异性。HRV SDNN 用于各种与压力相关的生命体征。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      平均 RRi (ms)
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Mean RRi VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      静息时较高
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      平均 RRi 是 RR 间期 (RRi)（连续心跳之间的间隔）的平均时间。较长的平均 RRi 表示心率较低，副交感神经心脏活动较高。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      LF/HF 比率
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [LF/HF VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      0.27–0.38
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      LF/HF 比率 – 心率变异性 (HRV) 中低频 (LF) 与高频 (HF) 分量的比率，反映自主神经系统的平衡。较高的比率表明交感神经（与压力相关）活动增加，而较低的比率表明副交感神经（与休息相关）占主导地位。
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  border-top: 2px solid #dee2e6;
+                  padding-top: 20px;
+                  font-size: 16px;
+                  color: #0d6efd;
+                  font-weight: bold;
+                  padding-bottom: 5px;
+                "
+              >
+                压力评估
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <table
+                  width="100%"
+                  cellpadding="8"
+                  cellspacing="0"
+                  border="1"
+                  style="
+                    border-collapse: collapse;
+                    font-size: 13px;
+                    border-color: #ddd;
+                  "
+                >
+                  <tr>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      指标
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      值
+                    </th>
+                    <th
+                      style="
+                        width: 15%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      期望值 (参考)
+                    </th>
+                    <th
+                      style="
+                        width: 55%;
+                        text-align: center;
+                        color: #0016bf;
+                        background: linear-gradient(
+                          260deg,
+                          #e9f4f9,
+                          #f3f4ff,
+                          #eff6fd
+                        );
+                      "
+                    >
+                      解释
+                    </th>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      压力水平
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Stress Level VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      低/正常
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      压力水平 – 根据心率变异性 (HRV) 指示您的身体承受的压力程度。轻度压力可以帮助您保持警觉和专注，但长期压力可能会影响您的健康。此指数仅供参考，应定期监测。
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      压力指数
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      [Stress Index VALUE]
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 15%;
+                        text-align: center;
+                      "
+                    >
+                      越低越好
+                    </td>
+                    <td
+                      style="
+                        line-height: 1.5;
+                        background-color: #f7f7f7;
+                        width: 55%;
+                      "
+                    >
+                      压力指数 – 源自心率变异性 (HRV) 的数值，反映您身体当前的压力状态。根据巴耶夫斯基的方法，它指示您的自主神经系统的活跃程度。指数越高，生理压力越大。
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding-top: 30px; font-size: 14px; line-height: 1.6">
+                <strong>注意：</strong><br />
+                - 提供的健康指标用于一般健康和健身跟踪。它们
+                <strong>不用于医疗诊断</strong>或治疗目的。<br />
+                - 如果某些指标缺失，可能是由于扫描过程中捕获的数据不足。为获得最准确的结果，请等待 5 分钟，并在光线充足的环境中重复扫描（避免混合照明）。舒适地坐着，在扫描过程中避免移动、大笑或说话。
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top: 20px; font-size: 12px; color: #888">
+                <em>免责声明：某些指标正在持续研究中。</em>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top: 20px; font-size: 14px; font-weight: 500">
+                感谢您使用 <strong>JBAAI</strong>。祝您健康快乐！💙
+              </td>
+            </tr>
+
+            <tr>
+              <td
+                style="
+                  padding-top: 30px;
+                  font-size: 12px;
+                  color: #777;
+                  text-align: center;
+                "
+              >
+                JBA AI | 美国加利福尼亚州<br />
+                请访问我们的网站：
+                <a
+                  href="https://jbabrands.ai"
+                  style="color: #0d6efd; text-decoration: none"
+                  >jbabrands.ai</a
+                >
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
