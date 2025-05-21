@@ -1,12 +1,16 @@
-import e from "express";
-import OtpModel from "../models/OTP.Model";
-import TokenModel from "../models/Token.Model";
+// Authentication related models
 import UserModel, { IUser } from "../models/User.Model";
+import TokenModel from "../models/Token.Model";
+import OtpModel from "../models/OTP.Model";
+import SubscriptionModel from "../models/Subscription.Model";
+
+// Error handling and utilities
 import CustomError from "../utils/Error.Util";
 import { sendMail } from "../utils/Mail.Util";
+
+// Authentication utilities
 import { compareOtp, generateOTP, hashOtp } from "../utils/OTP.Util";
 import { hashPassword, comparePasswords } from "../utils/Password.Util";
-import { parseISO } from "date-fns";
 import {
   accessTokenGenerator,
   refreshTokenGenerator,
@@ -14,10 +18,14 @@ import {
   verifyToken,
   verifyTokenToLogout,
 } from "../utils/Token.Util";
+
+// Date handling
+import { parseISO } from "date-fns";
+
+// Related services
 import InvitationService from "./Invitation.Service";
 import InvitationCodeService from "./InvitationCode.Service";
 import ProfileService from "./Profile.Service";
-import SubscriptionModel from "../models/Subscription.Model";
 
 class AuthService {
   async register(
