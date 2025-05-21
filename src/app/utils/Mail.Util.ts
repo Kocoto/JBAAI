@@ -20,15 +20,26 @@ export const renderEmailTemplate = async (
   language: string,
   userName: string,
   healthData: any,
+  type: string,
   rriChartImageUrl: string
 ) => {
   try {
     // Define base template directory path
-    const templateBaseDir = path.join(__dirname, "..", "..", "..", "templates");
+    const typeEmail = type === "premium" ? "premium" : "standard";
+    const templateBaseDir = path.join(
+      __dirname,
+      "..",
+      "..",
+      "..",
+      "templates",
+      "emails",
+      "report_scan",
+      `${typeEmail}`
+    );
 
     // Define template file names
-    const requestedTemplate = `HealthScanEmailTemplateV1.${language}.html`;
-    const fallbackTemplate = "HealthScanEmailTemplateV1.en.html";
+    const requestedTemplate = `HealthScanEmail.${typeEmail}.${language}.html`;
+    const fallbackTemplate = `HealthScanEmail.${typeEmail}.en.html`;
 
     // Get full template path with fallback to English if requested language not found
     const templatePath =

@@ -24,6 +24,7 @@ export interface IHealthDataEmailJobPayload {
   targetUsername: string;
   healthReportData: any;
   language: string;
+  type: string;
   chart?: string;
 }
 
@@ -94,6 +95,7 @@ class HealthDataService {
     username: string,
     rawData: any,
     language: string,
+    type: string,
     optionEmail?: string
   ): Promise<void> {
     try {
@@ -107,6 +109,7 @@ class HealthDataService {
         targetUsername: username,
         healthReportData: transformedData,
         language: language,
+        type: type,
       };
 
       await emailQueue.add("sendHealthReportEmail", jobPayload);
@@ -119,6 +122,7 @@ class HealthDataService {
           targetUsername: username,
           healthReportData: transformedData,
           language: language,
+          type: type,
         };
 
         await emailQueue.add("sendHealthReportEmail", jobPayload);

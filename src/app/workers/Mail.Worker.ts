@@ -24,6 +24,7 @@ export const processEmailJob = async (
           healthDataPayload.language,
           healthDataPayload.targetUsername,
           healthDataPayload.healthReportData,
+          healthDataPayload.type,
           "Đây là chart của bạn"
         );
 
