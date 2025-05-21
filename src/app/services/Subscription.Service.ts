@@ -8,6 +8,7 @@ import {
   subscriptionLifecycleQueue,
   IExpireSubscriptionPayload,
 } from "../queues/SubscriptionLifecycle.Queue";
+import UserModel from "../models/User.Model";
 
 class SubscriptionService {
   async getSubscriptionByUserId(userId: string) {
@@ -94,23 +95,141 @@ class SubscriptionService {
       const durationInMilliseconds =
         newPackageData.duration * 24 * 60 * 60 * 1000;
 
-      const currentAcctiveSubscription = await SubscriptionModel.findOne({
+      const currentActiveSubscription = await SubscriptionModel.findOne({
         userId: userId,
         isActive: true,
       });
 
       let finalActivatedSubscription;
 
-      if (currentAcctiveSubscription) {
+      if (currentActiveSubscription) {
         console.log(
           `[SubService] Updating existing active subscription for user ${userId}`
         );
-        currentAcctiveSubscription.isActive = false;
-        currentAcctiveSubscription.status = SubscriptionStatus.SUPERSEDED;
-        currentAcctiveSubscription.endDate = new Date();
-        await currentAcctiveSubscription.save();
+        currentActiveSubscription.isActive = false;
+        currentActiveSubscription.status = SubscriptionStatus.SUPERSEDED;
+        currentActiveSubscription.endDate = new Date();
+        await currentActiveSubscription.save();
+        console.log(
+          `[SubService] Deactivated old subscription ${currentActiveSubscription._id}.`
+        );
+
+        const oldJobId = `expire-sub-${currentActiveSubscription._id.toString()}`;
+        try {
+          const oldJob = await subscriptionLifecycleQueue.getJob(oldJobId);
+          if (oldJob) {
+            await oldJob.remove();
+            console.log(
+              `[SubService] Removed old BullMQ job ${oldJobId} for subscription ${currentActiveSubscription._id}.`
+            );
+          } else {
+            console.log(
+              `[SubService] No old BullMQ job found with ID ${oldJobId} for old subscription.`
+            );
+          }
+        } catch (error) {
+          console.log(
+            `[SubService] Error removing old BullMQ job ${oldJobId}: ${error}`
+          );
+        }
+      } else {
+        console.log(
+          `[SubService] User ${userId} has no active subscription or this is a new subscription.`
+        );
       }
-    } catch (error) {}
+      const startDate = new Date();
+      const newEndDate = new Date(startDate.getTime() + durationInMilliseconds);
+
+      finalActivatedSubscription = await SubscriptionModel.create({
+        userId: userId,
+        packageId: newPackageId,
+        packageName: newPackageData.name, // Lấy từ packageData
+        price: newPackageData.price, // Lấy từ packageData
+        startDate: startDate,
+        endDate: newEndDate,
+        isActive: true,
+        status: SubscriptionStatus.ACTIVE,
+        // paymentDetails: paymentInfo, // Nếu bạn truyền thông tin thanh toán vào
+      });
+
+      if (!finalActivatedSubscription) {
+        throw new CustomError(500, "Không thể tạo bản ghi subscription mới.");
+      }
+      console.log(
+        `[SubService] Created new active subscription ${finalActivatedSubscription._id} for user ${userId} until ${finalActivatedSubscription.endDate}.`
+      );
+
+      const payload: IExpireSubscriptionPayload = {
+        subscriptionId: finalActivatedSubscription._id.toString(),
+        userId: finalActivatedSubscription.userId.toString(),
+      };
+      const delay = finalActivatedSubscription.endDate.getTime() - Date.now();
+      const newJobId = `expire-sub-${finalActivatedSubscription._id.toString()}`;
+
+      if (delay >= 0) {
+        await subscriptionLifecycleQueue.add(
+          "expireSubscriptionTask",
+          payload,
+          {
+            delay: delay,
+            jobId: newJobId,
+          }
+        );
+        console.log(
+          `[SubService] Scheduled BullMQ job ${newJobId} for new subscription ${finalActivatedSubscription._id}.`
+        );
+      } else {
+        console.warn(
+          `[SubService] New subscription ${finalActivatedSubscription._id} has past endDate. Marking as expired.`
+        );
+        finalActivatedSubscription.isActive = false;
+        finalActivatedSubscription.status = SubscriptionStatus.EXPIRED;
+        await finalActivatedSubscription.save();
+        console.log(
+          `[SubService] Marked new subscription ${finalActivatedSubscription._id} as expired.`
+        );
+      }
+
+      if (
+        finalActivatedSubscription.isActive &&
+        finalActivatedSubscription.endDate > new Date()
+      ) {
+        await UserModel.findByIdAndUpdate(userId, {
+          isSubscription: true,
+          // type: newPackageData.type, // Ví dụ nếu bạn có trường 'type' trên User model
+          // currentPackageId: newPackageData._id, // Ví dụ
+        });
+        console.log(
+          `[SubService] User ${userId} status updated: isSubscription = true.`
+        );
+      } else {
+        // Nếu gói mới tạo ra mà hết hạn ngay, kiểm tra xem còn gói nào khác không
+        const anyOtherActiveStill = await SubscriptionModel.findOne({
+          userId: userId,
+          isActive: true,
+          endDate: { $gt: new Date() },
+        });
+        if (!anyOtherActiveStill) {
+          await UserModel.findByIdAndUpdate(userId, { isSubscription: false });
+          console.log(
+            `[SubService] User ${userId} status updated: isSubscription = false (no active subs).`
+          );
+        }
+      }
+      return finalActivatedSubscription;
+    } catch (error) {
+      console.error(
+        "[SubService] Error in handleSuccessfulPaymentAndActivateSubscription:",
+        error
+      );
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      throw new CustomError(
+        500,
+        (error as Error).message || "Lỗi không xác định khi xử lý subscription."
+      );
+    }
   }
 }
 

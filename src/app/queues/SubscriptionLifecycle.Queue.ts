@@ -17,11 +17,9 @@ const subscriptionLifecycleQueue = new Queue(
         type: "exponential",
         delay: 5000,
       },
-      removeOnComplete: {
-        count: 1000,
-      },
+      removeOnComplete: true,
       removeOnFail: {
-        count: 5000,
+        count: 1000,
       },
     },
   }
