@@ -19,12 +19,12 @@ import { swaggerSpec } from "./app/config/swagger.config";
 import { transporter } from "./app/config/nodemailer.config";
 import client from "./app/config/paypal.config";
 import { redisConnection } from "./app/config/redis.config";
-import "./app/queues/SubscriptionLifecycle.Queue";
 
 // Route and service imports
 import { route } from "./app/routes";
 import swaggerUi from "swagger-ui-express";
 import { initializeEmailWorker } from "./app/workers/Mail.Worker";
+import { initializeSubscriptionLifecycleWorker } from "./app/workers/SubscriptionLifecycle.Worker";
 
 const PORT = process.env.PORT || 4000;
 const DEEP_LINK_BASE_URL = "https://jbaai-y7mb.onrender.com";
@@ -102,6 +102,7 @@ async function startApplication() {
 
     // Initialize services
     initializeEmailWorker();
+    initializeSubscriptionLifecycleWorker();
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     // Initialize PayPal
@@ -141,6 +142,10 @@ async function gracefulShutdown() {
 
     if (initializeEmailWorker().close) {
       await initializeEmailWorker().close();
+      console.log("[Shutdown] Closed BullMQ workers");
+    }
+    if (initializeSubscriptionLifecycleWorker().close) {
+      await initializeSubscriptionLifecycleWorker().close();
       console.log("[Shutdown] Closed BullMQ workers");
     }
 

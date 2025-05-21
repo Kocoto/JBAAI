@@ -284,7 +284,7 @@ export const renderEmailTemplate = async (
 
     //High Total Cholesterol Risk
     htmlContent = htmlContent.replace(
-      /\s*\[Hight Total Cholesterol Risk VALUE\]/g,
+      /\s*\[High Total Cholesterol Risk VALUE\]/g,
       `${
         healthData.highTotalCholesterolRisk?.value === 1
           ? getLocalizedString(language, "low")

@@ -30,7 +30,6 @@ const subscriptionSchema = new Schema<ISubscription>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      indexes: true,
     },
     packageId: {
       type: Schema.Types.ObjectId,

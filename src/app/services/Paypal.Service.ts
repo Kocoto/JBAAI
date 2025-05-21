@@ -1,4 +1,5 @@
 import client, { paypal } from "../config/paypal.config";
+import PackageModel from "../models/Package.Model";
 import { IPurchaseHistoryInput } from "../models/PurchaseHistory.Model";
 import CustomError from "../utils/Error.Util";
 import PackageService from "./Package.Service";
@@ -310,21 +311,27 @@ class PaypalService {
           );
 
         // Tạo subscription và cập nhật user
-        const [subscription, updatedUser] = await Promise.all([
-          // Đổi tên biến user thành updatedUser để tránh trùng lặp
-          SubscriptionService.createSubscription(
-            String(userId),
-            String(purchaseRecord.packageId)
-          ),
-          UserService.updateUser(String(userId), {
-            isSubscription: true,
-            type: purchaseRecord.type,
-          }),
-        ]);
 
+        const newActiveSubscription =
+          await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
+            String(userId), // userId đã được truyền vào captureOrder
+            String(purchaseRecord.packageId)
+            // Bạn có thể truyền thêm thông tin thanh toán vào đây nếu cần lưu trong SubscriptionModel
+            // { transactionId: finalPaypalTxnId, amount: capturedAmount, currency: capturedCurrency }
+          );
+        const updatedUser = await UserService.updateUser(String(userId), {
+          isSubscription:
+            newActiveSubscription.isActive &&
+            newActiveSubscription.endDate > new Date(),
+          type: newActiveSubscription.isActive
+            ? (
+                await PackageModel.findById(newActiveSubscription.packageId)
+              )?.type
+            : user.type, // Cập nhật type nếu cần
+        });
         return {
           purchaseHistory: updatedPurchaseHistory,
-          subscription,
+          subscription: newActiveSubscription,
           user: updatedUser, // Trả về user đã được cập nhật
           captureResult,
         };

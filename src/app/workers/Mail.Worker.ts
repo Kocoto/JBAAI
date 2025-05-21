@@ -71,7 +71,7 @@ export const processEmailJob = async (
 
     default:
       console.warn(
-        `[Worker] Received job with unknown name: ${job.name}. Skipping.`
+        `[Worker email] Received job with unknown name: ${job.name}. Skipping.`
       );
       // Bạn có thể quyết định ném lỗi hoặc bỏ qua job này
       throw new Error(`Unknown job name: ${job.name}`);
