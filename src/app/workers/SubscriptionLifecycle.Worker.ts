@@ -8,14 +8,16 @@ import SubscriptionModel, {
 import UserModel from "../models/User.Model";
 
 console.log(
-  `[Worker] Stating subscription lifecycle worker for queue: ${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME}`
+  `[Worker] Khởi tạo worker quản lý vòng đời subscription cho hàng đợi: ${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME}`
 );
 
 export const processSubscriptionLifecycleJob = async (
   job: Job<IExpireSubscriptionPayload>
 ) => {
-  console.log(`[Worker] Processing subscription lifecycle job: ${job.id}`);
-  console.log(`[Worker] Job name: ${JSON.stringify(job.name)}`);
+  console.log(
+    `[Worker] Đang xử lý công việc quản lý vòng đời subscription: ${job.id}`
+  );
+  console.log(`[Worker] Tên công việc: ${JSON.stringify(job.name)}`);
 
   switch (job.name) {
     case "expireSubscriptionTask":
@@ -23,22 +25,24 @@ export const processSubscriptionLifecycleJob = async (
       const { subscriptionId, userId } = job.data;
       if (!subscriptionId || !userId) {
         console.error(
-          `[SubWorker] Job ${job.id} is missing subscriptionId or userId in payload.`
+          `[SubWorker] Công việc ${job.id} thiếu subscriptionId hoặc userId trong payload.`
         );
         // Ném lỗi để job này được coi là thất bại và không thử lại (nếu payload hỏng)
         // Hoặc bạn có thể chỉ log và để job tự hoàn thành mà không làm gì
-        throw new Error("Missing subscriptionId or userId in job payload.");
+        throw new Error(
+          "Thiếu subscriptionId hoặc userId trong payload công việc."
+        );
       }
       try {
         console.log(
-          `[SubWorker] Attempting to expire subscription ${subscriptionId} for user ${userId}.`
+          `[SubWorker] Đang cố gắng hết hạn subscription ${subscriptionId} cho người dùng ${userId}.`
         );
 
         const subscription = await SubscriptionModel.findById(subscriptionId);
 
         if (!subscription) {
           console.error(
-            `[SubWorker] Subscription ${subscriptionId} not found for user ${userId}.`
+            `[SubWorker] Không tìm thấy subscription ${subscriptionId} cho người dùng ${userId}.`
           );
           // Ném lỗi để job này được coi là thất bại và không thử lại (nếu subscription không tồn tại)
           return;
@@ -49,7 +53,7 @@ export const processSubscriptionLifecycleJob = async (
           subscription.status !== SubscriptionStatus.ACTIVE
         ) {
           console.log(
-            `[SubWorker] Subscription ${subscriptionId} is no longer active (current status: ${subscription.status}). Expiration task skipped.`
+            `[SubWorker] Subscription ${subscriptionId} không còn hoạt động (trạng thái hiện tại: ${subscription.status}). Bỏ qua nhiệm vụ hết hạn.`
           );
           return;
         }
@@ -63,25 +67,25 @@ export const processSubscriptionLifecycleJob = async (
           // Điều này không nên xảy ra nếu job được lên lịch đúng.
           // Có thể là job bị kích hoạt sớm do lỗi nào đó.
           console.warn(
-            `[SubWorker] Job ${job.id} for subscription ${subscriptionId} executed prematurely. Subscription endDate (${subscription.endDate}) is still in the future. Re-queueing with corrected delay or failing for review.`
+            `[SubWorker] Công việc ${job.id} cho subscription ${subscriptionId} được thực thi quá sớm. Ngày hết hạn subscription (${subscription.endDate}) vẫn còn trong tương lai. Đang xếp lại hàng đợi với độ trễ đã điều chỉnh hoặc đánh dấu thất bại để xem xét.`
           );
           // Tùy chọn:
           // 1. Ném lỗi để BullMQ thử lại sau (nếu bạn nghĩ đây là lỗi tạm thời).
           throw new Error(
-            `Job executed prematurely. Subscription endDate is ${subscription.endDate}`
+            `Công việc được thực thi quá sớm. Ngày hết hạn subscription là ${subscription.endDate}`
           );
         }
 
         // Nếu tất cả điều kiện đều ổn, tiến hành cập nhật
         console.log(
-          `[SubWorker] Expiring subscription ${subscriptionId}. Current endDate: ${subscription.endDate}.`
+          `[SubWorker] Đang hết hạn subscription ${subscriptionId}. Ngày hết hạn hiện tại: ${subscription.endDate}.`
         );
         subscription.isActive = false;
         subscription.status = SubscriptionStatus.EXPIRED;
         // Không cần thay đổi endDate, vì nó đã là ngày hết hạn.
         await subscription.save();
         console.log(
-          `[SubWorker] Subscription ${subscriptionId} status updated to EXPIRED and isActive = false.`
+          `[SubWorker] Subscription ${subscriptionId} đã được cập nhật trạng thái thành HẾT HẠN và isActive = false.`
         );
 
         // Cập nhật trạng thái isSubscription của User
@@ -98,37 +102,38 @@ export const processSubscriptionLifecycleJob = async (
             $set: { isSubscription: false },
           });
           console.log(
-            `[SubWorker] User ${userId} 'isSubscription' status updated to false.`
+            `[SubWorker] Trạng thái 'isSubscription' của người dùng ${userId} đã được cập nhật thành false.`
           );
         } else {
           console.log(
-            `[SubWorker] User ${userId} still has other active subscriptions. 'isSubscription' status not changed.`
+            `[SubWorker] Người dùng ${userId} vẫn còn các subscription khác đang hoạt động. Không thay đổi trạng thái 'isSubscription'.`
           );
         }
 
         console.log(
-          `[SubWorker] Successfully processed expiration for subscription ${subscriptionId}.`
+          `[SubWorker] Đã xử lý thành công việc hết hạn cho subscription ${subscriptionId}.`
         );
       } catch (error: any) {
         console.error(
-          `[SubWorker] Error processing 'expireSubscriptionTask' for job ${job.id} (Subscription: ${subscriptionId}):`,
+          `[SubWorker] Lỗi khi xử lý 'expireSubscriptionTask' cho công việc ${job.id} (Subscription: ${subscriptionId}):`,
           error
         );
         // Ném lỗi để BullMQ có thể thử lại job này dựa trên cấu hình `attempts` và `backoff`
         throw error;
       }
+      break;
     default:
       console.warn(
-        `[SubWorker] Received job with unknown name: ${job.name} (ID: ${job.id}).`
+        `[SubWorker] Nhận được công việc với tên không xác định: ${job.name} (ID: ${job.id}).`
       );
-      throw new Error(`Unknown job name: ${job.name}`); // Ném lỗi để job này được đánh dấu là thất bại
+      throw new Error(`Tên công việc không xác định: ${job.name}`); // Ném lỗi để job này được đánh dấu là thất bại
   }
 };
 
 export const initializeSubscriptionLifecycleWorker =
   (): Worker<IExpireSubscriptionPayload> => {
     console.log(
-      `[SubWorker Initializer] Initializing worker for queue: ${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME}...`
+      `[SubWorker Initializer] Đang khởi tạo worker cho hàng đợi: ${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME}...`
     );
 
     const workerInstance = new Worker<IExpireSubscriptionPayload>(
@@ -148,15 +153,15 @@ export const initializeSubscriptionLifecycleWorker =
       (job: Job<IExpireSubscriptionPayload> | undefined, error: Error) => {
         if (job) {
           console.error(
-            `[SubWorker Event] Job ${job.id} (Name: ${job.name}) failed after ${
-              job.attemptsMade
-            } attempts with error: ${error.message}. Data: ${JSON.stringify(
-              job.data
-            )}`
+            `[SubWorker Event] Công việc ${job.id} (Tên: ${
+              job.name
+            }) thất bại sau ${job.attemptsMade} lần thử với lỗi: ${
+              error.message
+            }. Dữ liệu: ${JSON.stringify(job.data)}`
           );
         } else {
           console.error(
-            `[SubWorker Event] An unspecified job in ${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME} failed with error: ${error.message}`
+            `[SubWorker Event] Một công việc không xác định trong ${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME} đã thất bại với lỗi: ${error.message}`
           );
         }
       }
@@ -164,29 +169,29 @@ export const initializeSubscriptionLifecycleWorker =
 
     workerInstance.on("error", (error: Error) => {
       console.error(
-        `[SubWorker Event] Worker for ${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME} encountered an error:`,
+        `[SubWorker Event] Worker cho ${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME} gặp lỗi:`,
         error
       );
     });
 
     workerInstance.on("completed", (job: Job<IExpireSubscriptionPayload>) => {
       console.log(
-        `[SubWorker Event] Job ${job.id} (Name: ${
+        `[SubWorker Event] Công việc ${job.id} (Tên: ${
           job.name
-        }) has completed successfully. Data: ${JSON.stringify(job.data)}`
+        }) đã hoàn thành thành công. Dữ liệu: ${JSON.stringify(job.data)}`
       );
     });
 
     workerInstance.on("active", (job: Job<IExpireSubscriptionPayload>) => {
       console.log(
-        `[SubWorker Event] Job ${job.id} (Name: ${
+        `[SubWorker Event] Công việc ${job.id} (Tên: ${
           job.name
-        }) has started processing. Data: ${JSON.stringify(job.data)}`
+        }) đã bắt đầu xử lý. Dữ liệu: ${JSON.stringify(job.data)}`
       );
     });
 
     console.log(
-      `[SubWorker Initializer] Subscription Lifecycle Worker for queue '${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME}' initialized and waiting for jobs.`
+      `[SubWorker Initializer] Worker Quản lý Vòng đời Subscription cho hàng đợi '${SUBSCRIPTION_LIFECYCLE_QUEUE_NAME}' đã được khởi tạo và đang chờ công việc.`
     );
     return workerInstance;
   };
