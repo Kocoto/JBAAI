@@ -19,6 +19,7 @@ import { swaggerSpec } from "./app/config/swagger.config";
 import { transporter } from "./app/config/nodemailer.config";
 import client from "./app/config/paypal.config";
 import { redisConnection } from "./app/config/redis.config";
+import "./app/queues/SubscriptionLifecycle.Queue";
 
 // Route and service imports
 import { route } from "./app/routes";

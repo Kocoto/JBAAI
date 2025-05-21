@@ -1,4 +1,3 @@
-import e from "express";
 import OtpModel from "../models/OTP.Model";
 import TokenModel from "../models/Token.Model";
 import UserModel from "../models/User.Model";
