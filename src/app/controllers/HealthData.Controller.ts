@@ -90,12 +90,14 @@ class HealthDataController {
         });
       }
       const username = req.user.username;
+      const type = user.type;
       // Send health data email with or without optional email settings
       const healthData = await HealthDataService.sentMailHealthData(
         email,
         username,
         rawData,
         language,
+        type,
         optionEmail || undefined
       );
 
