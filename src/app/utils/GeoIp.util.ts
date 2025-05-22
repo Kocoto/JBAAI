@@ -46,6 +46,10 @@ export function getCountryInfoFromIp(ip: string): GeoIpInfo {
     const countryIsoCode = locationResponse?.country?.isoCode;
     const countryName = locationResponse?.country?.names.en;
 
+    console.log(
+      `[GeoIP Util] GeoIP lookup for IP ${ip} completed. Country: ${countryIsoCode} - ${countryName}`
+    );
+
     if (countryIsoCode) {
       return {
         ip,
