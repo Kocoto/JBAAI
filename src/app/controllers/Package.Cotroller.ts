@@ -81,8 +81,8 @@ class PackageController {
   async getAllPackages(req: Request, res: Response, next: NextFunction) {
     try {
       // Get client IP address, fallback to USA if not available
-      // const clientIp = req.ip ?? "USA";
-      const clientIp = req.ip ?? "USA";
+      const clientIp = req.ip ?? "8.8.8.8";
+      // const clientIp = "123.21.85.189";
 
       // Check if GeoIP database is available
       if (!geoIpDbBuffer) {
@@ -136,7 +136,7 @@ class PackageController {
   async getPackageByType(req: Request, res: Response, next: NextFunction) {
     try {
       const { type } = req.body;
-      const clientIp = req.ip ?? "USA";
+      const clientIp = req.ip ?? "8.8.8.8";
 
       // Check if GeoIP database is available
       if (!geoIpDbBuffer) {
