@@ -5,6 +5,7 @@ export interface IInvitationCode extends Document {
   userId: Types.ObjectId;
   status: "active" | "inactive";
   numberOfUses: number;
+  codeType: "USER_TRIAL" | "FRANCHISE_HIERARCHY";
 }
 
 const InvitationCodeSchema = new Schema<IInvitationCode>(
@@ -13,8 +14,8 @@ const InvitationCodeSchema = new Schema<IInvitationCode>(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      unique: true,
       index: true,
+      required: true,
     },
     status: {
       type: String,
@@ -25,6 +26,11 @@ const InvitationCodeSchema = new Schema<IInvitationCode>(
     numberOfUses: {
       type: Number,
       default: 0,
+    },
+    codeType: {
+      type: String,
+      enum: ["USER_TRIAL", "FRANCHISE_HIERARCHY"],
+      required: true,
     },
   },
   {
