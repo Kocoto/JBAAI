@@ -3,6 +3,8 @@ export interface IInvitation {
   invitedUserId: Types.ObjectId;
   inviterUserId: Types.ObjectId;
   invitationCodeId: Types.ObjectId;
+  linkedCampaignId: Types.ObjectId;
+  inviteType: "USER_TRIAL" | "FRANCHISE_HIERARCHY";
 }
 const InvitationSchema = new Schema<IInvitation>(
   {
@@ -20,6 +22,16 @@ const InvitationSchema = new Schema<IInvitation>(
     invitationCodeId: {
       type: Schema.Types.ObjectId,
       ref: "InvitationCode",
+      required: true,
+    },
+    linkedCampaignId: {
+      type: Schema.Types.ObjectId,
+      ref: "Campaign",
+      required: true,
+    },
+    inviteType: {
+      type: String,
+      enum: ["USER_TRIAL", "FRANCHISE_HIERARCHY"],
       required: true,
     },
   },
