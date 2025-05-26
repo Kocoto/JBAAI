@@ -3,6 +3,7 @@ import UpgradeRequestModel from "../models/UpgradeRequest.Model";
 import CustomError from "../utils/Error.Util";
 import InvitationCodeService from "./InvitationCode.Service";
 import UserService from "./User.Service";
+import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
 
 class UpgradeRequestService {
   async createUpgradeRequest(userId: string, data: any) {
@@ -160,6 +161,7 @@ class UpgradeRequestService {
       userToUpdate.isSubscription = true;
       userToUpdate.franchiseName = upgradeRequest.franchiseName;
       userToUpdate.type = "premium";
+
       await Promise.all([
         userToUpdate.save(),
         upgradeRequest.save(),
@@ -167,8 +169,14 @@ class UpgradeRequestService {
           userToUpdate._id,
           upgradeRequest.franchiseName
         ),
+        FranchiseDetailsModel.create({
+          userId: upgradeRequest.userId,
+          parentId: null,
+          franchiseLevel: 0,
+          ancestorPath: [],
+          userTrialQuotaLedger: [],
+        }),
       ]);
-
       return upgradeRequest;
     } catch (error) {
       if (error instanceof CustomError) {
