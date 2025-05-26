@@ -120,6 +120,7 @@ class UpgradeRequestController {
       const upgradeRequest = await UpgradeRequestService.approveUpgradeRequest(
         upgradeRequestId
       );
+
       res.status(200).json({
         success: true,
         message: "Xác nhận yêu cầu nâng cấp thành công",
