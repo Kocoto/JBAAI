@@ -32,8 +32,6 @@ class HomeController {
    *                   example: "Hello World"
    */
   async index(req: Request, res: Response) {
-    const user = await UserService.updateManyUser();
-    console.log(user);
     res.send("Hello World");
   }
   async test(req: Request, res: Response) {
