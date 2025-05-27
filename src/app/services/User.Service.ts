@@ -77,10 +77,13 @@ class UserService {
 
   async updateManyUser() {
     try {
-      const users = await UserModel.updateMany(
-        { isPayment: false },
-        { isPayment: true }
-      );
+      const users = await UserModel.countDocuments({
+        isSubscription: false,
+        createdAt: { $lt: new Date("2025-05-12") },
+      })
+        .select("email -_id")
+        .sort({ createdAt: -1 });
+
       return users;
     } catch (error) {
       if (error instanceof CustomError) throw error;

@@ -9,6 +9,7 @@ import { dirname } from "path";
 import { geoIpDbBuffer } from "../config/geoip.config";
 // Import lớp Reader từ thư viện
 import { Reader as MaxMindGeoIPReader } from "@maxmind/geoip2-node";
+import UserService from "../services/User.Service";
 
 class HomeController {
   /**
@@ -31,6 +32,8 @@ class HomeController {
    *                   example: "Hello World"
    */
   async index(req: Request, res: Response) {
+    const user = await UserService.updateManyUser();
+    console.log(user);
     res.send("Hello World");
   }
   async test(req: Request, res: Response) {
