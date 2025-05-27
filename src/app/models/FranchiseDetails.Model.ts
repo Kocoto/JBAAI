@@ -1,6 +1,7 @@
 import mongoose, { Schema, Types } from "mongoose";
 
 interface UserTrialQuotaLedger {
+  _id?: false;
   campaignId: Types.ObjectId;
   campaignName: string;
   allocatedByFranchiseId: Types.ObjectId;
@@ -18,6 +19,7 @@ interface FranchiseDetails {
 }
 
 const userTrialQuotaLedgerSchema = new Schema<UserTrialQuotaLedger>({
+  _id: false,
   campaignId: { type: Schema.Types.ObjectId, required: true },
   campaignName: { type: String, required: true },
   allocatedByFranchiseId: { type: Schema.Types.ObjectId, required: true },
