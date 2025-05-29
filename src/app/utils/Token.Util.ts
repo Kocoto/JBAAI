@@ -35,7 +35,7 @@ export const refreshTokenGenerator = (
 
   try {
     return jwt.sign({ userId, clientId }, process.env.REFRESH_TOKEN_SECRET, {
-      expiresIn: "1m",
+      expiresIn: "7d",
     });
   } catch (error) {
     console.error("Lỗi tạo refresh token:", error);
