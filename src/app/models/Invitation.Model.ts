@@ -1,11 +1,14 @@
 import mongoose, { Schema, Types } from "mongoose";
+
 export interface IInvitation {
   invitedUserId: Types.ObjectId;
   inviterUserId: Types.ObjectId;
   invitationCodeId: Types.ObjectId;
-  linkedCampaignId: Types.ObjectId;
+  linkedLedgerEntryId: Types.ObjectId;
+  linkedRootCampaignId: Types.ObjectId;
   inviteType: "USER_TRIAL" | "FRANCHISE_HIERARCHY";
 }
+
 const InvitationSchema = new Schema<IInvitation>(
   {
     invitedUserId: {
@@ -24,7 +27,12 @@ const InvitationSchema = new Schema<IInvitation>(
       ref: "InvitationCode",
       required: true,
     },
-    linkedCampaignId: {
+    linkedLedgerEntryId: {
+      type: Schema.Types.ObjectId,
+      ref: "UserTrialQuotaLedger",
+      required: true,
+    },
+    linkedRootCampaignId: {
       type: Schema.Types.ObjectId,
       ref: "Campaign",
       required: true,

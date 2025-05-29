@@ -4,8 +4,9 @@ export interface IInvitationCode extends Document {
   code: string;
   userId: Types.ObjectId;
   status: "active" | "inactive";
-  numberOfUses: number;
   codeType: "USER_TRIAL" | "FRANCHISE_HIERARCHY";
+  currentActiveLedgerEntryId?: Types.ObjectId;
+  totalCumulativeUses?: number;
 }
 
 const InvitationCodeSchema = new Schema<IInvitationCode>(
@@ -23,14 +24,19 @@ const InvitationCodeSchema = new Schema<IInvitationCode>(
       default: "active",
       required: true,
     },
-    numberOfUses: {
-      type: Number,
-      default: 0,
-    },
     codeType: {
       type: String,
       enum: ["USER_TRIAL", "FRANCHISE_HIERARCHY"],
       required: true,
+    },
+    currentActiveLedgerEntryId: {
+      type: Schema.Types.ObjectId,
+      required: false,
+    },
+    totalCumulativeUses: {
+      type: Number,
+      required: false,
+      default: 0,
     },
   },
   {
