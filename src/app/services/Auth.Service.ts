@@ -26,6 +26,7 @@ import { parseISO } from "date-fns";
 import InvitationService from "./Invitation.Service";
 import InvitationCodeService from "./InvitationCode.Service";
 import ProfileService from "./Profile.Service";
+import SubscriptionService from "./Subscription.Service";
 
 class AuthService {
   async register(
@@ -97,10 +98,10 @@ class AuthService {
         );
         if (splitInvitationCode === "FREE15" || invitation) {
           await Promise.all([
-            SubscriptionModel.create({
-              userId: user._id,
-              packageId: process.env.DEMO_PACKAGE_ID,
-            }),
+            SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
+              String(user._id),
+              process.env.DEMO_PACKAGE_ID || "68356a7a61d8b342093eb1fa"
+            ),
             (user.isSubscription = true),
             (user.discount = true),
             (user.type = "standard"),
