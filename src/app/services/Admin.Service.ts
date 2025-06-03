@@ -1,5 +1,8 @@
 import CampaignModel from "../models/Campaign.Model";
+import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
+import InvitationModel from "../models/Invitation.Model";
 import { TrialConversionLogModel } from "../models/TrialConversionLog.Model";
+import UserModel from "../models/User.Model";
 import CustomError from "../utils/Error.Util";
 import { Types } from "mongoose";
 
@@ -16,6 +19,62 @@ export interface CampaignResponse {
   currentPage: number;
   hasNextPage: boolean;
   hasPrevPage: boolean;
+}
+
+export interface CampaignPerformanceSummary {
+  campaign: {
+    _id: string;
+    campaignName: string;
+    franchiseOwnerId: string;
+    totalAllocated: number;
+    consumedUses: number;
+    totalRenewed: number;
+    status: string;
+    startDate: Date;
+    endDate: Date;
+    renewalRequirementPercentage: number;
+  };
+  performance: {
+    // Tổng quan
+    totalInvitesSent: number; // Tổng số lời mời đã gửi
+    totalTrialUsers: number; // Tổng số người dùng dùng thử
+    totalRenewedUsers: number; // Tổng số người dùng đã gia hạn
+    conversionRate: number; // Tỷ lệ chuyển đổi (%)
+    renewalRate: number; // Tỷ lệ gia hạn (%)
+
+    // Phân tích theo cấp franchise
+    performanceByLevel: {
+      level: number;
+      franchiseName: string;
+      totalInvites: number;
+      totalRenewals: number;
+      conversionRate: number;
+    }[];
+
+    // Tiến độ đạt yêu cầu gia hạn
+    renewalProgress: {
+      required: number; // Số lượng gia hạn cần đạt
+      achieved: number; // Số lượng gia hạn đã đạt
+      percentage: number; // Phần trăm hoàn thành
+      isQualified: boolean; // Đã đủ điều kiện cho campaign mới chưa
+    };
+
+    // Thống kê thời gian
+    timeAnalysis: {
+      daysActive: number; // Số ngày campaign đã hoạt động
+      daysRemaining: number; // Số ngày còn lại
+      averageConversionTime: number; // Thời gian chuyển đổi trung bình (ngày)
+    };
+  };
+  // Danh sách franchise con và hiệu suất của họ
+  franchiseBreakdown: {
+    franchiseId: string;
+    franchiseName: string;
+    level: number;
+    invitesSent: number;
+    renewals: number;
+    conversionRate: number;
+  }[];
 }
 
 class AdminService {
@@ -414,12 +473,14 @@ class AdminService {
     }
   }
 
-  //GET /campaigns/:campaignId/performance-summary
-  async getCampaignPerformanceSummary(campaignId: string) {
+  async getCampaignPerformanceSummary(
+    campaignId: string
+  ): Promise<CampaignPerformanceSummary> {
     try {
       console.log(
         `[AdminService] Lấy tóm tắt hiệu suất Campaign với ID: ${campaignId}`
       );
+
       if (!campaignId?.trim()) {
         throw new CustomError(400, "ID Campaign không được để trống");
       }
@@ -428,18 +489,399 @@ class AdminService {
         throw new CustomError(400, "ID Campaign không hợp lệ");
       }
 
+      // Lấy thông tin campaign
       const campaign = await CampaignModel.findById(campaignId).lean();
-
       if (!campaign) {
         throw new CustomError(404, "Không tìm thấy Campaign");
       }
 
-      // Lấy thông tin về số lượng người dùng đã đăng ký và đã sử dụng Campaign
-      const totalRegistered = await TrialConversionLogModel.countDocuments({
-        rootCampaignId: campaignId,
-        didRenew: true,
-      });
-    } catch {}
+      // Lấy tất cả invitations liên quan đến campaign này
+      const invitations = await InvitationModel.find({
+        linkedRootCampaignId: new Types.ObjectId(campaignId),
+      }).lean();
+
+      // Lấy tất cả trial conversion logs liên quan đến campaign
+      const trialLogs = await TrialConversionLogModel.find({
+        rootCampaignId: new Types.ObjectId(campaignId),
+      }).lean();
+
+      // Tính toán các metrics cơ bản
+      const totalInvitesSent = invitations.length;
+      const totalTrialUsers = trialLogs.length;
+      const totalRenewedUsers = trialLogs.filter((log) => log.didRenew).length;
+      const conversionRate =
+        totalInvitesSent > 0
+          ? Math.round((totalTrialUsers / totalInvitesSent) * 100 * 100) / 100
+          : 0;
+      const renewalRate =
+        totalTrialUsers > 0
+          ? Math.round((totalRenewedUsers / totalTrialUsers) * 100 * 100) / 100
+          : 0;
+
+      // Tính toán renewal progress
+      const requiredRenewals = Math.ceil(
+        (campaign.totalAllocated * campaign.renewalRequirementPercentage) / 100
+      );
+      const renewalProgress = {
+        required: requiredRenewals,
+        achieved: totalRenewedUsers,
+        percentage:
+          requiredRenewals > 0
+            ? Math.round((totalRenewedUsers / requiredRenewals) * 100 * 100) /
+              100
+            : 0,
+        isQualified: totalRenewedUsers >= requiredRenewals,
+      };
+
+      // Tính toán time analysis
+      const now = new Date();
+      const startDate = new Date(campaign.startDate || campaign.createdAt);
+      const endDate = campaign.endDate ? new Date(campaign.endDate) : null;
+
+      const daysActive = Math.floor(
+        (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
+      const daysRemaining = endDate
+        ? Math.max(
+            0,
+            Math.floor(
+              (endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+            )
+          )
+        : -1; // -1 indicates no end date
+
+      // Tính average conversion time
+      let averageConversionTime = 0;
+      if (totalRenewedUsers > 0) {
+        const conversionTimes = trialLogs
+          .filter((log) => log.didRenew && log.renewalDate)
+          .map((log) => {
+            const trialStart = new Date(log.trialStartDate);
+            const renewalDate = new Date(log.renewalDate!);
+            return (
+              (renewalDate.getTime() - trialStart.getTime()) /
+              (1000 * 60 * 60 * 24)
+            );
+          });
+
+        if (conversionTimes.length > 0) {
+          const sum = conversionTimes.reduce((a, b) => a + b, 0);
+          averageConversionTime =
+            Math.round((sum / conversionTimes.length) * 10) / 10;
+        }
+      }
+
+      // Lấy thông tin franchise breakdown
+      const franchisePerformanceMap = new Map<
+        string,
+        {
+          franchiseId: string;
+          franchiseName: string;
+          level: number;
+          invitesSent: number;
+          renewals: number;
+        }
+      >();
+
+      // Đếm invites theo franchise
+      for (const invitation of invitations) {
+        const franchiseId = invitation.inviterUserId.toString();
+        if (!franchisePerformanceMap.has(franchiseId)) {
+          // Lấy thông tin franchise
+          const franchiseDetails = await FranchiseDetailsModel.findOne({
+            userId: invitation.inviterUserId,
+          })
+            .populate("userId", "username franchiseName")
+            .lean();
+
+          franchisePerformanceMap.set(franchiseId, {
+            franchiseId,
+            franchiseName:
+              (franchiseDetails?.userId as any)?.franchiseName || "Unknown",
+            level: franchiseDetails?.franchiseLevel || 0,
+            invitesSent: 0,
+            renewals: 0,
+          });
+        }
+
+        const franchiseData = franchisePerformanceMap.get(franchiseId)!;
+        franchiseData.invitesSent++;
+      }
+
+      // Đếm renewals theo franchise
+      for (const trialLog of trialLogs) {
+        if (trialLog.didRenew) {
+          const franchiseId = trialLog.referringFranchiseId.toString();
+          const franchiseData = franchisePerformanceMap.get(franchiseId);
+          if (franchiseData) {
+            franchiseData.renewals++;
+          }
+        }
+      }
+
+      // Chuyển map thành array và tính conversion rate
+      const franchiseBreakdown = Array.from(
+        franchisePerformanceMap.values()
+      ).map((data) => ({
+        ...data,
+        conversionRate:
+          data.invitesSent > 0
+            ? Math.round((data.renewals / data.invitesSent) * 100 * 100) / 100
+            : 0,
+      }));
+
+      // Tính performance by level
+      const performanceByLevelMap = new Map<
+        number,
+        {
+          level: number;
+          franchiseName: string;
+          totalInvites: number;
+          totalRenewals: number;
+        }
+      >();
+
+      for (const franchise of franchiseBreakdown) {
+        if (!performanceByLevelMap.has(franchise.level)) {
+          performanceByLevelMap.set(franchise.level, {
+            level: franchise.level,
+            franchiseName: `Level ${franchise.level}`,
+            totalInvites: 0,
+            totalRenewals: 0,
+          });
+        }
+
+        const levelData = performanceByLevelMap.get(franchise.level)!;
+        levelData.totalInvites += franchise.invitesSent;
+        levelData.totalRenewals += franchise.renewals;
+      }
+
+      const performanceByLevel = Array.from(performanceByLevelMap.values())
+        .map((data) => ({
+          ...data,
+          conversionRate:
+            data.totalInvites > 0
+              ? Math.round(
+                  (data.totalRenewals / data.totalInvites) * 100 * 100
+                ) / 100
+              : 0,
+        }))
+        .sort((a, b) => a.level - b.level);
+
+      // Cập nhật totalRenewed trong campaign nếu cần
+      if (campaign.totalRenewed !== totalRenewedUsers) {
+        await CampaignModel.findByIdAndUpdate(campaignId, {
+          totalRenewed: totalRenewedUsers,
+        });
+      }
+
+      const result: CampaignPerformanceSummary = {
+        campaign: {
+          _id: campaign._id.toString(),
+          campaignName: campaign.campaignName,
+          franchiseOwnerId: campaign.franchiseOwnerId.toString(),
+          totalAllocated: campaign.totalAllocated,
+          consumedUses: campaign.consumedUses,
+          totalRenewed: totalRenewedUsers,
+          status: campaign.status,
+          startDate: campaign.startDate!,
+          endDate: campaign.endDate!,
+          renewalRequirementPercentage: campaign.renewalRequirementPercentage,
+        },
+        performance: {
+          totalInvitesSent,
+          totalTrialUsers,
+          totalRenewedUsers,
+          conversionRate,
+          renewalRate,
+          performanceByLevel,
+          renewalProgress,
+          timeAnalysis: {
+            daysActive,
+            daysRemaining,
+            averageConversionTime,
+          },
+        },
+        franchiseBreakdown: franchiseBreakdown.sort(
+          (a, b) => b.renewals - a.renewals
+        ),
+      };
+
+      console.log(`[AdminService] Lấy tóm tắt hiệu suất Campaign thành công`);
+      return result;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] Lỗi CustomError khi lấy tóm tắt hiệu suất: ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Lỗi không xác định khi lấy tóm tắt hiệu suất: ${error}`
+      );
+      throw new CustomError(
+        500,
+        "Lỗi không xác định khi lấy tóm tắt hiệu suất Campaign"
+      );
+    }
+  }
+
+  // Helper methods for top performers
+  async getTopRenewersForCampaign(campaignId: string) {
+    try {
+      const topRenewers = await TrialConversionLogModel.aggregate([
+        {
+          $match: {
+            rootCampaignId: new Types.ObjectId(campaignId),
+            didRenew: true,
+          },
+        },
+        {
+          $group: {
+            _id: "$referringFranchiseId",
+            renewalCount: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { renewalCount: -1 },
+        },
+        {
+          $limit: 5,
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "_id",
+            foreignField: "_id",
+            as: "franchiseInfo",
+          },
+        },
+        {
+          $unwind: "$franchiseInfo",
+        },
+        {
+          $project: {
+            franchiseId: "$_id",
+            renewalCount: 1,
+            franchiseName: "$franchiseInfo.franchiseName",
+            username: "$franchiseInfo.username",
+            email: "$franchiseInfo.email",
+          },
+        },
+      ]);
+
+      return topRenewers;
+    } catch (error) {
+      console.error(`[AdminService] Error getting top renewers: ${error}`);
+      return [];
+    }
+  }
+
+  async getTopInvitersForCampaign(campaignId: string) {
+    try {
+      const topInviters = await InvitationModel.aggregate([
+        {
+          $match: {
+            linkedRootCampaignId: new Types.ObjectId(campaignId),
+          },
+        },
+        {
+          $group: {
+            _id: "$inviterUserId",
+            invitationCount: { $sum: 1 },
+          },
+        },
+        {
+          $sort: { invitationCount: -1 },
+        },
+        {
+          $limit: 5,
+        },
+        {
+          $lookup: {
+            from: "users",
+            localField: "_id",
+            foreignField: "_id",
+            as: "franchiseInfo",
+          },
+        },
+        {
+          $unwind: "$franchiseInfo",
+        },
+        {
+          $project: {
+            franchiseId: "$_id",
+            invitationCount: 1,
+            franchiseName: "$franchiseInfo.franchiseName",
+            username: "$franchiseInfo.username",
+            email: "$franchiseInfo.email",
+          },
+        },
+      ]);
+
+      return topInviters;
+    } catch (error) {
+      console.error(`[AdminService] Error getting top inviters: ${error}`);
+      return [];
+    }
+  }
+
+  //GET /franchises
+  async getAllFranchises(
+    page: number,
+    limit: number,
+    status?: string,
+    level?: number
+  ) {
+    try {
+      const validPage = Math.max(1, Math.floor(page) || 1);
+      const validLimit = Math.max(1, Math.floor(limit) || 10);
+
+      let mongoFilter: any = {};
+
+      if (status) {
+        mongoFilter.status = status;
+      }
+      if (typeof level === "number") {
+        mongoFilter.franchiseLevel = level;
+      }
+
+      const countFranchises = await FranchiseDetailsModel.countDocuments(
+        mongoFilter
+      );
+
+      const totalPages = Math.ceil(countFranchises / validLimit);
+      const skip = (validPage - 1) * validLimit;
+
+      const franchises = await FranchiseDetailsModel.find(mongoFilter)
+        .skip(skip)
+        .limit(validLimit)
+        .populate("userId", "username email")
+        .lean();
+
+      return {
+        franchises,
+        total: countFranchises,
+        totalPages,
+        currentPage: validPage,
+        hasNextPage: validPage < totalPages,
+        hasPrevPage: validPage > 1,
+      };
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] Lỗi khi tìm kiếm tất cả các franchise ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Lỗi không xác định khi tìm kiếm tất cả các franchise ${error}`
+      );
+      throw new CustomError(
+        500,
+        "Lỗi không xác định khi tìm kiếm tất cả các franchise"
+      );
+    }
   }
 }
 

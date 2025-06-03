@@ -45,6 +45,14 @@ class UpgradeRequestService {
 
   async getUpgradeRequestById(upgradeRequestId: string) {
     try {
+      if (!upgradeRequestId.trim()) {
+        throw new CustomError(400, "Id của yêu cầu không được để trống");
+      }
+
+      if (!Types.ObjectId.isValid(upgradeRequestId)) {
+        throw new CustomError(400, "Id của yêu cầu không hợp lệ");
+      }
+
       const upgradeRequest = await UpgradeRequestModel.findById(
         upgradeRequestId
       );
@@ -60,13 +68,47 @@ class UpgradeRequestService {
     }
   }
 
-  async getUpgradeRequestsByStatus(status: string) {
+  async getUpgradeRequestsByStatus(
+    status: string,
+    page: number = 1,
+    limit: number = 10
+  ) {
     try {
-      const upgradeRequests = await UpgradeRequestModel.find({ status });
-      if (!upgradeRequests) {
-        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+      const validPage = Math.max(1, Math.floor(page) || 1);
+      const validLimit = Math.min(Math.max(1, Math.floor(limit) || 10), 100); // Giới hạn tối đa 100 items
+
+      const countCampaigns = await UpgradeRequestModel.countDocuments({
+        status,
+      });
+      if (!countCampaigns) {
+        return {
+          upgradeRequests: [],
+          totalPages: 0,
+          total: 0,
+          currentPage: validPage,
+          hasNextPage: false,
+          hasPrevPage: false,
+        };
       }
-      return upgradeRequests;
+
+      const totalPages = Math.ceil(countCampaigns / validLimit);
+      const skip = (validPage - 1) * validLimit;
+
+      const upgradeRequests = await UpgradeRequestModel.find({ status })
+        .skip(skip)
+        .limit(validLimit);
+
+      const hasNextPage = validPage < totalPages;
+      const hasPrevPage = validPage > 1;
+
+      return {
+        upgradeRequests,
+        totalPages,
+        total: countCampaigns,
+        currentPage: validPage,
+        hasNextPage,
+        hasPrevPage,
+      };
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
@@ -75,24 +117,24 @@ class UpgradeRequestService {
     }
   }
 
-  async updateUpgradeRequest(upgradeRequestId: string, data: any) {
-    try {
-      const upgradeRequest = await UpgradeRequestModel.findByIdAndUpdate(
-        upgradeRequestId,
-        data,
-        { new: true }
-      );
-      if (!upgradeRequest) {
-        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
-      }
-      return upgradeRequest;
-    } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
-      throw new CustomError(500, error as string);
-    }
-  }
+  // async updateUpgradeRequest(upgradeRequestId: string, data: any) {
+  //   try {
+  //     const upgradeRequest = await UpgradeRequestModel.findByIdAndUpdate(
+  //       upgradeRequestId,
+  //       data,
+  //       { new: true }
+  //     );
+  //     if (!upgradeRequest) {
+  //       throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+  //     }
+  //     return upgradeRequest;
+  //   } catch (error) {
+  //     if (error instanceof CustomError) {
+  //       throw error;
+  //     }
+  //     throw new CustomError(500, error as string);
+  //   }
+  // }
 
   async acceptUpgradeRequest(upgradeRequestId: string, sellerId: string) {
     try {

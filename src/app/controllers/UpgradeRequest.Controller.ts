@@ -45,18 +45,28 @@ class UpgradeRequestController {
     res: Response,
     next: NextFunction
   ) {
-    // console.log("Đã tới đây, endpoint: /upgrade-requests/:status");
-
     try {
       const status = req.params.status;
-      const upgradeRequests =
-        await UpgradeRequestService.getUpgradeRequestsByStatus(
-          status as string
-        );
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      const result = await UpgradeRequestService.getUpgradeRequestsByStatus(
+        status as string,
+        page,
+        limit
+      );
+
       res.status(200).json({
         success: true,
         message: "Lấy danh sách yêu cầu nâng cấp thành công",
-        data: upgradeRequests,
+        data: result.upgradeRequests,
+        pagination: {
+          total: result.total,
+          totalPages: result.totalPages,
+          currentPage: result.currentPage,
+          hasNextPage: result.hasNextPage,
+          hasPrevPage: result.hasPrevPage,
+        },
       });
     } catch (error) {
       next(error);
@@ -66,7 +76,7 @@ class UpgradeRequestController {
   async acceptUpgradeRequest(req: Request, res: Response, next: NextFunction) {
     log("Đã tới đây, endpoint: /upgrade-requests/:id/accept");
     try {
-      const upgradeRequestId = req.params.upgradeRequestId;
+      const upgradeRequestId = req.params.requestId;
       const sellerId = req.user?._id;
       if (!upgradeRequestId) {
         throw new CustomError(400, "Không tìm thấy id");
@@ -113,7 +123,7 @@ class UpgradeRequestController {
 
   async approveUpgradeRequest(req: Request, res: Response, next: NextFunction) {
     try {
-      const upgradeRequestId = req.params.upgradeRequestId;
+      const upgradeRequestId = req.params.requestId;
       if (!upgradeRequestId) {
         throw new CustomError(400, "Không tìm thấy id");
       }

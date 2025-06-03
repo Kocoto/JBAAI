@@ -21,6 +21,8 @@ interface FranchiseDetails {
   franchiseLevel: number;
   ancestorPath: Types.ObjectId[];
   userTrialQuotaLedger: UserTrialQuotaLedger[];
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const userTrialQuotaLedgerSchema = new Schema<UserTrialQuotaLedger>(
@@ -72,13 +74,18 @@ const userTrialQuotaLedgerSchema = new Schema<UserTrialQuotaLedger>(
   }
 );
 
-const franchiseDetailsSchema = new Schema<FranchiseDetails>({
-  userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-  parentId: { type: Schema.Types.ObjectId, ref: "User", default: null },
-  franchiseLevel: { type: Number, required: true },
-  ancestorPath: [{ type: Schema.Types.ObjectId, ref: "User" }],
-  userTrialQuotaLedger: [userTrialQuotaLedgerSchema],
-});
+const franchiseDetailsSchema = new Schema<FranchiseDetails>(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    parentId: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    franchiseLevel: { type: Number, required: true },
+    ancestorPath: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    userTrialQuotaLedger: [userTrialQuotaLedgerSchema],
+  },
+  {
+    timestamps: true,
+  }
+);
 
 export const FranchiseDetailsModel = mongoose.model<FranchiseDetails>(
   "FranchiseDetails",

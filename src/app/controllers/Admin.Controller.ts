@@ -391,6 +391,140 @@ class AdminController {
       next(error);
     }
   }
+
+  async getCampaignPerformanceSummary(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      console.log("[AdminController] Bắt đầu lấy tóm tắt hiệu suất Campaign.");
+
+      const { campaignId } = req.params;
+
+      if (!campaignId) {
+        return res.status(400).json({
+          success: false,
+          message: "ID Campaign không được để trống",
+          data: null,
+        });
+      }
+
+      const performanceSummary =
+        await AdminService.getCampaignPerformanceSummary(campaignId);
+
+      console.log(
+        `[AdminController] Lấy tóm tắt hiệu suất Campaign thành công: ${performanceSummary.campaign.campaignName}`
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy tóm tắt hiệu suất Campaign thành công",
+        data: performanceSummary,
+      });
+    } catch (error) {
+      console.error(
+        `[AdminController] Lỗi khi lấy tóm tắt hiệu suất Campaign: ${error}`
+      );
+      next(error);
+    }
+  }
+
+  //GET /franchises
+  async getAllFranchises(req: Request, res: Response, next: NextFunction) {
+    try {
+      console.log("[AdminController] Bắt đầu lấy danh sách Franchises.");
+
+      // Lấy query parameters
+      const { page, limit, status, level } = req.query;
+
+      // Parse và validate page và limit
+      const pageNumber = parseInt(page as string) || 1;
+      const limitNumber = parseInt(limit as string) || 10;
+
+      // Parse level nếu có
+      let franchiseLevel: number | undefined;
+      if (level !== undefined && level !== "") {
+        franchiseLevel = parseInt(level as string);
+
+        // Validate level là số hợp lệ
+        if (isNaN(franchiseLevel) || franchiseLevel < 0) {
+          return res.status(400).json({
+            success: false,
+            message: "Cấp franchise phải là số không âm",
+            data: null,
+          });
+        }
+      }
+
+      // Validate status nếu có
+      const validStatuses = ["active", "inactive", "suspended"]; // Thêm các status hợp lệ theo business logic
+      if (status && !validStatuses.includes(status as string)) {
+        return res.status(400).json({
+          success: false,
+          message: `Trạng thái không hợp lệ. Chỉ chấp nhận: ${validStatuses.join(
+            ", "
+          )}`,
+          data: null,
+        });
+      }
+
+      // Gọi service để lấy dữ liệu
+      const result = await AdminService.getAllFranchises(
+        pageNumber,
+        limitNumber,
+        status as string,
+        franchiseLevel
+      );
+
+      console.log(
+        `[AdminController] Lấy được ${result.franchises.length} Franchises.`
+      );
+
+      // Format response data
+      const formattedFranchises = result.franchises.map((franchise) => ({
+        _id: franchise._id,
+        userId: franchise.userId,
+        parentId: franchise.parentId,
+        franchiseLevel: franchise.franchiseLevel,
+        ancestorPath: franchise.ancestorPath,
+        userTrialQuotaLedger: franchise.userTrialQuotaLedger,
+        totalActiveQuota:
+          franchise.userTrialQuotaLedger
+            ?.filter((ledger: any) => ledger.status === "active")
+            ?.reduce((sum: number, ledger: any) => {
+              const available =
+                ledger.totalAllocated -
+                ledger.consumedByOwnInvites -
+                ledger.allocatedToChildren;
+              return sum + Math.max(0, available);
+            }, 0) || 0,
+        createdAt: franchise.createdAt,
+        updatedAt: franchise.updatedAt,
+      }));
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy danh sách Franchises thành công",
+        data: {
+          franchises: formattedFranchises,
+          pagination: {
+            currentPage: result.currentPage,
+            totalPages: result.totalPages,
+            totalItems: result.total,
+            itemsPerPage: limitNumber,
+            hasNextPage: result.hasNextPage,
+            hasPrevPage: result.hasPrevPage,
+          },
+        },
+      });
+    } catch (error) {
+      console.error(
+        `[AdminController] Lỗi khi lấy danh sách Franchises: ${error}`
+      );
+      next(error);
+    }
+  }
 }
 
 export default new AdminController();

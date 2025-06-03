@@ -7,7 +7,7 @@ const router = Router();
 router.use(checkLogin);
 
 router.post(
-  "/approve/:upgradeRequestId",
+  "/:requestId/approve",
   UpgradeRequestController.approveUpgradeRequest
 );
 router.get(
@@ -15,7 +15,7 @@ router.get(
   UpgradeRequestController.getUpgradeRequestBySellerId
 );
 router.put(
-  "/accept/:upgradeRequestId",
+  "/:requestId/assign-seller",
   UpgradeRequestController.acceptUpgradeRequest
 );
 router.get(

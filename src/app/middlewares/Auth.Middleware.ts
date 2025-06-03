@@ -58,3 +58,17 @@ export const checkLogin = async (
     next(error);
   }
 };
+
+export const checkAdmin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  if (req.user?.role !== "admin") {
+    return res.status(403).json({
+      success: false,
+      message: "Bạn không có quyền truy cập chức năng này",
+    });
+  }
+  next();
+};
