@@ -31,6 +31,7 @@ const InvitationCodeSchema = new Schema<IInvitationCode>(
     },
     currentActiveLedgerEntryId: {
       type: Schema.Types.ObjectId,
+
       required: false,
     },
     totalCumulativeUses: {

@@ -29,7 +29,11 @@ const trialConversionLogSchema = new Schema<ITrialConversionLog>(
       ref: "User",
       required: true,
     },
-    rootCampaignId: { type: Schema.Types.ObjectId, required: true },
+    rootCampaignId: {
+      type: Schema.Types.ObjectId,
+      ref: "Campaign",
+      required: true,
+    },
     ledgerEntryIdUsed: {
       type: Schema.Types.ObjectId,
       ref: "UserTrialQuotaLedger",
@@ -40,8 +44,6 @@ const trialConversionLogSchema = new Schema<ITrialConversionLog>(
     didRenew: { type: Boolean, required: true, default: false },
     renewalDate: { type: Date },
     paidSubscriptionId: { type: Schema.Types.ObjectId, ref: "Subscription" },
-    createdAt: { type: Date, required: true, default: Date.now },
-    updatedAt: { type: Date, required: true, default: Date.now },
   },
   {
     timestamps: true,

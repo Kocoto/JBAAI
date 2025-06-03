@@ -23,51 +23,60 @@ interface FranchiseDetails {
   userTrialQuotaLedger: UserTrialQuotaLedger[];
 }
 
-const userTrialQuotaLedgerSchema = new Schema<UserTrialQuotaLedger>({
-  // ID của ledger entry này (ví dụ: LEDGER_F0_A, LEDGER_F1_A)
-  _id: { type: Schema.Types.ObjectId, auto: true },
+const userTrialQuotaLedgerSchema = new Schema<UserTrialQuotaLedger>(
+  {
+    // ID của ledger entry này (ví dụ: LEDGER_F0_A, LEDGER_F1_A)
+    _id: { type: Schema.Types.ObjectId, auto: true },
 
-  // Tham chiếu đến Campaign._id - ID của chiến dịch gốc từ admin. Quan trọng cho F0, F1, F2... để truy ngược
-  sourceCampaignId: { type: Schema.Types.ObjectId },
+    // Tham chiếu đến Campaign._id - ID của chiến dịch gốc từ admin. Quan trọng cho F0, F1, F2... để truy ngược
+    sourceCampaignId: { type: Schema.Types.ObjectId, ref: "Campaign" },
 
-  // Tham chiếu đến FranchiseDetails.userTrialQuotaLedger._id của franchise cha - cho biết quota này được chia từ entry nào của cha
-  // Giá trị null nếu là F0 nhận từ admin
-  sourceParentLedgerEntryId: { type: Schema.Types.ObjectId },
+    // Tham chiếu đến FranchiseDetails.userTrialQuotaLedger._id của franchise cha - cho biết quota này được chia từ entry nào của cha
+    // Giá trị null nếu là F0 nhận từ admin
+    // ref: "FranchiseDetails.userTrialQuotaLedger",
+    sourceParentLedgerEntryId: {
+      type: Schema.Types.ObjectId,
+      default: null,
+    },
 
-  // ID của người cấp quota này: admin hoặc franchise cha
-  allocatedByUserId: { type: Schema.Types.ObjectId, required: true },
+    // ID của người cấp quota này: admin hoặc franchise cha
+    allocatedByUserId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
 
-  // Số lượng quota được cấp trong entry này
-  totalAllocated: { type: Number, required: true },
+    // Số lượng quota được cấp trong entry này
+    totalAllocated: { type: Number, required: true },
 
-  // Số quota đã được franchise này trực tiếp sử dụng để mời người dùng cuối
-  consumedByOwnInvites: { type: Number, required: true, default: 0 },
+    // Số quota đã được franchise này trực tiếp sử dụng để mời người dùng cuối
+    consumedByOwnInvites: { type: Number, required: true, default: 0 },
 
-  // Tổng số quota franchise này đã phân bổ cho các con trực tiếp của mình từ entry này
-  allocatedToChildren: { type: Number, required: true, default: 0 },
+    // Tổng số quota franchise này đã phân bổ cho các con trực tiếp của mình từ entry này
+    allocatedToChildren: { type: Number, required: true, default: 0 },
 
-  status: {
-    type: String,
-    required: true,
-    enum: ["active", "exhausted", "expired", "paused"],
+    status: {
+      type: String,
+      required: true,
+      enum: ["active", "exhausted", "expired", "paused"],
+    },
+
+    // Ngày bắt đầu của chiến dịch gốc, để tính toán thời hạn nếu cần
+    originalCampaignStartDate: { type: Date },
+
+    // Ngày kết thúc của chiến dịch gốc, nếu có
+    originalCampaignEndDate: { type: Date },
   },
-
-  // Thời gian tạo và cập nhật cho ledger entry này
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-
-  // Ngày bắt đầu của chiến dịch gốc, để tính toán thời hạn nếu cần
-  originalCampaignStartDate: { type: Date },
-
-  // Ngày kết thúc của chiến dịch gốc, nếu có
-  originalCampaignEndDate: { type: Date },
-});
+  {
+    timestamps: true,
+  }
+);
 
 const franchiseDetailsSchema = new Schema<FranchiseDetails>({
-  userId: { type: Schema.Types.ObjectId, required: true },
-  parentId: { type: Schema.Types.ObjectId, default: null },
+  userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+  parentId: { type: Schema.Types.ObjectId, ref: "User", default: null },
   franchiseLevel: { type: Number, required: true },
-  ancestorPath: [{ type: Schema.Types.ObjectId }],
+  ancestorPath: [{ type: Schema.Types.ObjectId, ref: "User" }],
   userTrialQuotaLedger: [userTrialQuotaLedgerSchema],
 });
 
