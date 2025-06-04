@@ -24,4 +24,11 @@ router.get(
   AdminController.getCampaignPerformanceSummary
 );
 
+// Franchise management routes
+router.get("/franchises", AdminController.getAllFranchises);
+router.get(
+  "/franchises/:userId/hierarchy",
+  AdminController.getFranchiseHierarchy
+);
+
 export default router;

@@ -856,7 +856,7 @@ class AdminService {
       const franchises = await FranchiseDetailsModel.find(mongoFilter)
         .skip(skip)
         .limit(validLimit)
-        .populate("userId", "username email")
+        .populate("userId")
         .lean();
 
       return {
@@ -880,6 +880,268 @@ class AdminService {
       throw new CustomError(
         500,
         "Lỗi không xác định khi tìm kiếm tất cả các franchise"
+      );
+    }
+  }
+
+  /**
+   * Hàm lấy cây phân cấp franchise và thống kê
+   * @param userId - ID của user cần lấy cây phân cấp
+   *
+   * Quy trình:
+   * 1. Validate input và kiểm tra user
+   * 2. Lấy thông tin franchise gốc
+   * 3. Xây dựng cây phân cấp bằng đệ quy:
+   *    - Lấy danh sách franchise con trực tiếp
+   *    - Với mỗi franchise con:
+   *      + Tính quota còn hoạt động
+   *      + Đếm số lượng lời mời
+   *      + Tính tỷ lệ chuyển đổi
+   *      + Đệ quy để lấy cây con
+   * 4. Tính thống kê tổng quan cho franchise gốc
+   * 5. Tính thống kê theo từng cấp độ franchise
+   * 6. Đóng gói kết quả trả về
+   */
+  async getFranchiseHierarchy(userId: string) {
+    try {
+      console.log(
+        `[AdminService] Lấy cây phân cấp franchise cho user: ${userId}`
+      );
+
+      // Validate đầu vào
+      if (!userId?.trim()) {
+        throw new CustomError(400, "ID User không được để trống");
+      }
+
+      if (!Types.ObjectId.isValid(userId)) {
+        throw new CustomError(400, "ID User không hợp lệ");
+      }
+
+      // Kiểm tra user có tồn tại và có phải là franchise không
+      const user = await UserModel.findById(userId).lean();
+      if (!user) {
+        throw new CustomError(404, "Không tìm thấy người dùng");
+      }
+
+      // Lấy thông tin franchise details của user gốc
+      const rootFranchise = await FranchiseDetailsModel.findOne({
+        userId: new Types.ObjectId(userId),
+      })
+        .populate("userId", "username email franchiseName role")
+        .lean();
+
+      if (!rootFranchise) {
+        throw new CustomError(404, "Người dùng không phải là franchise");
+      }
+
+      // Hàm đệ quy xây dựng cây phân cấp
+      const buildHierarchyTree = async (
+        parentId: Types.ObjectId,
+        level: number = 0
+      ): Promise<any> => {
+        // Lấy danh sách franchise con trực tiếp
+        const childFranchises = await FranchiseDetailsModel.find({
+          parentId: parentId,
+        })
+          .populate(
+            "userId",
+            "username email franchiseName role isSubscription type"
+          )
+          .lean();
+
+        // Xử lý từng franchise con và build cây
+        const childrenWithSubTree = await Promise.all(
+          childFranchises.map(async (child) => {
+            // Tính quota còn active
+            const activeQuota =
+              child.userTrialQuotaLedger
+                ?.filter((ledger: any) => ledger.status === "active")
+                ?.reduce((sum: number, ledger: any) => {
+                  const available =
+                    ledger.totalAllocated -
+                    ledger.consumedByOwnInvites -
+                    ledger.allocatedToChildren;
+                  return sum + Math.max(0, available);
+                }, 0) || 0;
+
+            // Đếm số lượng lời mời
+            const invitations = await InvitationModel.countDocuments({
+              inviterUserId: child.userId,
+            });
+
+            // Tính số lượng và tỷ lệ chuyển đổi
+            const trialConversions = await TrialConversionLogModel.find({
+              referringFranchiseId: child.userId,
+            }).lean();
+
+            const totalRenewals = trialConversions.filter(
+              (log) => log.didRenew
+            ).length;
+            const conversionRate =
+              invitations > 0
+                ? Math.round((totalRenewals / invitations) * 100 * 100) / 100
+                : 0;
+
+            // Đệ quy lấy cây con
+            const subTree = await buildHierarchyTree(
+              child.userId as Types.ObjectId,
+              level + 1
+            );
+
+            return {
+              _id: child._id,
+              userId: child.userId,
+              parentId: child.parentId,
+              franchiseLevel: child.franchiseLevel,
+              ancestorPath: child.ancestorPath,
+              activeQuota: activeQuota,
+              totalInvites: invitations,
+              totalRenewals: totalRenewals,
+              conversionRate: conversionRate,
+              createdAt: child.createdAt,
+              updatedAt: child.updatedAt,
+              children: subTree,
+            };
+          })
+        );
+
+        return childrenWithSubTree;
+      };
+
+      // Xây dựng cây từ franchise gốc
+      const hierarchyTree = await buildHierarchyTree(
+        rootFranchise.userId as Types.ObjectId
+      );
+
+      // Tính thống kê cho franchise gốc
+      const rootInvitations = await InvitationModel.countDocuments({
+        inviterUserId: rootFranchise.userId,
+      });
+
+      const rootTrialConversions = await TrialConversionLogModel.find({
+        referringFranchiseId: rootFranchise.userId,
+      }).lean();
+
+      const rootTotalRenewals = rootTrialConversions.filter(
+        (log) => log.didRenew
+      ).length;
+      const rootConversionRate =
+        rootInvitations > 0
+          ? Math.round((rootTotalRenewals / rootInvitations) * 100 * 100) / 100
+          : 0;
+
+      // Tính quota active của franchise gốc
+      const rootActiveQuota =
+        rootFranchise.userTrialQuotaLedger
+          ?.filter((ledger: any) => ledger.status === "active")
+          ?.reduce((sum: number, ledger: any) => {
+            const available =
+              ledger.totalAllocated -
+              ledger.consumedByOwnInvites -
+              ledger.allocatedToChildren;
+            return sum + Math.max(0, available);
+          }, 0) || 0;
+
+      // Hàm đếm tổng số franchise con
+      const countTotalDescendants = (children: any[]): number => {
+        let count = children.length;
+        for (const child of children) {
+          count += countTotalDescendants(child.children || []);
+        }
+        return count;
+      };
+
+      // Hàm tính thống kê theo cấp độ
+      const getLevelStatistics = (
+        tree: any[],
+        stats: Map<number, any> = new Map()
+      ): Map<number, any> => {
+        for (const node of tree) {
+          const level = node.franchiseLevel;
+
+          if (!stats.has(level)) {
+            stats.set(level, {
+              level: level,
+              totalFranchises: 0,
+              totalInvites: 0,
+              totalRenewals: 0,
+              averageConversionRate: 0,
+            });
+          }
+
+          const levelStats = stats.get(level)!;
+          levelStats.totalFranchises++;
+          levelStats.totalInvites += node.totalInvites || 0;
+          levelStats.totalRenewals += node.totalRenewals || 0;
+
+          if (node.children && node.children.length > 0) {
+            getLevelStatistics(node.children, stats);
+          }
+        }
+
+        return stats;
+      };
+
+      // Tính thống kê theo cấp và tỷ lệ chuyển đổi trung bình
+      const levelStats = getLevelStatistics(hierarchyTree);
+      const levelStatisticsArray = Array.from(levelStats.values()).map(
+        (stat) => ({
+          ...stat,
+          averageConversionRate:
+            stat.totalInvites > 0
+              ? Math.round(
+                  (stat.totalRenewals / stat.totalInvites) * 100 * 100
+                ) / 100
+              : 0,
+        })
+      );
+
+      // Đóng gói kết quả
+      const result = {
+        root: {
+          _id: rootFranchise._id,
+          userId: rootFranchise.userId,
+          parentId: rootFranchise.parentId,
+          franchiseLevel: rootFranchise.franchiseLevel,
+          ancestorPath: rootFranchise.ancestorPath,
+          activeQuota: rootActiveQuota,
+          totalInvites: rootInvitations,
+          totalRenewals: rootTotalRenewals,
+          conversionRate: rootConversionRate,
+          createdAt: rootFranchise.createdAt,
+          updatedAt: rootFranchise.updatedAt,
+        },
+        hierarchy: hierarchyTree,
+        statistics: {
+          totalDescendants: countTotalDescendants(hierarchyTree),
+          totalLevels:
+            Math.max(
+              ...Array.from(levelStats.keys()),
+              rootFranchise.franchiseLevel
+            ) -
+            rootFranchise.franchiseLevel +
+            1,
+          levelBreakdown: levelStatisticsArray.sort(
+            (a, b) => a.level - b.level
+          ),
+        },
+      };
+
+      console.log(`[AdminService] Lấy cây phân cấp franchise thành công`);
+      return result;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] Lỗi CustomError khi lấy cây phân cấp franchise: ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Lỗi không xác định khi lấy cây phân cấp franchise: ${error}`
+      );
+      throw new CustomError(
+        500,
+        "Lỗi không xác định khi lấy cây phân cấp franchise"
       );
     }
   }

@@ -1,6 +1,7 @@
 import AdminService, { campaignFilter } from "../services/Admin.Service";
 import { NextFunction, Request, Response } from "express";
 import CustomError from "../utils/Error.Util";
+import { Types } from "mongoose";
 
 class AdminController {
   /**
@@ -521,6 +522,48 @@ class AdminController {
     } catch (error) {
       console.error(
         `[AdminController] Lỗi khi lấy danh sách Franchises: ${error}`
+      );
+      next(error);
+    }
+  }
+
+  async getFranchiseHierarchy(req: Request, res: Response, next: NextFunction) {
+    try {
+      console.log("[AdminController] Bắt đầu lấy cây phân cấp franchise.");
+
+      const { userId } = req.params;
+
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: "ID User không được để trống",
+          data: null,
+        });
+      }
+
+      // Validate userId format
+      if (!Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({
+          success: false,
+          message: "ID User không hợp lệ",
+          data: null,
+        });
+      }
+
+      const hierarchyData = await AdminService.getFranchiseHierarchy(userId);
+
+      console.log(
+        `[AdminController] Lấy cây phân cấp franchise thành công cho user: ${userId}`
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy cây phân cấp franchise thành công",
+        data: hierarchyData,
+      });
+    } catch (error) {
+      console.error(
+        `[AdminController] Lỗi khi lấy cây phân cấp franchise: ${error}`
       );
       next(error);
     }
