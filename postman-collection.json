@@ -1,0 +1,1284 @@
+{
+  "info": {
+    "_postman_id": "jbaai-api-collection-v1",
+    "name": "JBAAI API Collection",
+    "description": "Collection đầy đủ cho JBAAI API bao gồm Authentication, User Management, Health Data, Subscription, Payment và Admin APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "packageId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "purchaseHistoryId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "upgradeRequestId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "campaignId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "healthDataId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('userId', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"StrongPassword123\",\n    \"username\": \"testuser\",\n    \"phone\": \"0901234567\",\n    \"role\": \"user\",\n    \"invitationCode\": \"AQP FREE15\",\n    \"optionEmail\": \"option@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Đăng ký tài khoản mới. Nếu có mã mời 'AQP FREE15' sẽ được tặng gói standard."
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data) {",
+                  "        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+                  "        pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                  "        if (response.data.user && response.data.user._id) {",
+                  "            pm.collectionVariables.set('userId', response.data.user._id);",
+                  "        }",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "vi",
+                "description": "Ngôn ngữ: vi, en, in, cn"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"StrongPassword123\",\n    \"clientId\": \"web-app-v1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Đăng nhập bằng email/username và password"
+          }
+        },
+        {
+          "name": "Get OTP",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/resend-otp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "resend-otp"]
+            },
+            "description": "Gửi mã OTP đến email"
+          }
+        },
+        {
+          "name": "Verify OTP to Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data) {",
+                  "        pm.collectionVariables.set('accessToken', response.data.accessToken);",
+                  "        pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"otp\": \"123456\",\n    \"clientId\": \"web-app-v1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify-otp-to-login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "verify-otp-to-login"]
+            },
+            "description": "Xác thực OTP để đăng nhập"
+          }
+        },
+        {
+          "name": "Verify OTP to Reset Password",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/verify-otp-to-reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "verify-otp-to-reset-password"]
+            },
+            "description": "Xác thực OTP để reset password"
+          }
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"NewPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "reset-password"]
+            },
+            "description": "Reset password sau khi đã xác thực OTP"
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"oldPassword\": \"StrongPassword123\",\n    \"newPassword\": \"NewPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "change-password"]
+            },
+            "description": "Đổi mật khẩu (yêu cầu đăng nhập)"
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('accessToken', response.token.accessToken);",
+                  "        pm.collectionVariables.set('refreshToken', response.token.refreshToken);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\",\n    \"clientId\": \"web-app-v1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "refresh-token"]
+            },
+            "description": "Làm mới access token"
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"refreshToken\": \"{{refreshToken}}\",\n    \"clientId\": \"web-app-v1\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Đăng xuất"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User Management",
+      "item": [
+        {
+          "name": "Switch Email Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/user/switch-notification",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "user", "switch-notification"]
+            },
+            "description": "Bật/tắt thông báo email"
+          }
+        },
+        {
+          "name": "Change Language",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"language\": \"vi\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/user/change-language",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "user", "change-language"]
+            },
+            "description": "Thay đổi ngôn ngữ. Các giá trị hợp lệ: vn, en, in, cn"
+          }
+        },
+        {
+          "name": "Update Many Users (Test)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/user/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "user", "test"]
+            },
+            "description": "API test để update nhiều users"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Profile",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "profile"]
+            },
+            "description": "Lấy thông tin profile của user"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"height\": 170,\n    \"weight\": 65,\n    \"age\": 25,\n    \"gender\": \"male\",\n    \"smokingStatus\": 0\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/profile/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "profile", "update"]
+            },
+            "description": "Cập nhật thông tin profile"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Health Data",
+      "item": [
+        {
+          "name": "Get Health Data by Date",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"date\": \"20/12/2024\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health-data",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health-data"]
+            },
+            "description": "Lấy dữ liệu sức khỏe theo ngày (định dạng dd/MM/yyyy)"
+          }
+        },
+        {
+          "name": "Create Health Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('healthDataId', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"healthData\": {\n        \"bpValue\": {\n            \"diastolic\": 74,\n            \"systolic\": 117\n        },\n        \"pulseRate\": {\n            \"value\": 55,\n            \"confidence\": {\n                \"level\": 3\n            }\n        },\n        \"oxygenSaturation\": {\n            \"value\": 98\n        },\n        \"respirationRate\": {\n            \"value\": 17,\n            \"confidence\": {\n                \"level\": 3\n            }\n        },\n        \"hemoglobin\": {\n            \"value\": 10.3\n        },\n        \"hemoglobinA1c\": {\n            \"value\": 5.82\n        },\n        \"wellnessLevel\": {\n            \"value\": 3\n        },\n        \"wellnessIndex\": {\n            \"value\": 9\n        },\n        \"stressLevel\": {\n            \"value\": 1\n        },\n        \"stressIndex\": {\n            \"value\": 49\n        }\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health-data/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health-data", "update"]
+            },
+            "description": "Tạo dữ liệu sức khỏe mới"
+          }
+        },
+        {
+          "name": "Get Health Data by Date Range",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"week\",\n    \"data\": \"1/2024\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health-data/get-health-data-by-range",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health-data", "get-health-data-by-range"]
+            },
+            "description": "Lấy dữ liệu sức khỏe theo khoảng thời gian. Type: day, week, month"
+          }
+        },
+        {
+          "name": "Send Health Data Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept-Language",
+                "value": "vi"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"healthData\": {\n        \"bpValue\": {\n            \"diastolic\": 74,\n            \"systolic\": 117\n        },\n        \"pulseRate\": {\n            \"value\": 55\n        },\n        \"oxygenSaturation\": {\n            \"value\": 98\n        },\n        \"wellnessLevel\": {\n            \"value\": 3\n        },\n        \"wellnessIndex\": {\n            \"value\": 9\n        }\n    }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health-data/sent-mail",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health-data", "sent-mail"]
+            },
+            "description": "Gửi email báo cáo sức khỏe"
+          }
+        },
+        {
+          "name": "Delete Health Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"healthDataId\": \"{{healthDataId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health-data/delete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health-data", "delete"]
+            },
+            "description": "Xóa dữ liệu sức khỏe"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Package",
+      "item": [
+        {
+          "name": "Get All Packages",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.length > 0) {",
+                  "        pm.collectionVariables.set('packageId', response.data[0]._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/package",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "package"]
+            },
+            "description": "Lấy tất cả packages (dựa trên IP để xác định location)"
+          }
+        },
+        {
+          "name": "Get Package by Type",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"type\": \"premium\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/package/get-by-type",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "package", "get-by-type"]
+            },
+            "description": "Lấy package theo loại (standard hoặc premium)"
+          }
+        },
+        {
+          "name": "Get Package by ID",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/package/{{packageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "package", "{{packageId}}"]
+            },
+            "description": "Lấy thông tin chi tiết package"
+          }
+        },
+        {
+          "name": "Create Package",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Premium Monthly\",\n    \"price\": 10,\n    \"description\": \"Premium package with all features\",\n    \"duration\": 30,\n    \"type\": \"premium\",\n    \"location\": \"VN\",\n    \"discount\": 2,\n    \"status\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/package/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "package", "create"]
+            },
+            "description": "Tạo package mới (yêu cầu đăng nhập)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. PayPal Payment",
+      "item": [
+        {
+          "name": "Create PayPal Order",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.order && response.data.order.result) {",
+                  "        pm.collectionVariables.set('orderId', response.data.order.result.id);",
+                  "        pm.collectionVariables.set('purchaseHistoryId', response.data.newPurchase._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"packageId\": \"{{packageId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/paypal/create-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "paypal", "create-order"]
+            },
+            "description": "Tạo đơn hàng PayPal"
+          }
+        },
+        {
+          "name": "Capture PayPal Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"orderId\": \"{{orderId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/paypal/capture-order",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "paypal", "capture-order"]
+            },
+            "description": "Xác nhận thanh toán PayPal"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Upgrade Request",
+      "item": [
+        {
+          "name": "Create Upgrade Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data._id) {",
+                  "        pm.collectionVariables.set('upgradeRequestId', response.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"phone\": \"0901234567\",\n    \"fullname\": \"Nguyen Van A\",\n    \"address\": \"123 Nguyen Hue, Q1, TPHCM\",\n    \"franchiseName\": \"FRANCHISE001\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/upgrade-request",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "upgrade-request"]
+            },
+            "description": "Tạo yêu cầu nâng cấp lên franchise"
+          }
+        },
+        {
+          "name": "Get Upgrade Requests by Status",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/upgrade-request/get-by-status/pending?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "v1",
+                "upgrade-request",
+                "get-by-status",
+                "pending"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Lấy danh sách yêu cầu nâng cấp theo trạng thái (pending, reviewing, approved, rejected)"
+          }
+        },
+        {
+          "name": "Accept Upgrade Request (Seller)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/upgrade-request/{{upgradeRequestId}}/assign-seller",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "v1",
+                "upgrade-request",
+                "{{upgradeRequestId}}",
+                "assign-seller"
+              ]
+            },
+            "description": "Seller nhận xử lý yêu cầu nâng cấp"
+          }
+        },
+        {
+          "name": "Get Upgrade Requests by Seller ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/upgrade-request/get-by-seller-id/reviewing",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "v1",
+                "upgrade-request",
+                "get-by-seller-id",
+                "reviewing"
+              ]
+            },
+            "description": "Lấy danh sách yêu cầu mà seller đang xử lý"
+          }
+        },
+        {
+          "name": "Approve Upgrade Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/upgrade-request/{{upgradeRequestId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "v1",
+                "upgrade-request",
+                "{{upgradeRequestId}}",
+                "approve"
+              ]
+            },
+            "description": "Phê duyệt yêu cầu nâng cấp"
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Invitation Code",
+      "item": [
+        {
+          "name": "Get Invitation Code by User",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/invitation-code",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "invitation-code"]
+            },
+            "description": "Lấy mã mời của user hiện tại"
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Admin APIs",
+      "item": [
+        {
+          "name": "Campaigns",
+          "item": [
+            {
+              "name": "Create Campaign",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.data && response.data._id) {",
+                      "        pm.collectionVariables.set('campaignId', response.data._id);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"campaignName\": \"Campaign Q1 2025\",\n    \"franchiseOwnerId\": \"{{userId}}\",\n    \"totalAllocated\": 100,\n    \"startDate\": \"2025-01-01\",\n    \"endDate\": \"2025-03-31\",\n    \"renewalRequirement\": 20\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/campaigns",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "admin", "campaigns"]
+                },
+                "description": "Tạo campaign mới (Admin only)"
+              }
+            },
+            {
+              "name": "Get All Campaigns",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/campaigns?status=active&page=1&limit=10",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "admin", "campaigns"],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "description": "active, inactive, expired, deleted"
+                    },
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "franchiseOwnerId",
+                      "value": "{{userId}}",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Lấy danh sách campaigns với filter và phân trang"
+              }
+            },
+            {
+              "name": "Get Campaign by ID",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/campaigns/{{campaignId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "admin", "campaigns", "{{campaignId}}"]
+                },
+                "description": "Lấy thông tin chi tiết campaign"
+              }
+            },
+            {
+              "name": "Update Campaign",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"campaignName\": \"Updated Campaign Q1 2025\",\n    \"totalAllocated\": 150,\n    \"renewalRequirement\": 25\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/campaigns/{{campaignId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "admin", "campaigns", "{{campaignId}}"]
+                },
+                "description": "Cập nhật thông tin campaign"
+              }
+            },
+            {
+              "name": "Change Campaign Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"status\": \"inactive\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/campaigns/{{campaignId}}/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "campaigns",
+                    "{{campaignId}}",
+                    "status"
+                  ]
+                },
+                "description": "Thay đổi trạng thái campaign (active, inactive, expired)"
+              }
+            },
+            {
+              "name": "Delete Campaign",
+              "request": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/campaigns/{{campaignId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "admin", "campaigns", "{{campaignId}}"]
+                },
+                "description": "Xóa campaign (soft delete)"
+              }
+            },
+            {
+              "name": "Get Campaign Statistics",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/campaigns/statistics",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "admin", "campaigns", "statistics"]
+                },
+                "description": "Lấy thống kê campaigns"
+              }
+            },
+            {
+              "name": "Get Campaign Performance Summary",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/campaigns/{{campaignId}}/performance-summary",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "campaigns",
+                    "{{campaignId}}",
+                    "performance-summary"
+                  ]
+                },
+                "description": "Lấy báo cáo hiệu suất chi tiết của campaign"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Franchises",
+          "item": [
+            {
+              "name": "Get All Franchises",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/franchises?page=1&limit=10&level=0",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "admin", "franchises"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "disabled": true
+                    },
+                    {
+                      "key": "level",
+                      "value": "0",
+                      "description": "Cấp độ franchise (0, 1, 2,...)"
+                    }
+                  ]
+                },
+                "description": "Lấy danh sách tất cả franchises"
+              }
+            },
+            {
+              "name": "Get Franchise Hierarchy",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/franchises/{{userId}}/hierarchy",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "franchises",
+                    "{{userId}}",
+                    "hierarchy"
+                  ]
+                },
+                "description": "Lấy cây phân cấp franchise và thống kê"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10. Home & Utilities",
+      "item": [
+        {
+          "name": "Home",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            },
+            "description": "API home endpoint"
+          }
+        },
+        {
+          "name": "Test GeoIP",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/test",
+              "host": ["{{baseUrl}}"],
+              "path": ["test"]
+            },
+            "description": "Test GeoIP functionality"
+          }
+        },
+        {
+          "name": "Hide Score",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/hide-score",
+              "host": ["{{baseUrl}}"],
+              "path": ["hide-score"]
+            },
+            "description": "Hide score endpoint"
+          }
+        },
+        {
+          "name": "Payment Success Page",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/success",
+              "host": ["{{baseUrl}}"],
+              "path": ["success"]
+            },
+            "description": "Payment success page"
+          }
+        },
+        {
+          "name": "Payment Cancel Page",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["cancel"]
+            },
+            "description": "Payment cancel page"
+          }
+        },
+        {
+          "name": "API Documentation",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api-docs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api-docs"]
+            },
+            "description": "Swagger API documentation"
+          }
+        }
+      ]
+    }
+  ]
+}

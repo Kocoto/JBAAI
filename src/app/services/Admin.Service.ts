@@ -1145,6 +1145,9 @@ class AdminService {
       );
     }
   }
+
+  // Export reports
+  async exportPaymentHistoryReport() {}
 }
 
 export default new AdminService();
