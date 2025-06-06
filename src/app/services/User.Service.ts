@@ -83,7 +83,7 @@ class UserService {
       // Find users matching criteria
       const users = await UserModel.find({
         isSubscription: false,
-        createdAt: { $lt: new Date("2025-05-12") },
+        createdAt: { $gt: new Date("2025-05-12") },
       })
         .select("email -_id")
         .sort({ createdAt: -1 });
