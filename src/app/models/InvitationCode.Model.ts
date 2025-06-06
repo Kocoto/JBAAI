@@ -7,6 +7,8 @@ export interface IInvitationCode extends Document {
   codeType: "USER_TRIAL" | "FRANCHISE_HIERARCHY";
   currentActiveLedgerEntryId?: Types.ObjectId;
   totalCumulativeUses?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const InvitationCodeSchema = new Schema<IInvitationCode>(
