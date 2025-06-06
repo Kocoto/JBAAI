@@ -56,7 +56,7 @@ class PackageService {
     try {
       const packages = await PackageModel.find({
         status: true,
-        location: isoCode,
+        location: isoCode === "VN" ? "VN" : "other",
       });
       if (!packages) {
         throw new CustomError(404, "Packages not found");
@@ -75,7 +75,7 @@ class PackageService {
       const packages = await PackageModel.find({
         type,
         status: true,
-        location: isoCode,
+        location: isoCode === "VN" ? "VN" : "other",
       });
       if (!packages) {
         throw new CustomError(404, "Packages not found");
