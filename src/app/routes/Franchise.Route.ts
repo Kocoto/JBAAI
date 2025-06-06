@@ -40,4 +40,67 @@ router.get(
   FranchiseController.getMyUserTrialQuotaLedger
 );
 
+// POST /api/v1/franchise/manage-children-quota/allocate - Cấp quota cho franchise con
+router.post(
+  "/manage-children-quota/allocate",
+  checkFranchise,
+  FranchiseController.allocateQuotaToChild
+);
+
+// PUT /api/v1/franchise/manage-children-quota/revoke-allocation/:childLedgerEntryId - Thu hồi quota
+router.put(
+  "/manage-children-quota/revoke-allocation/:childLedgerEntryId",
+  checkFranchise,
+  FranchiseController.revokeQuotaFromChild
+);
+
+// GET /api/v1/franchise/manage-children-quota/allocation-history/child/:childFranchiseUserId - Lịch sử cấp phát
+router.get(
+  "/manage-children-quota/allocation-history/child/:childFranchiseUserId",
+  checkFranchise,
+  FranchiseController.getChildAllocationHistory
+);
+
+// GET /api/v1/franchise/reports/my-trial-performance - Hiệu suất mời dùng thử của chính mình
+router.get(
+  "/reports/my-trial-performance",
+  checkFranchise,
+  FranchiseController.getMyTrialPerformance
+);
+
+// GET /api/v1/franchise/reports/children-trial-performance-summary - Hiệu suất tổng hợp franchise con
+router.get(
+  "/reports/children-trial-performance-summary",
+  checkFranchise,
+  FranchiseController.getChildrenTrialPerformanceSummary
+);
+
+// GET /api/v1/franchise/reports/child-trial-performance/:childFranchiseUserId - Hiệu suất chi tiết một franchise con
+router.get(
+  "/reports/child-trial-performance/:childFranchiseUserId",
+  checkFranchise,
+  FranchiseController.getSingleChildTrialPerformance
+);
+
+// GET /api/v1/franchise/reports/full-hierarchy-performance/:rootCampaignId? - Hiệu suất toàn bộ cây franchise
+router.get(
+  "/reports/full-hierarchy-performance/:rootCampaignId?",
+  checkFranchise,
+  FranchiseController.getFullHierarchyPerformance
+);
+
+// GET /api/v1/franchise/reports/full-hierarchy-performance - Hiệu suất toàn bộ cây franchise (không có rootCampaignId)
+router.get(
+  "/reports/full-hierarchy-performance",
+  checkFranchise,
+  FranchiseController.getFullHierarchyPerformance
+);
+
+// GET /api/v1/franchise/reports/quota-utilization - Tình hình sử dụng quota
+router.get(
+  "/reports/quota-utilization",
+  checkFranchise,
+  FranchiseController.getQuotaUtilization
+);
+
 export default router;
