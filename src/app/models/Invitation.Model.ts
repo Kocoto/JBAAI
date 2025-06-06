@@ -7,6 +7,8 @@ export interface IInvitation {
   linkedLedgerEntryId: Types.ObjectId;
   linkedRootCampaignId: Types.ObjectId;
   inviteType: "USER_TRIAL" | "FRANCHISE_HIERARCHY";
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 const InvitationSchema = new Schema<IInvitation>(

@@ -30,5 +30,9 @@ router.get(
   "/franchises/:userId/hierarchy",
   AdminController.getFranchiseHierarchy
 );
+router.get(
+  "/franchises/:userId/performance-overview",
+  AdminController.getFranchisePerformanceOverview
+);
 
 export default router;

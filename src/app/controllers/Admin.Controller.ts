@@ -568,6 +568,137 @@ class AdminController {
       next(error);
     }
   }
+
+  async getFranchisePerformanceOverview(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      console.log(
+        "[AdminController] Bắt đầu lấy tổng quan hiệu suất franchise."
+      );
+
+      const { userId } = req.params;
+      const { startDate, endDate, rootCampaignId } = req.query;
+
+      // Validate userId
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: "ID User không được để trống",
+          data: null,
+        });
+      }
+
+      if (!Types.ObjectId.isValid(userId)) {
+        return res.status(400).json({
+          success: false,
+          message: "ID User không hợp lệ",
+          data: null,
+        });
+      }
+
+      // Validate và parse dates nếu có
+      let parsedStartDate: Date | undefined;
+      let parsedEndDate: Date | undefined;
+
+      if (startDate) {
+        parsedStartDate = new Date(startDate as string);
+        if (isNaN(parsedStartDate.getTime())) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "Định dạng startDate không hợp lệ. Sử dụng ISO format (YYYY-MM-DD hoặc YYYY-MM-DDTHH:mm:ss.sssZ)",
+            data: null,
+          });
+        }
+      }
+
+      if (endDate) {
+        parsedEndDate = new Date(endDate as string);
+        if (isNaN(parsedEndDate.getTime())) {
+          return res.status(400).json({
+            success: false,
+            message:
+              "Định dạng endDate không hợp lệ. Sử dụng ISO format (YYYY-MM-DD hoặc YYYY-MM-DDTHH:mm:ss.sssZ)",
+            data: null,
+          });
+        }
+      }
+
+      // Validate date range
+      if (
+        parsedStartDate &&
+        parsedEndDate &&
+        parsedStartDate >= parsedEndDate
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: "startDate phải trước endDate",
+          data: null,
+        });
+      }
+
+      // Validate rootCampaignId nếu có
+      if (rootCampaignId && !Types.ObjectId.isValid(rootCampaignId as string)) {
+        return res.status(400).json({
+          success: false,
+          message: "ID Campaign không hợp lệ",
+          data: null,
+        });
+      }
+
+      // Kiểm tra xem có quá nhiều ngày không (để tránh query quá nặng)
+      if (parsedStartDate && parsedEndDate) {
+        const daysDifference = Math.ceil(
+          (parsedEndDate.getTime() - parsedStartDate.getTime()) /
+            (1000 * 60 * 60 * 24)
+        );
+
+        if (daysDifference > 365) {
+          return res.status(400).json({
+            success: false,
+            message: "Khoảng thời gian tối đa là 365 ngày",
+            data: null,
+          });
+        }
+      }
+
+      // Call service method
+      const performanceOverview =
+        await AdminService.getFranchisePerformanceOverview(
+          userId,
+          parsedStartDate,
+          parsedEndDate,
+          rootCampaignId as string
+        );
+
+      console.log(
+        `[AdminController] Lấy tổng quan hiệu suất franchise thành công cho user: ${userId}`
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Lấy tổng quan hiệu suất franchise thành công",
+        data: performanceOverview,
+        meta: {
+          userId: userId,
+          filters: {
+            startDate: parsedStartDate?.toISOString() || null,
+            endDate: parsedEndDate?.toISOString() || null,
+            rootCampaignId: rootCampaignId || null,
+          },
+          queryTimestamp: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      console.error(
+        `[AdminController] Lỗi khi lấy tổng quan hiệu suất franchise: ${error}`
+      );
+      next(error);
+    }
+  }
 }
 
 export default new AdminController();
