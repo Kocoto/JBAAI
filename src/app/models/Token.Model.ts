@@ -9,8 +9,8 @@ interface IToken {
     enum: ["active", "inactive"];
     default: "active";
     required: true;
-    expiresAt: Date;
   };
+  expiresAt: Date;
 }
 
 const tokenSchema = new Schema<IToken>(
@@ -23,8 +23,8 @@ const tokenSchema = new Schema<IToken>(
       enum: ["active", "inactive"],
       default: "active",
       required: true,
-      expiresAt: { type: Date, required: true },
     },
+    expiresAt: { type: Date, required: true },
   },
   {
     timestamps: true,
