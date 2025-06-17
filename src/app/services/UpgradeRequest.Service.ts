@@ -1,9 +1,10 @@
-import { Types } from "mongoose";
+import mongoose, { Types } from "mongoose";
 import UpgradeRequestModel from "../models/UpgradeRequest.Model";
 import CustomError from "../utils/Error.Util";
 import InvitationCodeService from "./InvitationCode.Service";
 import UserService from "./User.Service";
 import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
+import { generateOTP } from "../utils/OTP.Util";
 
 class UpgradeRequestService {
   async createUpgradeRequest(userId: string, data: any) {
@@ -183,43 +184,62 @@ class UpgradeRequestService {
   }
 
   async approveUpgradeRequest(upgradeRequestId: string) {
+    const session = await mongoose.startSession();
     try {
-      const upgradeRequest = await UpgradeRequestModel.findById(
-        upgradeRequestId
-      ).populate("userId");
-      if (!upgradeRequest) {
-        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
-      }
-      if (!upgradeRequest.userId) {
-        // Hoặc kiểm tra kiểu cụ thể hơn nếu bạn dùng interface/type cho User
-        throw new CustomError(
-          500,
-          "Không thể lấy thông tin người dùng từ yêu cầu nâng cấp."
-        );
-      }
-      upgradeRequest.status = "approved";
-      const userToUpdate = upgradeRequest.userId as any;
-      userToUpdate.role = upgradeRequest.role;
-      userToUpdate.isSubscription = true;
-      userToUpdate.franchiseName = upgradeRequest.franchiseName;
-      userToUpdate.type = "premium";
-
-      await Promise.all([
-        userToUpdate.save(),
-        upgradeRequest.save(),
-        InvitationCodeService.createInvitationCode(
-          userToUpdate._id,
-          upgradeRequest.franchiseName
-        ),
-        FranchiseDetailsModel.create({
-          userId: upgradeRequest.userId,
-          parentId: null,
-          franchiseLevel: 0,
-          ancestorPath: [],
-          userTrialQuotaLedger: [],
-        }),
-      ]);
-      return upgradeRequest;
+      const result = await session.withTransaction(async () => {
+        const upgradeRequest = await UpgradeRequestModel.findById(
+          upgradeRequestId
+        )
+          .populate("userId")
+          .session(session);
+        if (!upgradeRequest) {
+          throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+        }
+        if (!upgradeRequest.userId) {
+          // Hoặc kiểm tra kiểu cụ thể hơn nếu bạn dùng interface/type cho User
+          throw new CustomError(
+            500,
+            "Không thể lấy thông tin người dùng từ yêu cầu nâng cấp."
+          );
+        }
+        upgradeRequest.status = "approved";
+        const userToUpdate = upgradeRequest.userId as any;
+        userToUpdate.role = upgradeRequest.role;
+        userToUpdate.isSubscription = true;
+        userToUpdate.franchiseName = upgradeRequest.franchiseName;
+        userToUpdate.type = "premium";
+        const code = upgradeRequest.franchiseName.toUpperCase();
+        await Promise.all([
+          userToUpdate.save({ session }),
+          upgradeRequest.save({ session }),
+          InvitationCodeService.createInvitationCode(
+            userToUpdate._id,
+            code,
+            "USER_TRIAL",
+            session
+          ),
+          InvitationCodeService.createInvitationCode(
+            userToUpdate._id,
+            code,
+            "FRANCHISE_HIERARCHY",
+            session
+          ),
+          FranchiseDetailsModel.create(
+            [
+              {
+                userId: upgradeRequest.userId,
+                parentId: null,
+                franchiseLevel: 0,
+                ancestorPath: [],
+                userTrialQuotaLedger: [],
+              },
+            ],
+            { session }
+          ),
+        ]);
+        return upgradeRequest;
+      });
+      return result;
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;
