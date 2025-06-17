@@ -186,12 +186,13 @@ class UpgradeRequestService {
   async approveUpgradeRequest(upgradeRequestId: string) {
     const session = await mongoose.startSession();
     try {
-      const result = await session.withTransaction(async () => {
+      const result = await session.withTransaction(async (currentSession) => {
+        console.log("Bắt đầu một lần thử giao dịch...");
         const upgradeRequest = await UpgradeRequestModel.findById(
           upgradeRequestId
         )
           .populate("userId")
-          .session(session);
+          .session(currentSession);
         if (!upgradeRequest) {
           throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
         }
@@ -209,21 +210,24 @@ class UpgradeRequestService {
         userToUpdate.franchiseName = upgradeRequest.franchiseName;
         userToUpdate.type = "premium";
         const code = upgradeRequest.franchiseName.toUpperCase();
+        // Thay vì Promise.all(), chạy tuần tự
         await Promise.all([
-          userToUpdate.save({ session }),
-          upgradeRequest.save({ session }),
+          userToUpdate.save({ session: currentSession }),
+          upgradeRequest.save({ session: currentSession }),
+
           InvitationCodeService.createInvitationCode(
             userToUpdate._id,
             code,
             "USER_TRIAL",
-            session
+            currentSession
           ),
           InvitationCodeService.createInvitationCode(
             userToUpdate._id,
             code,
             "FRANCHISE_HIERARCHY",
-            session
+            currentSession
           ),
+
           FranchiseDetailsModel.create(
             [
               {
@@ -234,17 +238,23 @@ class UpgradeRequestService {
                 userTrialQuotaLedger: [],
               },
             ],
-            { session }
+            { session: currentSession }
           ),
         ]);
+
+        console.log("Tất cả các bước trong lần thử này đã thành công.");
         return upgradeRequest;
       });
       return result;
     } catch (error) {
-      if (error instanceof CustomError) {
-        throw error;
-      }
-      throw new CustomError(500, error as string);
+      console.error("GIAO DỊCH THẤT BẠI SAU TẤT CẢ CÁC LẦN THỬ:", error);
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        500,
+        "Không thể duyệt yêu cầu nâng cấp do lỗi hệ thống."
+      );
+    } finally {
+      await session.endSession();
     }
   }
 }
