@@ -57,7 +57,7 @@ class AuthService {
           invitationCode
         );
 
-        if (!checkInvitationCode && invitationCode !== "AQP FREE15") {
+        if (!checkInvitationCode && invitationCode !== "AQP FREE25") {
           throw new CustomError(400, "Mã mời không hợp lệ");
         }
       }
@@ -96,11 +96,11 @@ class AuthService {
           invitationCode,
           user._id.toString()
         );
-        if (invitationCode === "AQP FREE15" || invitation) {
+        if (invitationCode === "AQP FREE25" || invitation) {
           await Promise.all([
             SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
               String(user._id),
-              process.env.DEMO_PACKAGE_ID || "68356a7a61d8b342093eb1fa"
+              process.env.DEMO_PACKAGE_ID || "68525e6fed04a7cb9f68c95d"
             ),
             (user.isSubscription = true),
             (user.discount = true),
