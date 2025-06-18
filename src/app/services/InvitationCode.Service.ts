@@ -18,7 +18,7 @@ class InvitationCodeService {
   async checkCode(code: string) {
     try {
       const checkCode = await InvitationCodeModel.findOne({ code: code });
-      if (!checkCode && code !== "AQP FREE15") {
+      if (!checkCode && code !== "AQP FREE25") {
         throw new CustomError(400, "Mã mời không hợp lệ");
       }
       return checkCode;
