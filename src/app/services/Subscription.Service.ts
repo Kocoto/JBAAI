@@ -9,6 +9,7 @@ import {
   IExpireSubscriptionPayload,
 } from "../queues/SubscriptionLifecycle.Queue";
 import UserModel from "../models/User.Model";
+import { ClientSession } from "mongoose";
 
 class SubscriptionService {
   async getSubscriptionByUserId(userId: string) {
@@ -77,13 +78,20 @@ class SubscriptionService {
 
   async handleSuccessfulPaymentAndActivateSubscription(
     userId: string,
-    newPackageId: string
+    newPackageId: string,
+    session?: ClientSession
   ) {
     try {
       console.log(
         `[SubService] Handling successful payment for user ${userId}, new package ${newPackageId}`
       );
-      const newPackageData = await PackageModel.findById(newPackageId);
+      const [newPackageData, currentActiveSubscription] = await Promise.all([
+        PackageModel.findById(newPackageId).session(session || null),
+        SubscriptionModel.findOne({
+          userId: userId,
+          isActive: true,
+        }).session(session || null),
+      ]);
       if (!newPackageData || typeof newPackageData.duration !== "number") {
         // durationInDays là ví dụ
         throw new CustomError(
@@ -95,11 +103,6 @@ class SubscriptionService {
       const durationInMilliseconds =
         newPackageData.duration * 24 * 60 * 60 * 1000;
 
-      const currentActiveSubscription = await SubscriptionModel.findOne({
-        userId: userId,
-        isActive: true,
-      });
-
       let finalActivatedSubscription;
 
       if (currentActiveSubscription) {
@@ -109,7 +112,7 @@ class SubscriptionService {
         currentActiveSubscription.isActive = false;
         currentActiveSubscription.status = SubscriptionStatus.SUPERSEDED;
         currentActiveSubscription.endDate = new Date();
-        await currentActiveSubscription.save();
+        await currentActiveSubscription.save({ session: session });
         console.log(
           `[SubService] Deactivated old subscription ${currentActiveSubscription._id}.`
         );
@@ -140,31 +143,37 @@ class SubscriptionService {
       const startDate = new Date();
       const newEndDate = new Date(startDate.getTime() + durationInMilliseconds);
 
-      finalActivatedSubscription = await SubscriptionModel.create({
-        userId: userId,
-        packageId: newPackageId,
-        packageName: newPackageData.name, // Lấy từ packageData
-        price: newPackageData.price, // Lấy từ packageData
-        startDate: startDate,
-        endDate: newEndDate,
-        isActive: true,
-        status: SubscriptionStatus.ACTIVE,
-        // paymentDetails: paymentInfo, // Nếu bạn truyền thông tin thanh toán vào
-      });
+      finalActivatedSubscription = await SubscriptionModel.create(
+        [
+          {
+            userId: userId,
+            packageId: newPackageId,
+            packageName: newPackageData.name, // Lấy từ packageData
+            price: newPackageData.price, // Lấy từ packageData
+            startDate: startDate,
+            endDate: newEndDate,
+            isActive: true,
+            status: SubscriptionStatus.ACTIVE,
+            // paymentDetails: paymentInfo, // Nếu bạn truyền thông tin thanh toán vào
+          },
+        ],
+        { session }
+      );
 
       if (!finalActivatedSubscription) {
         throw new CustomError(500, "Không thể tạo bản ghi subscription mới.");
       }
       console.log(
-        `[SubService] Created new active subscription ${finalActivatedSubscription._id} for user ${userId} until ${finalActivatedSubscription.endDate}.`
+        `[SubService] Created new active subscription ${finalActivatedSubscription[0]._id} for user ${userId} until ${finalActivatedSubscription[0].endDate}.`
       );
 
       const payload: IExpireSubscriptionPayload = {
-        subscriptionId: finalActivatedSubscription._id.toString(),
-        userId: finalActivatedSubscription.userId.toString(),
+        subscriptionId: finalActivatedSubscription[0]._id.toString(),
+        userId: finalActivatedSubscription[0].userId.toString(),
       };
-      const delay = finalActivatedSubscription.endDate.getTime() - Date.now();
-      const newJobId = `expire-sub-${finalActivatedSubscription._id.toString()}`;
+      const delay =
+        finalActivatedSubscription[0].endDate.getTime() - Date.now();
+      const newJobId = `expire-sub-${finalActivatedSubscription[0]._id.toString()}`;
 
       if (delay >= 0) {
         await subscriptionLifecycleQueue.add(
@@ -176,29 +185,33 @@ class SubscriptionService {
           }
         );
         console.log(
-          `[SubService] Scheduled BullMQ job ${newJobId} for new subscription ${finalActivatedSubscription._id}.`
+          `[SubService] Scheduled BullMQ job ${newJobId} for new subscription ${finalActivatedSubscription[0]._id}.`
         );
       } else {
         console.warn(
-          `[SubService] New subscription ${finalActivatedSubscription._id} has past endDate. Marking as expired.`
+          `[SubService] New subscription ${finalActivatedSubscription[0]._id} has past endDate. Marking as expired.`
         );
-        finalActivatedSubscription.isActive = false;
-        finalActivatedSubscription.status = SubscriptionStatus.EXPIRED;
-        await finalActivatedSubscription.save();
+        finalActivatedSubscription[0].isActive = false;
+        finalActivatedSubscription[0].status = SubscriptionStatus.EXPIRED;
+        await finalActivatedSubscription[0].save({ session: session });
         console.log(
-          `[SubService] Marked new subscription ${finalActivatedSubscription._id} as expired.`
+          `[SubService] Marked new subscription ${finalActivatedSubscription[0]._id} as expired.`
         );
       }
 
       if (
-        finalActivatedSubscription.isActive &&
-        finalActivatedSubscription.endDate > new Date()
+        finalActivatedSubscription[0].isActive &&
+        finalActivatedSubscription[0].endDate > new Date()
       ) {
-        await UserModel.findByIdAndUpdate(userId, {
-          isSubscription: true,
-          // type: newPackageData.type, // Ví dụ nếu bạn có trường 'type' trên User model
-          // currentPackageId: newPackageData._id, // Ví dụ
-        });
+        await UserModel.findByIdAndUpdate(
+          userId,
+          {
+            isSubscription: true,
+            // type: newPackageData.type, // Ví dụ nếu bạn có trường 'type' trên User model
+            // currentPackageId: newPackageData._id, // Ví dụ
+          },
+          { session: session }
+        );
         console.log(
           `[SubService] User ${userId} status updated: isSubscription = true.`
         );
@@ -208,15 +221,17 @@ class SubscriptionService {
           userId: userId,
           isActive: true,
           endDate: { $gt: new Date() },
-        });
+        }).session(session || null);
         if (!anyOtherActiveStill) {
-          await UserModel.findByIdAndUpdate(userId, { isSubscription: false });
+          await UserModel.findByIdAndUpdate(userId, {
+            isSubscription: false,
+          }).session(session || null);
           console.log(
             `[SubService] User ${userId} status updated: isSubscription = false (no active subs).`
           );
         }
       }
-      return finalActivatedSubscription;
+      return finalActivatedSubscription[0];
     } catch (error) {
       console.error(
         "[SubService] Error in handleSuccessfulPaymentAndActivateSubscription:",

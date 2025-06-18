@@ -1,3 +1,4 @@
+import { ClientSession } from "mongoose";
 import profileModel from "../models/Profile.Model";
 import UserModel from "../models/User.Model";
 import CustomError from "../utils/Error.Util";
@@ -22,16 +23,21 @@ class ProfileService {
     }
   }
 
-  async createProfile(userId: string, profile: any) {
+  async createProfile(userId: string, profile: any, session?: ClientSession) {
     try {
-      const newProfile = await profileModel.create({
-        userId: userId,
-        ...profile,
-      });
+      const newProfile = await profileModel.create(
+        [
+          {
+            userId: userId,
+            ...profile,
+          },
+        ],
+        { session }
+      );
       if (!newProfile) {
         throw new CustomError(400, "Không thể tạo hồ sơ");
       }
-      return newProfile;
+      return newProfile[0];
     } catch (error) {
       if (error instanceof CustomError) {
         throw error;

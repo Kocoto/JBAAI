@@ -27,6 +27,7 @@ import InvitationService from "./Invitation.Service";
 import InvitationCodeService from "./InvitationCode.Service";
 import ProfileService from "./Profile.Service";
 import SubscriptionService from "./Subscription.Service";
+import mongoose from "mongoose";
 
 class AuthService {
   async register(
@@ -39,103 +40,115 @@ class AuthService {
     invitationCode?: string,
     optionEmail?: string
   ) {
+    // Tối ưu: Hash password trước khi vào transaction
+    const hashedPassword = await hashPassword(password);
+
+    const session = await mongoose.startSession();
     try {
-      const currentTime = new Date();
-      const demoEndTimeStr = process.env.DEMO_END_TIME;
-      const demoEndTime = parseISO(demoEndTimeStr!); // Đảm bảo demoEndTimeStr không là null hoặc undefined
+      const result = await session.withTransaction(async (ses) => {
+        // Logic kiểm tra User đã tồn tại (ném lỗi nếu có)
+        const existingUser = await UserModel.findOne({
+          $or: [{ email }, { username }, { phone }],
+        }).session(ses);
 
-      const [existingEmail, existingUsername, existingPhone] =
-        await Promise.all([
-          UserModel.findOne({ email: email }),
-          UserModel.findOne({ username: username }),
-          UserModel.findOne({ phone: phone }),
-        ]);
-      let checkInvitationCode;
-      // const splitInvitationCode = invitationCode?.slice(-6);
-      if (invitationCode) {
-        checkInvitationCode = await InvitationCodeService.checkCode(
-          invitationCode
+        if (existingUser) {
+          if (existingUser.email === email)
+            throw new CustomError(409, "Email này đã được sử dụng.");
+          if (existingUser.username === username)
+            throw new CustomError(409, "Username này đã được sử dụng.");
+          if (existingUser.phone === phone)
+            throw new CustomError(409, "Số điện thoại này đã được sử dụng.");
+        }
+
+        // Tạo đối tượng userData
+        const userData: any = {
+          username,
+          email,
+          phone,
+          role: role || "user",
+          password: hashedPassword,
+        };
+        if (optionEmail) userData.optionEmail = optionEmail;
+
+        // Tạo User
+        const createdUsers = await UserModel.create([userData], {
+          session: ses,
+        });
+        const newUser = createdUsers[0];
+
+        // Xử lý mã mời và subscription (đảm bảo chỉ một khối được chạy)
+        let needsSave = false; // Dùng cờ để biết khi nào cần save
+
+        if (invitationCode) {
+          // Giả sử InvitationCodeService.checkCode sẽ throw lỗi nếu mã không hợp lệ
+          // và trả về thông tin mã nếu hợp lệ.
+          const invitationInfo = await InvitationCodeService.checkCode(
+            invitationCode,
+            ses
+          );
+
+          await InvitationService.createInvitation(
+            invitationCode,
+            newUser._id.toString(),
+            ses
+          );
+
+          // Kích hoạt gói quà tặng
+          await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
+            newUser._id.toString(),
+            process.env.DEMO_PACKAGE_ID || "68525e6fed04a7cb9f68c95d",
+            ses
+          );
+
+          newUser.isSubscription = true;
+          newUser.discount = true;
+          newUser.type = "standard";
+          needsSave = true;
+        } else if (new Date() <= parseISO(process.env.DEMO_END_TIME!)) {
+          // Đang trong thời gian demo
+          await SubscriptionModel.create(
+            [
+              {
+                userId: newUser._id,
+                packageId: process.env.DEMO_PACKAGE_ID,
+              },
+            ],
+            { session: ses }
+          );
+
+          newUser.isSubscription = true;
+          needsSave = true;
+        }
+
+        // Tạo Profile (luôn truyền session)
+        await ProfileService.createProfile(
+          newUser._id.toString(),
+          {
+            height: 0,
+            weight: 0,
+            age: 0,
+            gender: "",
+            smokingStatus: 0,
+          },
+          ses
         );
 
-        if (!checkInvitationCode && invitationCode !== "AQP FREE25") {
-          throw new CustomError(400, "Mã mời không hợp lệ");
+        // Save lại user nếu có thay đổi
+        if (needsSave) {
+          await newUser.save({ session: ses });
         }
-      }
 
-      if (existingEmail) {
-        throw new CustomError(400, "Email đã tồn tại");
-      }
-      if (existingUsername) {
-        throw new CustomError(400, "Tên người dùng đã tồn tại");
-      }
-      if (existingPhone) {
-        throw new CustomError(400, "Số điện thoại đã tồn tại");
-      }
-      const hashedPassword = await hashPassword(password);
-      // Create base user data object
-      const userData = {
-        username: username,
-        email: email,
-        phone: phone,
-        role: role || "user",
-        password: hashedPassword,
-      };
-
-      // Add optional email if provided
-      if (optionEmail) {
-        (userData as any).optionEmail = optionEmail;
-      }
-
-      // Create new user with prepared data
-      const user = await UserModel.create(userData);
-      if (!user) {
-        throw new CustomError(500, "lỗi xảy ra khi tạo người dùng");
-      }
-      if (invitationCode) {
-        const invitation = await InvitationService.createInvitation(
-          invitationCode,
-          user._id.toString()
-        );
-        if (invitationCode === "AQP FREE25" || invitation) {
-          await Promise.all([
-            SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
-              String(user._id),
-              process.env.DEMO_PACKAGE_ID || "68525e6fed04a7cb9f68c95d"
-            ),
-            (user.isSubscription = true),
-            (user.discount = true),
-            (user.type = "standard"),
-          ]);
-          await user.save();
-        }
-      }
-
-      await ProfileService.createProfile(user._id.toString(), {
-        height: 0,
-        weight: 0,
-        age: 0,
-        gender: "",
-        smokingStatus: 0,
+        return newUser; // Trả về newUser đã được cập nhật
       });
 
-      if (currentTime <= new Date(demoEndTime)) {
-        console.log("Đang trong thời gian demo");
-        const subscription = await SubscriptionModel.create({
-          userId: user._id,
-          packageId: process.env.DEMO_PACKAGE_ID,
-        });
-        user.isSubscription = true;
-        await user.save();
-        console.log("Đã tạo subscription");
-
-        if (!subscription) {
-          throw new CustomError(500, "Tạo subscription thất bại");
-        }
-      }
-      return user;
+      return result;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new CustomError(500, error as string);
+      // Cải thiện error handling một chút
+      const message = error instanceof Error ? error.message : String(error);
+      throw new CustomError(500, message);
+    } finally {
+      await session.endSession();
     }
   }
 
