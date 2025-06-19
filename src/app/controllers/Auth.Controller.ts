@@ -183,6 +183,29 @@ class AuthController {
       next(error);
     }
   }
+
+  async loginWithJba(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { uid, email, role, expires_at, activated_at } = req.query;
+      if (!uid || !email || !role || !expires_at || !activated_at) {
+        throw new CustomError(400, "Thiếu thông tin đăng nhập");
+      }
+      const data = {
+        uid: uid as string,
+        email: email as string,
+        role: role as string,
+        expires_at: expires_at as string,
+        activated_at: activated_at as string,
+      };
+
+      res.status(200).json({
+        success: true,
+        data: data,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new AuthController();

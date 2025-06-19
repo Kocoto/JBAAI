@@ -136,7 +136,7 @@ class PackageController {
   async getPackageByType(req: Request, res: Response, next: NextFunction) {
     try {
       const { type } = req.body;
-      const clientIp = "8.8.8.8";
+      const clientIp = req.ip ?? "8.8.8.8";
 
       // Check if GeoIP database is available
       if (!geoIpDbBuffer) {

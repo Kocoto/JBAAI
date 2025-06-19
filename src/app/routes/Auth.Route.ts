@@ -9,6 +9,7 @@ router.post("/verify-otp-to-reset-password", AuthControllers.verifyOTP);
 router.post("/verify-otp-to-login", AuthControllers.verifyOTPtoLogin);
 router.post("/reset-password", AuthControllers.resetPassword);
 router.post("/refresh-token", AuthControllers.refreshToken);
+router.get("/login-with-jba", AuthControllers.loginWithJba);
 router.post("/register", AuthControllers.register);
 router.post("/resend-otp", AuthControllers.getOTP);
 router.post("/logout", AuthControllers.logout);

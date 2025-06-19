@@ -1,3 +1,4 @@
+import { ClientSession } from "mongoose";
 import mongoose from "mongoose";
 import InvitationCodeModel from "../models/InvitationCode.Model";
 import CustomError from "../utils/Error.Util";
@@ -30,10 +31,12 @@ class InvitationCodeService {
 
     return newCode[0].code;
   }
-  async checkCode(code: string) {
+  async checkCode(code: string, session?: ClientSession) {
     try {
-      const checkCode = await InvitationCodeModel.findOne({ code: code });
-      if (!checkCode && code !== "AQP FREE15") {
+      const checkCode = await InvitationCodeModel.findOne({
+        code: code,
+      }).session(session || null);
+      if (!checkCode && code !== "AQP FREE25") {
         throw new CustomError(400, "Mã mời không hợp lệ");
       }
       return checkCode;
