@@ -35,6 +35,7 @@ class InvitationCodeService {
     try {
       const checkCode = await InvitationCodeModel.findOne({
         code: code,
+        status: "active",
       }).session(session || null);
       if (!checkCode && code !== "AQP FREE25") {
         throw new CustomError(400, "Mã mời không hợp lệ");

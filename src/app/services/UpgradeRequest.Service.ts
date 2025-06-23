@@ -187,7 +187,6 @@ class UpgradeRequestService {
     const session = await mongoose.startSession();
     try {
       const result = await session.withTransaction(async (currentSession) => {
-        console.log("Bắt đầu một lần thử giao dịch...");
         const upgradeRequest = await UpgradeRequestModel.findById(
           upgradeRequestId
         )
