@@ -1,8 +1,8 @@
 {
   "info": {
-    "_postman_id": "jbaai-api-collection-v1",
-    "name": "JBAAI API Collection",
-    "description": "Collection đầy đủ cho JBAAI API bao gồm Authentication, User Management, Health Data, Subscription, Payment và Admin APIs",
+    "_postman_id": "jbaai-api-collection-v2",
+    "name": "JBAAI API Collection - Complete Version",
+    "description": "Collection đầy đủ và chi tiết cho JBAAI API bao gồm tất cả các endpoints: Authentication, User Management, Profile, Health Data, Package, PayPal Payment, Upgrade Request, Invitation Code, Admin APIs, Franchise APIs, Report và các utilities",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -65,6 +65,21 @@
       "key": "healthDataId",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "franchiseUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "childFranchiseUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "ledgerEntryId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
@@ -109,7 +124,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "register"]
             },
-            "description": "Đăng ký tài khoản mới. Nếu có mã mời 'AQP FREE15' sẽ được tặng gói standard."
+            "description": "Đăng ký tài khoản mới. Nếu có mã mời 'AQP FREE15' sẽ được tặng gói standard. Role có thể là: user, franchise, admin"
           }
         },
         {
@@ -124,9 +139,7 @@
                   "    if (response.data) {",
                   "        pm.collectionVariables.set('accessToken', response.data.accessToken);",
                   "        pm.collectionVariables.set('refreshToken', response.data.refreshToken);",
-                  "        if (response.data.user && response.data.user._id) {",
-                  "            pm.collectionVariables.set('userId', response.data.user._id);",
-                  "        }",
+                  "        pm.collectionVariables.set('userId', response.data.user._id);",
                   "    }",
                   "}"
                 ],
@@ -143,11 +156,6 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
-              },
-              {
-                "key": "Accept-Language",
-                "value": "vi",
-                "description": "Ngôn ngữ: vi, en, in, cn"
               }
             ],
             "body": {
@@ -159,7 +167,32 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "login"]
             },
-            "description": "Đăng nhập bằng email/username và password"
+            "description": "Đăng nhập bằng email và password"
+          }
+        },
+        {
+          "name": "Login with JBA",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login-with-jba?code=example_code&state=example_state",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login-with-jba"],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "example_code"
+                },
+                {
+                  "key": "state",
+                  "value": "example_state"
+                }
+              ]
+            },
+            "description": "Đăng nhập thông qua JBA OAuth"
           }
         },
         {
@@ -244,14 +277,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"test@example.com\",\n    \"otp\": \"123456\"\n}"
+              "raw": "{\n    \"otp\": \"123456\",\n    \"email\": \"test@example.com\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/verify-otp-to-reset-password",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "verify-otp-to-reset-password"]
             },
-            "description": "Xác thực OTP để reset password"
+            "description": "Xác thực OTP để reset mật khẩu"
           }
         },
         {
@@ -269,14 +302,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"NewPassword123\"\n}"
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"newPassword\": \"NewStrongPassword123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/reset-password",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "reset-password"]
             },
-            "description": "Reset password sau khi đã xác thực OTP"
+            "description": "Reset mật khẩu sau khi đã xác thực OTP"
           }
         },
         {
@@ -291,14 +324,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"oldPassword\": \"StrongPassword123\",\n    \"newPassword\": \"NewPassword123\"\n}"
+              "raw": "{\n    \"oldPassword\": \"StrongPassword123\",\n    \"newPassword\": \"NewStrongPassword123\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/auth/change-password",
               "host": ["{{baseUrl}}"],
               "path": ["api", "v1", "auth", "change-password"]
             },
-            "description": "Đổi mật khẩu (yêu cầu đăng nhập)"
+            "description": "Thay đổi mật khẩu (yêu cầu đăng nhập)"
           }
         },
         {
@@ -477,37 +510,15 @@
       "item": [
         {
           "name": "Get Health Data by Date",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"date\": \"20/12/2024\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/health-data",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "health-data"]
-            },
-            "description": "Lấy dữ liệu sức khỏe theo ngày (định dạng dd/MM/yyyy)"
-          }
-        },
-        {
-          "name": "Create Health Data",
           "event": [
             {
               "listen": "test",
               "script": {
                 "exec": [
-                  "if (pm.response.code === 201) {",
+                  "if (pm.response.code === 200) {",
                   "    const response = pm.response.json();",
-                  "    if (response.data && response.data._id) {",
-                  "        pm.collectionVariables.set('healthDataId', response.data._id);",
+                  "    if (response.data && response.data.length > 0) {",
+                  "        pm.collectionVariables.set('healthDataId', response.data[0]._id);",
                   "    }",
                   "}"
                 ],
@@ -525,7 +536,29 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"healthData\": {\n        \"bpValue\": {\n            \"diastolic\": 74,\n            \"systolic\": 117\n        },\n        \"pulseRate\": {\n            \"value\": 55,\n            \"confidence\": {\n                \"level\": 3\n            }\n        },\n        \"oxygenSaturation\": {\n            \"value\": 98\n        },\n        \"respirationRate\": {\n            \"value\": 17,\n            \"confidence\": {\n                \"level\": 3\n            }\n        },\n        \"hemoglobin\": {\n            \"value\": 10.3\n        },\n        \"hemoglobinA1c\": {\n            \"value\": 5.82\n        },\n        \"wellnessLevel\": {\n            \"value\": 3\n        },\n        \"wellnessIndex\": {\n            \"value\": 9\n        },\n        \"stressLevel\": {\n            \"value\": 1\n        },\n        \"stressIndex\": {\n            \"value\": 49\n        }\n    }\n}"
+              "raw": "{\n    \"createdAt\": \"2025-01-20\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/health-data",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "health-data"]
+            },
+            "description": "Lấy dữ liệu sức khỏe theo ngày cụ thể"
+          }
+        },
+        {
+          "name": "Create Health Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"bpValue\": {\n        \"diastolic\": 80,\n        \"systolic\": 120\n    },\n    \"pulseRate\": {\n        \"value\": 70\n    },\n    \"oxygenSaturation\": {\n        \"value\": 98\n    },\n    \"wellnessLevel\": {\n        \"value\": 3\n    },\n    \"wellnessIndex\": {\n        \"value\": 85\n    },\n    \"pulseWaveVelocity\": {\n        \"value\": 7.5\n    },\n    \"bioPPG\": {\n        \"value\": 2\n    },\n    \"hrvLevel\": {\n        \"value\": 3\n    },\n    \"hrvIndex\": {\n        \"value\": 56\n    },\n    \"stressLevel\": {\n        \"value\": 1\n    },\n    \"stressIndex\": {\n        \"value\": 49\n    }\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/health-data/update",
@@ -547,7 +580,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"type\": \"week\",\n    \"data\": \"1/2024\"\n}"
+              "raw": "{\n    \"type\": \"week\",\n    \"data\": \"1/2025\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/v1/health-data/get-health-data-by-range",
@@ -814,64 +847,46 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"phone\": \"0901234567\",\n    \"fullname\": \"Nguyen Van A\",\n    \"address\": \"123 Nguyen Hue, Q1, TPHCM\",\n    \"franchiseName\": \"FRANCHISE001\"\n}"
+              "raw": "{\n    \"packageId\": \"{{packageId}}\",\n    \"description\": \"Yêu cầu nâng cấp gói premium\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/upgrade-request",
+              "raw": "{{baseUrl}}/api/v1/upgrade-request/create",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "v1", "upgrade-request"]
+              "path": ["api", "v1", "upgrade-request", "create"]
             },
-            "description": "Tạo yêu cầu nâng cấp lên franchise"
+            "description": "Tạo yêu cầu nâng cấp gói"
           }
         },
         {
-          "name": "Get Upgrade Requests by Status",
+          "name": "Get Pending Upgrade Requests",
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/api/v1/upgrade-request/get-by-status/pending?page=1&limit=10",
+              "raw": "{{baseUrl}}/api/v1/upgrade-request/pending",
               "host": ["{{baseUrl}}"],
-              "path": [
-                "api",
-                "v1",
-                "upgrade-request",
-                "get-by-status",
-                "pending"
-              ],
-              "query": [
-                {
-                  "key": "page",
-                  "value": "1"
-                },
-                {
-                  "key": "limit",
-                  "value": "10"
-                }
-              ]
+              "path": ["api", "v1", "upgrade-request", "pending"]
             },
-            "description": "Lấy danh sách yêu cầu nâng cấp theo trạng thái (pending, reviewing, approved, rejected)"
+            "description": "Lấy danh sách yêu cầu đang chờ xử lý"
           }
         },
         {
-          "name": "Accept Upgrade Request (Seller)",
+          "name": "Accept Upgrade Request",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"upgradeRequestId\": \"{{upgradeRequestId}}\"\n}"
+            },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/upgrade-request/{{upgradeRequestId}}/assign-seller",
+              "raw": "{{baseUrl}}/api/v1/upgrade-request/accept-by-seller",
               "host": ["{{baseUrl}}"],
-              "path": [
-                "api",
-                "v1",
-                "upgrade-request",
-                "{{upgradeRequestId}}",
-                "assign-seller"
-              ]
+              "path": ["api", "v1", "upgrade-request", "accept-by-seller"]
             },
             "description": "Seller nhận xử lý yêu cầu nâng cấp"
           }
@@ -938,7 +953,283 @@
       ]
     },
     {
-      "name": "9. Admin APIs",
+      "name": "9. Franchise APIs",
+      "item": [
+        {
+          "name": "My Franchise Info",
+          "item": [
+            {
+              "name": "Get My Franchise Details",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/me/details",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "franchise", "me", "details"]
+                },
+                "description": "Lấy thông tin FranchiseDetails của franchise đang đăng nhập"
+              }
+            },
+            {
+              "name": "Get My Quota",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/me/quota",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "franchise", "me", "quota"]
+                },
+                "description": "Lấy thông tin quota hiện tại"
+              }
+            },
+            {
+              "name": "Get My Statistics",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/me/statistics",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "franchise", "me", "statistics"]
+                },
+                "description": "Lấy thống kê hiệu suất"
+              }
+            },
+            {
+              "name": "Get My Invitation Codes",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/me/invitation-codes",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "v1", "franchise", "me", "invitation-codes"]
+                },
+                "description": "Lấy danh sách các mã mời"
+              }
+            },
+            {
+              "name": "Get My User Trial Quota Ledger",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/me/user-trial-quota-ledger?status=active",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "me",
+                    "user-trial-quota-ledger"
+                  ],
+                  "query": [
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "description": "Filter by status: active, inactive, expired"
+                    },
+                    {
+                      "key": "rootCampaignId",
+                      "value": "{{campaignId}}",
+                      "description": "Filter by campaign ID",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "Lấy danh sách quota ledger"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Manage Children Quota",
+          "item": [
+            {
+              "name": "Allocate Quota to Child",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"childFranchiseUserId\": \"{{childFranchiseUserId}}\",\n    \"amountToAllocate\": 10,\n    \"sourceLedgerEntryId\": \"{{ledgerEntryId}}\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/manage-children-quota/allocate",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "manage-children-quota",
+                    "allocate"
+                  ]
+                },
+                "description": "Cấp quota cho franchise con"
+              }
+            },
+            {
+              "name": "Revoke Quota from Child",
+              "request": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/manage-children-quota/revoke-allocation/{{ledgerEntryId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "manage-children-quota",
+                    "revoke-allocation",
+                    "{{ledgerEntryId}}"
+                  ]
+                },
+                "description": "Thu hồi quota từ franchise con"
+              }
+            },
+            {
+              "name": "Get Child Allocation History",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/manage-children-quota/allocation-history/child/{{childFranchiseUserId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "manage-children-quota",
+                    "allocation-history",
+                    "child",
+                    "{{childFranchiseUserId}}"
+                  ]
+                },
+                "description": "Lịch sử cấp phát quota cho franchise con cụ thể"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reports",
+          "item": [
+            {
+              "name": "Get My Trial Performance",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/reports/my-trial-performance",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "reports",
+                    "my-trial-performance"
+                  ]
+                },
+                "description": "Hiệu suất mời dùng thử của chính mình"
+              }
+            },
+            {
+              "name": "Get Children Trial Performance Summary",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/reports/children-trial-performance-summary",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "reports",
+                    "children-trial-performance-summary"
+                  ]
+                },
+                "description": "Hiệu suất tổng hợp franchise con"
+              }
+            },
+            {
+              "name": "Get Single Child Trial Performance",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/reports/child-trial-performance/{{childFranchiseUserId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "reports",
+                    "child-trial-performance",
+                    "{{childFranchiseUserId}}"
+                  ]
+                },
+                "description": "Hiệu suất chi tiết một franchise con"
+              }
+            },
+            {
+              "name": "Get Full Hierarchy Performance",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/reports/full-hierarchy-performance",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "reports",
+                    "full-hierarchy-performance"
+                  ]
+                },
+                "description": "Hiệu suất toàn bộ cây franchise"
+              }
+            },
+            {
+              "name": "Get Full Hierarchy Performance by Campaign",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/reports/full-hierarchy-performance/{{campaignId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "reports",
+                    "full-hierarchy-performance",
+                    "{{campaignId}}"
+                  ]
+                },
+                "description": "Hiệu suất toàn bộ cây franchise theo campaign"
+              }
+            },
+            {
+              "name": "Get Quota Utilization",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/franchise/reports/quota-utilization",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "franchise",
+                    "reports",
+                    "quota-utilization"
+                  ]
+                },
+                "description": "Tình hình sử dụng quota"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "10. Admin APIs",
       "item": [
         {
           "name": "Campaigns",
@@ -993,7 +1284,7 @@
                     {
                       "key": "status",
                       "value": "active",
-                      "description": "active, inactive, expired, deleted"
+                      "description": "Filter by status: active, inactive, expired"
                     },
                     {
                       "key": "page",
@@ -1002,15 +1293,10 @@
                     {
                       "key": "limit",
                       "value": "10"
-                    },
-                    {
-                      "key": "franchiseOwnerId",
-                      "value": "{{userId}}",
-                      "disabled": true
                     }
                   ]
                 },
-                "description": "Lấy danh sách campaigns với filter và phân trang"
+                "description": "Lấy danh sách campaigns với phân trang"
               }
             },
             {
@@ -1116,20 +1402,36 @@
                     "performance-summary"
                   ]
                 },
-                "description": "Lấy báo cáo hiệu suất chi tiết của campaign"
+                "description": "Lấy tổng quan hiệu suất của campaign"
               }
             }
           ]
         },
         {
-          "name": "Franchises",
+          "name": "Franchise Management",
           "item": [
             {
               "name": "Get All Franchises",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    const response = pm.response.json();",
+                      "    if (response.data && response.data.franchises && response.data.franchises.length > 0) {",
+                      "        pm.collectionVariables.set('franchiseUserId', response.data.franchises[0].userId);",
+                      "    }",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
               "request": {
                 "method": "GET",
                 "url": {
-                  "raw": "{{baseUrl}}/api/v1/admin/franchises?page=1&limit=10&level=0",
+                  "raw": "{{baseUrl}}/api/v1/admin/franchises?page=1&limit=10&status=active&franchiseLevel=1",
                   "host": ["{{baseUrl}}"],
                   "path": ["api", "v1", "admin", "franchises"],
                   "query": [
@@ -1144,12 +1446,12 @@
                     {
                       "key": "status",
                       "value": "active",
-                      "disabled": true
+                      "description": "Filter by user status"
                     },
                     {
-                      "key": "level",
-                      "value": "0",
-                      "description": "Cấp độ franchise (0, 1, 2,...)"
+                      "key": "franchiseLevel",
+                      "value": "1",
+                      "description": "Filter by franchise level"
                     }
                   ]
                 },
@@ -1161,18 +1463,37 @@
               "request": {
                 "method": "GET",
                 "url": {
-                  "raw": "{{baseUrl}}/api/v1/admin/franchises/{{userId}}/hierarchy",
+                  "raw": "{{baseUrl}}/api/v1/admin/franchises/{{franchiseUserId}}/hierarchy",
                   "host": ["{{baseUrl}}"],
                   "path": [
                     "api",
                     "v1",
                     "admin",
                     "franchises",
-                    "{{userId}}",
+                    "{{franchiseUserId}}",
                     "hierarchy"
                   ]
                 },
-                "description": "Lấy cây phân cấp franchise và thống kê"
+                "description": "Lấy cây phân cấp của franchise"
+              }
+            },
+            {
+              "name": "Get Franchise Performance Overview",
+              "request": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/franchises/{{franchiseUserId}}/performance-overview",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "franchises",
+                    "{{franchiseUserId}}",
+                    "performance-overview"
+                  ]
+                },
+                "description": "Lấy tổng quan hiệu suất của franchise"
               }
             }
           ]
@@ -1180,7 +1501,24 @@
       ]
     },
     {
-      "name": "10. Home & Utilities",
+      "name": "11. Report",
+      "item": [
+        {
+          "name": "Export Revenue Report",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/report/revenue",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "report", "revenue"]
+            },
+            "description": "Export báo cáo doanh thu"
+          }
+        }
+      ]
+    },
+    {
+      "name": "12. Home & Utilities",
       "item": [
         {
           "name": "Home",
@@ -1241,26 +1579,26 @@
             },
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/success",
+              "raw": "{{baseUrl}}/payment-success",
               "host": ["{{baseUrl}}"],
-              "path": ["success"]
+              "path": ["payment-success"]
             },
             "description": "Payment success page"
           }
         },
         {
-          "name": "Payment Cancel Page",
+          "name": "Payment Fail Page",
           "request": {
             "auth": {
               "type": "noauth"
             },
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/cancel",
+              "raw": "{{baseUrl}}/payment-fail",
               "host": ["{{baseUrl}}"],
-              "path": ["cancel"]
+              "path": ["payment-fail"]
             },
-            "description": "Payment cancel page"
+            "description": "Payment fail page"
           }
         },
         {
