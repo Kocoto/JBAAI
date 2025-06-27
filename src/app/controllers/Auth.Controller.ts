@@ -3,6 +3,7 @@ import AuthService from "../services/Auth.Service";
 import OTPService from "../services/OTP.Service";
 import CustomError from "../utils/Error.Util";
 import SubscriptionService from "../services/Subscription.Service";
+import axios from "axios";
 
 class AuthController {
   async register(req: Request, res: Response, next: NextFunction) {
@@ -186,21 +187,23 @@ class AuthController {
 
   async loginWithJba(req: Request, res: Response, next: NextFunction) {
     try {
-      const { uid, email, role, expires_at, activated_at } = req.query;
-      if (!uid || !email || !role || !expires_at || !activated_at) {
+      const { uid, clientId } = req.body;
+      if (!uid || !clientId) {
         throw new CustomError(400, "Thiếu thông tin đăng nhập");
       }
-      const data = {
-        uid: uid as string,
-        email: email as string,
-        role: role as string,
-        expires_at: expires_at as string,
-        activated_at: activated_at as string,
-      };
+      console.log(uid, clientId);
+      const response = await axios.get(
+        `https://jbabrands.com/wp-json/jba/v1/member-info/${uid}`
+      );
+      const data = response.data;
+      if (response.status !== 200) {
+        throw new CustomError(response.status, data.message);
+      }
+      const user = await AuthService.loginWithJba(data, clientId);
 
       res.status(200).json({
         success: true,
-        data: data,
+        data: user,
       });
     } catch (error) {
       next(error);

@@ -388,5 +388,101 @@ class AuthService {
       throw new CustomError(500, error as string);
     }
   }
+
+  async loginWithJba(data: any, clientId: string) {
+    const session = await mongoose.startSession();
+    try {
+      // Bắt đầu một transaction và thực hiện tất cả các thao tác liên quan bên trong
+      const result = await session.withTransaction(async (ses) => {
+        // Sử dụng let để có thể gán lại giá trị cho biến user
+        let user = await UserModel.findOne({ email: data.email }).session(ses);
+
+        let profile; // Khai báo biến profile để lưu trữ
+
+        // Trường hợp 1: Người dùng CHƯA tồn tại trong hệ thống
+        if (!user) {
+          // 1. Tạo người dùng mới
+          const createUsers = await UserModel.create(
+            [
+              {
+                email: data.email,
+                username: data.displayName,
+                typeLogin: "jba",
+                password: await hashPassword(
+                  Math.random().toString(36).slice(-8)
+                ),
+              },
+            ],
+            { session: ses } // Quan trọng: truyền session vào thao tác create
+          );
+          user = createUsers[0];
+
+          // 2. Tạo profile cho người dùng mới
+          // Giả sử ProfileService.createProfile trả về profile đã tạo
+          profile = await ProfileService.createProfile(
+            user._id.toString(),
+            {
+              height: 0,
+              weight: 0,
+              age: 0,
+              gender: "",
+              smokingStatus: 0,
+            },
+            ses // Truyền session vào service
+          );
+
+          // 3. Tạo gói đăng ký (subscription) nếu có
+          if (data.role === "silver" || data.role === "gold") {
+            await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
+              user._id.toString(),
+              process.env.JBA_PACKAGE_ID || "683d25bad70c0d6366e3d753",
+              ses
+            );
+          }
+          const updatedUser = await UserModel.findById(user._id).session(ses);
+          if (updatedUser) {
+            user = updatedUser; // Gán lại biến user với dữ liệu mới
+          }
+        } else {
+          // Trường hợp 2: Người dùng ĐÃ tồn tại, lấy thông tin profile của họ
+          profile = await ProfileService.getProfile(user._id.toString(), ses);
+        }
+
+        // Tất cả các thao tác sau đây đều nằm trong transaction
+        // 4. Tạo Access Token và Refresh Token
+        const [refreshToken, accessToken] = await Promise.all([
+          refreshTokenGenerator(String(user._id), clientId),
+          accessTokenGenerator(String(user._id), clientId),
+        ]);
+
+        // 5. Lưu (hoặc cập nhật) Refresh Token vào DB
+        await TokenModel.findOneAndUpdate(
+          { userId: user._id, clientId: clientId },
+          {
+            token: refreshToken,
+            status: "active",
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          },
+          // upsert: true sẽ tạo mới nếu chưa tìm thấy
+          { new: true, upsert: true, session: ses }
+        );
+
+        // 6. Trả về tất cả dữ liệu cần thiết từ transaction
+        return { user, accessToken, refreshToken, profile };
+      }); // Kết thúc transaction
+
+      // Transaction thành công, `result` sẽ chứa object { user, accessToken, ... }
+      return result;
+    } catch (error) {
+      // Xử lý lỗi tập trung
+      if (error instanceof CustomError) throw error;
+      // Ghi log lỗi gốc để debug
+      console.error("Login with JBA failed:", error);
+      throw new CustomError(500, "An unexpected error occurred during login.");
+    } finally {
+      // Luôn luôn kết thúc session dù thành công hay thất bại
+      await session.endSession();
+    }
+  }
 }
 export default new AuthService();

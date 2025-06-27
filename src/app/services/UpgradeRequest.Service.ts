@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { ClientSession, Types } from "mongoose";
 import UpgradeRequestModel from "../models/UpgradeRequest.Model";
 import CustomError from "../utils/Error.Util";
 import InvitationCodeService from "./InvitationCode.Service";
@@ -30,9 +30,12 @@ class UpgradeRequestService {
     }
   }
 
-  async getUpgradeRequestByUserId(userId: string) {
+  async getUpgradeRequestByUserId(userId: string, session?: ClientSession) {
     try {
-      const upgradeRequest = await UpgradeRequestModel.findOne({ userId });
+      const upgradeRequest = await UpgradeRequestModel.findOne({
+        userId,
+      }).session(session || null);
+
       //cần tìm ra các fix logic chỗ này( trang profile cần gửi về nhưng có những người dùng chưa có request thì sãy ra lỗi )
       return upgradeRequest;
     } catch (error) {

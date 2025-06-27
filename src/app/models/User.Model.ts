@@ -14,6 +14,7 @@ export interface IUserOutput {
   updatedAt: Date;
   __v: number;
   emailNotificationsEnabled: boolean;
+  typeLogin: string;
   optionEmail?: string;
 }
 
@@ -31,6 +32,7 @@ export interface IUser {
   emailNotificationsEnabled: boolean;
   isPayment: boolean;
   isHideScore: boolean;
+  typeLogin: "email" | "phone" | "google" | "facebook" | "jba";
   type?: "normal" | "standard" | "premium";
   franchiseName?: string;
   optionEmail?: string;
@@ -41,7 +43,7 @@ const UserSchema = new Schema<IUser>(
     username: { type: String, unique: true, required: true, index: true },
     password: { type: String, required: true },
     email: { type: String, unique: true, required: true, index: true },
-    phone: { type: String, required: true, unique: true },
+    phone: { type: String, unique: true, sparse: true },
     role: {
       type: String,
       enum: ["admin", "user", "franchise", "seller"],
@@ -74,6 +76,7 @@ const UserSchema = new Schema<IUser>(
       enum: ["normal", "standard", "premium"],
       default: "normal",
     },
+    typeLogin: { type: String, default: "email" },
     franchiseName: { type: String },
     optionEmail: { type: String },
   },

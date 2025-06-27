@@ -4,15 +4,17 @@ import UserModel from "../models/User.Model";
 import CustomError from "../utils/Error.Util";
 import UpgradeRequestService from "./UpgradeRequest.Service";
 class ProfileService {
-  async getProfile(userId: string) {
+  async getProfile(userId: string, session?: ClientSession) {
     try {
-      const user = await UserModel.findById(userId);
+      const user = await UserModel.findById(userId).session(session || null);
       if (!user) {
         throw new CustomError(404, "Không tìm thấy người dùng");
       }
-      let profile = await profileModel.findOne({ userId: userId });
+      let profile = await profileModel
+        .findOne({ userId: userId })
+        .session(session || null);
       const upgradeRequest =
-        await UpgradeRequestService.getUpgradeRequestByUserId(userId);
+        await UpgradeRequestService.getUpgradeRequestByUserId(userId, session);
 
       return { profile, user, upgradeRequest };
     } catch (error) {
