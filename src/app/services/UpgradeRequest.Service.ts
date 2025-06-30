@@ -231,7 +231,7 @@ class UpgradeRequestService {
             [
               {
                 userId: upgradeRequest.userId,
-                parentId: null,
+                parentId: upgradeRequest.userId,
                 franchiseLevel: 0,
                 ancestorPath: [],
                 userTrialQuotaLedger: [],

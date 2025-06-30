@@ -5,6 +5,7 @@ import { TrialConversionLogModel } from "../models/TrialConversionLog.Model";
 import UserModel from "../models/User.Model";
 import CustomError from "../utils/Error.Util";
 import { Types } from "mongoose";
+import FranchiseService from "./Franchise.Service";
 
 export interface campaignFilter {
   status?: string;
@@ -221,6 +222,24 @@ class AdminService {
       console.log(
         `[AdminService] Tạo Campaign thành công với ID: ${newCampaign._id}`
       );
+
+      console.log(
+        `[AdminService] Bắt đầu khởi tạo sổ cái đầu tiên cho Franchise của Campaign vừa tạo`
+      );
+
+      const newLedger = await FranchiseService.allocateQuotaToChild(
+        newCampaign.franchiseOwnerId.toString(),
+        newCampaign.franchiseOwnerId.toString(),
+        newCampaign.totalAllocated,
+        newCampaign._id.toString()
+      );
+      if (!newLedger) {
+        throw new CustomError(500, "Lỗi khi tạo sổ cái cho Franchise");
+      }
+      console.log(
+        `[AdminService] Tạo sổ cái thành công với ID: ${newLedger.childLedgerEntryCreated._id}`
+      );
+
       return newCampaign;
     } catch (error) {
       if (error instanceof CustomError) {
