@@ -5,6 +5,7 @@ import { TrialConversionLogModel } from "../models/TrialConversionLog.Model";
 import UserModel from "../models/User.Model";
 import CustomError from "../utils/Error.Util";
 import { Types } from "mongoose";
+import FranchiseService from "./Franchise.Service";
 
 export interface campaignFilter {
   status?: string;
@@ -171,7 +172,8 @@ class AdminService {
     totalAllocated: number,
     startDate: Date,
     endDate: Date,
-    renewalRequirement: number
+    renewalRequirement: number,
+    createdBy: string
   ) {
     try {
       console.log("[AdminService] Bắt đầu tạo và phân bổ Campaign.");
@@ -205,16 +207,12 @@ class AdminService {
       const newCampaign = await CampaignModel.create({
         campaignName: campaignName.trim(),
         franchiseOwnerId: new Types.ObjectId(franchiseOwnerId),
-        allocatedByFranchiseId: null, // Campaign gốc từ admin nên parent là null
         totalAllocated: totalAllocated,
-        consumedUses: 0, // Mới tạo nên chưa dùng
         status: "active", // Mặc định là active khi tạo
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        renewalRequirement: renewalRequirement,
-        totalRenewed: 0, // Mới tạo nên chưa có lượt gia hạn
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        renewalRequirementPercentage: renewalRequirement,
+        createdBy: new Types.ObjectId(createdBy),
       });
 
       if (!newCampaign) {
@@ -224,6 +222,24 @@ class AdminService {
       console.log(
         `[AdminService] Tạo Campaign thành công với ID: ${newCampaign._id}`
       );
+
+      console.log(
+        `[AdminService] Bắt đầu khởi tạo sổ cái đầu tiên cho Franchise của Campaign vừa tạo`
+      );
+
+      const newLedger = await FranchiseService.allocateQuotaToChild(
+        newCampaign.franchiseOwnerId.toString(),
+        newCampaign.franchiseOwnerId.toString(),
+        newCampaign.totalAllocated,
+        newCampaign._id.toString()
+      );
+      if (!newLedger) {
+        throw new CustomError(500, "Lỗi khi tạo sổ cái cho Franchise");
+      }
+      console.log(
+        `[AdminService] Tạo sổ cái thành công với ID: ${newLedger.childLedgerEntryCreated._id}`
+      );
+
       return newCampaign;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -375,7 +391,7 @@ class AdminService {
       status?: string;
       startDate?: Date;
       endDate?: Date;
-      renewalRequirement?: number;
+      renewalRequirementPercentage?: number;
     }
   ) {
     try {
@@ -403,8 +419,8 @@ class AdminService {
         throw new CustomError(400, "Số lượng phân bổ phải lớn hơn 0");
       }
       if (
-        updateData.renewalRequirement !== undefined &&
-        updateData.renewalRequirement < 0
+        updateData.renewalRequirementPercentage !== undefined &&
+        updateData.renewalRequirementPercentage < 0
       ) {
         throw new CustomError(400, "Yêu cầu gia hạn không được âm");
       }
@@ -429,8 +445,9 @@ class AdminService {
       if (updateData.endDate) {
         dataToUpdate.endDate = new Date(updateData.endDate);
       }
-      if (updateData.renewalRequirement !== undefined) {
-        dataToUpdate.renewalRequirement = updateData.renewalRequirement;
+      if (updateData.renewalRequirementPercentage !== undefined) {
+        dataToUpdate.renewalRequirementPercentage =
+          updateData.renewalRequirementPercentage;
       }
 
       // Kiểm tra ngày hợp lệ nếu cả startDate và endDate đều được cập nhật

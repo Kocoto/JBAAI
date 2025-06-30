@@ -10,11 +10,13 @@ import UserRoute from "./User.Route";
 import InvitationCodeRoute from "./InvitationCode.Route";
 import ReportRoute from "./Report.Route";
 import AdminRoute from "./Admin.Route";
+import FranchiseRoute from "./Franchise.Route";
 
 export function route(app: Express) {
   app.use("/api/v1/invitation-code", InvitationCodeRoute);
   app.use("/api/v1/upgrade-request", UpgradeRequestRoute);
   app.use("/api/v1/health-data", HealthDataRoute);
+  app.use("/api/v1/franchise", FranchiseRoute);
   app.use("/api/v1/package", PackageRoute);
   app.use("/api/v1/profile", ProfileRoute);
   app.use("/api/v1/report", ReportRoute);

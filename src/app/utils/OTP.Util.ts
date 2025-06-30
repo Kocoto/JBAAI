@@ -1,4 +1,4 @@
-import { compareSync, hash } from "bcrypt";
+import { compareSync, hash, compare } from "bcrypt";
 
 export const generateOTP = (length = 6) => {
   const characters = "0123456789";
@@ -19,7 +19,7 @@ export const compareOtp = async (
   otp: string,
   hashedOtp: string
 ): Promise<boolean> => {
-  const isMatch = await compareSync(otp, hashedOtp);
+  const isMatch = await compare(otp, hashedOtp);
   return isMatch;
 };
 

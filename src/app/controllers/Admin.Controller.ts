@@ -19,7 +19,7 @@ class AdminController {
         endDate,
         renewalRequirement,
       } = req.body;
-
+      console.log("kiểm tra id của franchiseOwnerId", franchiseOwnerId);
       // Validate required fields
       if (
         !campaignName ||
@@ -41,7 +41,8 @@ class AdminController {
         parseInt(totalAllocated),
         new Date(startDate),
         new Date(endDate),
-        parseInt(renewalRequirement) || 0
+        parseInt(renewalRequirement) || 0,
+        req.user._id
       );
 
       console.log(

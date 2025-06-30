@@ -28,6 +28,7 @@ import InvitationCodeService from "./InvitationCode.Service";
 import ProfileService from "./Profile.Service";
 import SubscriptionService from "./Subscription.Service";
 import mongoose from "mongoose";
+import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
 
 class AuthService {
   async register(
@@ -82,17 +83,18 @@ class AuthService {
         if (invitationCode) {
           // Giả sử InvitationCodeService.checkCode sẽ throw lỗi nếu mã không hợp lệ
           // và trả về thông tin mã nếu hợp lệ.
-          const invitationInfo = await InvitationCodeService.checkCode(
+          const invitationCodeInfo = await InvitationCodeService.checkCode(
             invitationCode,
             ses
           );
-
+          if (!invitationCodeInfo) {
+            throw new CustomError(400, "Mã mời không hợp lệ");
+          }
           await InvitationService.createInvitation(
             invitationCode,
             newUser._id.toString(),
             ses
           );
-
           // Kích hoạt gói quà tặng
           await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
             newUser._id.toString(),
@@ -103,6 +105,33 @@ class AuthService {
           newUser.isSubscription = true;
           newUser.discount = true;
           newUser.type = "standard";
+
+          if (invitationCodeInfo.codeType === "FRANCHISE_HIERARCHY") {
+            // Find parent franchise details
+            const parentFranchiseDetails = await FranchiseDetailsModel.findOne({
+              _id: invitationCodeInfo.userId,
+            }).session(ses);
+
+            // Get parent franchise level, default to 0 if not found
+            const parentFranchiseLevel =
+              parentFranchiseDetails?.franchiseLevel ?? 0;
+
+            // Calculate new franchise level (parent level + 1)
+            const newFranchiseLevel = parentFranchiseLevel + 1;
+
+            // Create new franchise details for the user
+            const newFranchiseDetails = await FranchiseDetailsModel.create(
+              [
+                {
+                  userId: newUser._id, // Link to newly created user
+                  parentId: invitationCodeInfo.userId, // Set parent franchise
+                  franchiseLevel: newFranchiseLevel, // Set calculated level
+                  ancestorPath: [invitationCodeInfo.userId], // Initialize ancestor path with parent
+                },
+              ],
+              { session: ses }
+            );
+          }
           needsSave = true;
         } else if (new Date() <= parseISO(process.env.DEMO_END_TIME!)) {
           // Đang trong thời gian demo

@@ -1,6 +1,6 @@
 import mongoose, { Schema, Types } from "mongoose";
 
-interface UserTrialQuotaLedger {
+export interface UserTrialQuotaLedger {
   _id: Types.ObjectId;
   sourceCampaignId?: Types.ObjectId;
   sourceParentLedgerEntryId?: Types.ObjectId;
@@ -15,7 +15,7 @@ interface UserTrialQuotaLedger {
   originalCampaignEndDate?: Date;
 }
 
-interface FranchiseDetails {
+export interface FranchiseDetails {
   userId: Types.ObjectId;
   parentId: Types.ObjectId | null;
   franchiseLevel: number;
