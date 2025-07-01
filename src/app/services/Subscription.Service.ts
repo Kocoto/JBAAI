@@ -207,7 +207,7 @@ class SubscriptionService {
           userId,
           {
             isSubscription: true,
-            // type: newPackageData.type, // Ví dụ nếu bạn có trường 'type' trên User model
+            type: newPackageData.type, // Ví dụ nếu bạn có trường 'type' trên User model
             // currentPackageId: newPackageData._id, // Ví dụ
           },
           { session: session }
