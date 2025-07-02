@@ -151,7 +151,7 @@ class AuthService {
         const userData: any = {
           username,
           email,
-          phone: phone ? phone : null,
+          phone: !phone || phone === "" ? null : phone,
           role: role || "user",
           password: hashedPassword,
           ...(optionEmail && { optionEmail }), // Cú pháp gọn hơn
