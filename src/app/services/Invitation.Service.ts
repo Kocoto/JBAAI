@@ -35,24 +35,28 @@ class InvitationService {
           ],
           { session: session || null }
         );
+      } else {
+        if (!franchise) {
+          throw new CustomError(400, "Lỗi khi xác thực mã mời");
+        }
+        const inviterUserId = invitationCode.userId;
+        const invitationCodeId = invitationCode._id;
+        invitation = await InvitationModel.create(
+          [
+            {
+              inviterUserId,
+              invitationCodeId,
+              invitedUserId,
+              inviteType: "FRANCHISE_HIERARCHY",
+              linkedLedgerEntryId: invitationCode.currentActiveLedgerEntryId,
+              linkedRootCampaignId:
+                franchise.userTrialQuotaLedger[0]?.sourceCampaignId,
+            },
+          ],
+          { session: session || null }
+        );
       }
 
-      const inviterUserId = invitationCode.userId;
-      const invitationCodeId = invitationCode._id;
-      invitation = await InvitationModel.create(
-        [
-          {
-            inviterUserId,
-            invitationCodeId,
-            invitedUserId,
-            inviteType: "FRANCHISE_HIERARCHY",
-            linkedLedgerEntryId: invitationCode.currentActiveLedgerEntryId,
-            linkedRootCampaignId:
-              franchise?.userTrialQuotaLedger[0]?.sourceCampaignId,
-          },
-        ],
-        { session: session || null }
-      );
       return invitation[0];
     } catch (error) {
       if (error instanceof CustomError) {

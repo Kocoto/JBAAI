@@ -32,6 +32,82 @@ import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
 import axios from "axios";
 
 class AuthService {
+  /**
+   * Xử lý logic liên quan đến mã mời trong một transaction.
+   * @private
+   */
+  private async _handleInvitationFlow(
+    invitationCode: string,
+    newUser: any, // Nên định nghĩa một interface cho User document
+    session: mongoose.ClientSession
+  ) {
+    // 1. Kiểm tra và lấy thông tin mã mời
+    const invitationCodeInfo = await InvitationCodeService.checkCode(
+      invitationCode,
+      session
+    );
+
+    if (!invitationCodeInfo) {
+      throw new CustomError(400, "Mã mời không hợp lệ hoặc đã hết hạn.");
+    }
+
+    // 2. Tạo bản ghi lời mời
+    await InvitationService.createInvitation(
+      invitationCode,
+      newUser._id.toString(),
+      session
+    );
+
+    // 3. Kích hoạt gói quà tặng/subscription
+    await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
+      newUser._id.toString(),
+      invitationCodeInfo.packageId.toString(),
+      session
+    );
+
+    // 4. Cập nhật trạng thái cho user mới
+    newUser.isSubscription = true;
+    newUser.discount = true;
+    newUser.type = "standard"; // Hoặc dựa trên thông tin gói
+
+    // 5. Xử lý logic phân cấp (Franchise Hierarchy)
+    if (invitationCodeInfo.codeType === "FRANCHISE_HIERARCHY") {
+      const parentFranchiseDetails = await FranchiseDetailsModel.findOne({
+        // Tên trường `_id` rõ ràng hơn là `userId` trên invitation code
+        _id: invitationCodeInfo.userId,
+      }).session(session);
+
+      const parentFranchiseLevel = parentFranchiseDetails?.franchiseLevel ?? 0;
+      const newFranchiseLevel = parentFranchiseLevel + 1;
+
+      await FranchiseDetailsModel.create(
+        [
+          {
+            userId: newUser._id,
+            parentId: invitationCodeInfo.userId,
+            franchiseLevel: newFranchiseLevel,
+            // Cần xây dựng ancestorPath đầy đủ hơn nếu cần
+            ancestorPath: [
+              ...(parentFranchiseDetails?.ancestorPath || []),
+              invitationCodeInfo.userId,
+            ],
+          },
+        ],
+        { session }
+      );
+    }
+
+    // 6. Cập nhật lại thông tin mã mời (quan trọng: dùng session)
+    if (invitationCodeInfo.totalCumulativeUses !== undefined) {
+      invitationCodeInfo.totalCumulativeUses += 1;
+    }
+    // **FIX QUAN TRỌNG NHẤT:** Phải truyền session vào save()
+    await invitationCodeInfo.save({ session });
+  }
+
+  /**
+   * Đăng ký người dùng mới
+   */
   async register(
     email: string,
     password: string,
@@ -42,105 +118,51 @@ class AuthService {
     invitationCode?: string,
     optionEmail?: string
   ) {
-    // Tối ưu: Hash password trước khi vào transaction
+    // 1. Hash password trước khi vào transaction
     const hashedPassword = await hashPassword(password);
 
     const session = await mongoose.startSession();
     try {
       const result = await session.withTransaction(async (ses) => {
-        // Logic kiểm tra User đã tồn tại (ném lỗi nếu có)
+        // 2. Kiểm tra User đã tồn tại (tối ưu hơn)
         const existingUser = await UserModel.findOne({
           $or: [{ email }, { username }, { phone }],
         }).session(ses);
 
         if (existingUser) {
+          let message = "Thông tin đăng ký đã tồn tại.";
           if (existingUser.email === email)
-            throw new CustomError(409, "Email này đã được sử dụng.");
+            message = "Email này đã được sử dụng.";
           if (existingUser.username === username)
-            throw new CustomError(409, "Username này đã được sử dụng.");
+            message = "Username này đã được sử dụng.";
           if (existingUser.phone === phone)
-            throw new CustomError(409, "Số điện thoại này đã được sử dụng.");
+            message = "Số điện thoại này đã được sử dụng.";
+          throw new CustomError(409, message);
         }
 
-        // Tạo đối tượng userData
+        // 3. Tạo đối tượng userData
         const userData: any = {
           username,
           email,
           phone,
           role: role || "user",
           password: hashedPassword,
+          ...(optionEmail && { optionEmail }), // Cú pháp gọn hơn
+          ...(address && { address }),
         };
-        if (optionEmail) userData.optionEmail = optionEmail;
 
-        // Tạo User
+        // 4. Tạo User mới
         const createdUsers = await UserModel.create([userData], {
           session: ses,
         });
         const newUser = createdUsers[0];
 
-        // Xử lý mã mời và subscription (đảm bảo chỉ một khối được chạy)
-        let needsSave = false; // Dùng cờ để biết khi nào cần save
-
+        // 5. Xử lý luồng mã mời nếu có (tách ra hàm riêng)
         if (invitationCode) {
-          // Giả sử InvitationCodeService.checkCode sẽ throw lỗi nếu mã không hợp lệ
-          // và trả về thông tin mã nếu hợp lệ.
-          const invitationCodeInfo = await InvitationCodeService.checkCode(
-            invitationCode,
-            ses
-          );
-          if (!invitationCodeInfo) {
-            throw new CustomError(400, "Mã mời không hợp lệ");
-          }
-          await InvitationService.createInvitation(
-            invitationCode,
-            newUser._id.toString(),
-            ses
-          );
-          // Kích hoạt gói quà tặng
-          await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
-            newUser._id.toString(),
-            invitationCodeInfo.packageId.toString(),
-            ses
-          );
-
-          newUser.isSubscription = true;
-          newUser.discount = true;
-          newUser.type = "standard";
-
-          if (invitationCodeInfo?.codeType === "FRANCHISE_HIERARCHY") {
-            // Find parent franchise details
-            const parentFranchiseDetails = await FranchiseDetailsModel.findOne({
-              _id: invitationCodeInfo.userId,
-            }).session(ses);
-
-            // Get parent franchise level, default to 0 if not found
-            const parentFranchiseLevel =
-              parentFranchiseDetails?.franchiseLevel ?? 0;
-
-            // Calculate new franchise level (parent level + 1)
-            const newFranchiseLevel = parentFranchiseLevel + 1;
-
-            // Create new franchise details for the user
-            const newFranchiseDetails = await FranchiseDetailsModel.create(
-              [
-                {
-                  userId: newUser._id, // Link to newly created user
-                  parentId: invitationCodeInfo.userId, // Set parent franchise
-                  franchiseLevel: newFranchiseLevel, // Set calculated level
-                  ancestorPath: [invitationCodeInfo.userId], // Initialize ancestor path with parent
-                },
-              ],
-              { session: ses }
-            );
-          }
-          if (invitationCodeInfo?.totalCumulativeUses !== undefined) {
-            invitationCodeInfo.totalCumulativeUses += 1;
-          }
-          invitationCodeInfo.save();
-          needsSave = true;
+          await this._handleInvitationFlow(invitationCode, newUser, ses);
         }
 
-        // Tạo Profile (luôn truyền session)
+        // 6. Tạo Profile (luôn thực hiện)
         await ProfileService.createProfile(
           newUser._id.toString(),
           {
@@ -153,21 +175,24 @@ class AuthService {
           ses
         );
 
-        // Save lại user nếu có thay đổi
-        if (needsSave) {
-          await newUser.save({ session: ses });
-        }
+        // 7. Lưu lại tất cả thay đổi trên newUser một lần duy nhất ở cuối
+        // Điều này đảm bảo các thay đổi từ _handleInvitationFlow cũng được lưu
+        await newUser.save({ session: ses });
 
-        return newUser; // Trả về newUser đã được cập nhật
+        return newUser;
       });
 
       return result;
     } catch (error) {
+      // Ném lại lỗi đã được xử lý
       if (error instanceof CustomError) throw error;
-      // Cải thiện error handling một chút
+
+      // Bắt các lỗi khác và đóng gói lại
       const message = error instanceof Error ? error.message : String(error);
-      throw new CustomError(500, message);
+      console.error("Registration Error:", message, error); // Log lỗi để debug
+      throw new CustomError(500, `Lỗi hệ thống khi đăng ký: ${message}`);
     } finally {
+      // Luôn đóng session sau khi hoàn tất
       await session.endSession();
     }
   }
