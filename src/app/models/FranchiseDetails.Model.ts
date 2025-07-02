@@ -76,7 +76,12 @@ const userTrialQuotaLedgerSchema = new Schema<UserTrialQuotaLedger>(
 
 const franchiseDetailsSchema = new Schema<FranchiseDetails>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
     parentId: { type: Schema.Types.ObjectId, ref: "User", default: null },
     franchiseLevel: { type: Number, required: true },
     ancestorPath: [{ type: Schema.Types.ObjectId, ref: "User" }],

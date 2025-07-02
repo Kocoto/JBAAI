@@ -4,8 +4,8 @@ export interface IInvitation {
   invitedUserId: Types.ObjectId;
   inviterUserId: Types.ObjectId;
   invitationCodeId: Types.ObjectId;
-  linkedLedgerEntryId: Types.ObjectId;
-  linkedRootCampaignId: Types.ObjectId;
+  linkedLedgerEntryId?: Types.ObjectId;
+  linkedRootCampaignId?: Types.ObjectId;
   inviteType: "USER_TRIAL" | "FRANCHISE_HIERARCHY";
   createdAt?: Date;
   updatedAt?: Date;
@@ -32,12 +32,10 @@ const InvitationSchema = new Schema<IInvitation>(
     linkedLedgerEntryId: {
       type: Schema.Types.ObjectId,
       ref: "UserTrialQuotaLedger",
-      required: true,
     },
     linkedRootCampaignId: {
       type: Schema.Types.ObjectId,
       ref: "Campaign",
-      required: true,
     },
     inviteType: {
       type: String,

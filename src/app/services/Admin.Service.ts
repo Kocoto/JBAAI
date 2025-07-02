@@ -1562,7 +1562,10 @@ class AdminService {
       >();
 
       for (const invitation of totalInvitations) {
-        const campaignId = invitation.linkedRootCampaignId.toString();
+        const campaignId = invitation.linkedRootCampaignId?.toString();
+        if (!campaignId) {
+          continue;
+        }
         if (!campaignPerformanceMap.has(campaignId)) {
           const campaign = await CampaignModel.findById(campaignId).lean();
           campaignPerformanceMap.set(campaignId, {
