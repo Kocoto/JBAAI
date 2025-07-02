@@ -711,15 +711,15 @@ class AdminController {
     try {
       let data: IInvitationCodeInput;
       const userId = req.user._id;
-      const { code, status, codeType, packageId } = req.body;
-      if (!code || !status || !codeType) {
-        throw new CustomError(400, "code,  status, codeType là bắt buộc");
+      const { code, packageId } = req.body;
+      if (!code || !packageId) {
+        throw new CustomError(400, "code, packageId là bắt buộc");
       }
       data = {
         code,
         userId,
-        status,
-        codeType,
+        status: "active",
+        codeType: "USER_TRIAL",
         packageId,
       };
       const newInvitationCode = await AdminService.createInvitationCode(data);

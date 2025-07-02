@@ -39,7 +39,7 @@ class InvitationCodeService {
         code: code,
         status: "active",
       }).session(session || null);
-      if (!checkCode && code !== "AQP FREE25") {
+      if (!checkCode) {
         throw new CustomError(400, "Mã mời không hợp lệ");
       }
       return checkCode;

@@ -34,7 +34,7 @@ const InvitationCodeSchema = new Schema<IInvitationCode>(
     status: {
       type: String,
       enum: ["active", "inactive"],
-      default: "active",
+      default: "inactive",
       required: true,
     },
     codeType: {

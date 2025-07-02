@@ -1704,12 +1704,13 @@ class AdminService {
         userId: new Types.ObjectId(data.userId),
         status: data.status,
         codeType: data.codeType,
+        packageId: data.packageId,
         currentActiveLedgerEntryId: data.currentActiveLedgerEntryId
           ? new Types.ObjectId(data.currentActiveLedgerEntryId)
           : undefined,
       });
       if (!code) {
-        throw new CustomError(500, "Lỗi không xác định khi tạo mã mời");
+        throw new CustomError(500, "Lỗi không xác định sau khi tạo mã mời");
       }
 
       return code;

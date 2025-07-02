@@ -29,6 +29,7 @@ import ProfileService from "./Profile.Service";
 import SubscriptionService from "./Subscription.Service";
 import mongoose from "mongoose";
 import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
+import axios from "axios";
 
 class AuthService {
   async register(
@@ -87,7 +88,7 @@ class AuthService {
             invitationCode,
             ses
           );
-          if (!invitationCodeInfo && invitationCode !== "AQP FREE25") {
+          if (!invitationCodeInfo) {
             throw new CustomError(400, "Mã mời không hợp lệ");
           }
           await InvitationService.createInvitation(
@@ -98,7 +99,7 @@ class AuthService {
           // Kích hoạt gói quà tặng
           await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
             newUser._id.toString(),
-            process.env.DEMO_PACKAGE_ID || "68525e6fed04a7cb9f68c95d",
+            invitationCodeInfo.packageId.toString(),
             ses
           );
 
@@ -132,6 +133,10 @@ class AuthService {
               { session: ses }
             );
           }
+          if (invitationCodeInfo?.totalCumulativeUses !== undefined) {
+            invitationCodeInfo.totalCumulativeUses += 1;
+          }
+          invitationCodeInfo.save();
           needsSave = true;
         }
 
@@ -167,100 +172,212 @@ class AuthService {
     }
   }
 
+  // async login(email: string, password: string, clientId: string) {
+  //   try {
+  //     // Find user
+  //     const user = await UserModel.findOne({
+  //       $or: [
+  //         { email: { $regex: new RegExp(`^${email}$`, "i") } },
+  //         { username: { $regex: new RegExp(`^${email}$`, "i") } },
+  //       ],
+  //     });
+
+  //     if (!user) {
+  //       throw new CustomError(400, "Không tìm thấy người dùng hoặc email");
+  //     }
+  //     // Validate password
+  //     const isPasswordValid = await comparePasswords(password, user.password);
+  //     if (!isPasswordValid) {
+  //       throw new CustomError(400, "Mật khẩu không hợp lệ");
+  //     }
+
+  //     if (user.typeLogin.type === "jba") {
+  //       const uid = user.typeLogin.id;
+  //       const response = await axios.get(
+  //         `https://jbabrands.com/wp-json/jba/v1/member-info/${uid}`
+  //       );
+  //       const data = response.data;
+  //       if (data.role === "silver" || data.role === "gold") {
+  //         if (user.type === "normal" || user.type === "standard") {
+  //           user.type = "premium";
+  //         }
+  //       }
+  //     }
+  //     await user.save();
+  //     // Check if user is verified
+  //     // if (!user.verify) {
+  //     //   try {
+  //     //     // Delete existing OTP if any
+  //     //     await OtpModel.deleteOne({ userId: user._id });
+
+  //     //     // Generate and hash new OTP
+  //     //     const otp = generateOTP();
+  //     //     const hashedOtp = await hashOtp(otp);
+
+  //     //     // Create OTP record with expiration
+  //     //     await OtpModel.create({
+  //     //       userId: user._id,
+  //     //       otp: hashedOtp,
+  //     //       email: user.email,
+  //     //     });
+
+  //     //     // Prepare and send email
+  //     //     const mailOptions = {
+  //     //       from: process.env.EMAIL_USER,
+  //     //       to: user.email,
+  //     //       subject: "Xác thực tài khoản - Mã OTP",
+  //     //       html: `
+  //     //       <div style="font-family: Arial, sans-serif; line-height: 1.5;">
+  //     //         <h2>Mã OTP của bạn</h2>
+  //     //         <p>Vui lòng sử dụng mã OTP sau để xác thực tài khoản của bạn:</p>
+  //     //         <div style="display: flex; align-items: center;">
+  //     //           <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
+  //     //         </div>
+  //     //         <p>Mã này sẽ hết hạn sau 10 phút.</p>
+  //     //         <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+  //     //       </div>
+  //     //       `,
+  //     //     };
+
+  //     //     const checkSendMail = await sendMail(mailOptions);
+  //     //     if (!checkSendMail) {
+  //     //       throw new CustomError(
+  //     //         500,
+  //     //         "Gửi email thất bại. Vui lòng thử lại sau."
+  //     //       );
+  //     //     }
+
+  //     //     throw new CustomError(
+  //     //       400,
+  //     //       "Vui lòng kiểm tra email và xác thực tài khoản của bạn"
+  //     //     );
+  //     //   } catch (otpError) {
+  //     //     if (otpError instanceof CustomError) throw otpError;
+  //     //     throw new CustomError(500, "Lỗi trong quá trình tạo và gửi mã OTP");
+  //     //   }
+  //     // }
+
+  //     // Generate tokens and update token record
+  //     const [refreshToken, accessToken] = await Promise.all([
+  //       refreshTokenGenerator(String(user._id), clientId),
+  //       accessTokenGenerator(String(user._id), clientId),
+  //     ]);
+
+  //     await TokenModel.findOneAndUpdate(
+  //       { userId: user._id, clientId: clientId },
+  //       {
+  //         token: refreshToken,
+  //         status: "active",
+  //         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  //       },
+  //       { new: true, upsert: true }
+  //     );
+
+  //     const profile = await ProfileService.getProfile(user._id.toString());
+
+  //     return { user, accessToken, refreshToken, profile };
+  //   } catch (error) {
+  //     if (error instanceof CustomError) throw error;
+  //     throw new CustomError(500, error as string);
+  //   }
+  // }
   async login(email: string, password: string, clientId: string) {
+    // Bắt đầu một transaction để đảm bảo tính toàn vẹn
+    const session = await mongoose.startSession();
     try {
-      // Find user
-      const user = await UserModel.findOne({
-        $or: [
-          { email: { $regex: new RegExp(`^${email}$`, "i") } },
-          { username: { $regex: new RegExp(`^${email}$`, "i") } },
-        ],
+      const result = await session.withTransaction(async (ses) => {
+        // 1. Tìm người dùng
+        const user = await UserModel.findOne({
+          $or: [
+            { email: { $regex: new RegExp(`^${email}$`, "i") } },
+            { username: { $regex: new RegExp(`^${email}$`, "i") } },
+          ],
+        }).session(ses); // Thêm session vào query
+
+        if (!user) {
+          throw new CustomError(400, "Email hoặc mật khẩu không chính xác");
+        }
+
+        // 2. Xác thực mật khẩu
+        const isPasswordValid = await comparePasswords(password, user.password);
+        if (!isPasswordValid) {
+          throw new CustomError(400, "Email hoặc mật khẩu không chính xác");
+        }
+
+        // 3. Đồng bộ trạng thái với JBA nếu cần
+        if (user.typeLogin?.type === "jba" && user.typeLogin?.id) {
+          try {
+            // Gọi API JBA để lấy trạng thái mới nhất
+            const response = await axios.get(
+              `https://jbabrands.com/wp-json/jba/v1/member-info/${user.typeLogin.id}`,
+              { timeout: 5000 } // Đặt timeout để tránh chờ quá lâu
+            );
+
+            const jbaData = response.data;
+            const isJbaPremium =
+              jbaData?.role === "silver" || jbaData?.role === "gold";
+
+            // LOGIC ĐÃ SỬA: Chỉ NÂNG CẤP, không bao giờ HẠ CẤP.
+            // Nếu JBA là premium VÀ người dùng hiện tại chưa phải premium, thì mới nâng cấp.
+            if (isJbaPremium && !user.isSubscription) {
+              console.log(
+                `Upgrading user ${user.email} to premium based on JBA status.`
+              );
+              user.isSubscription = true;
+              user.type = "premium";
+
+              // Lưu lại thay đổi vào DB. Cần AWAIT!
+              await user.save({ session: ses });
+            }
+          } catch (apiError: any) {
+            // Nếu API của JBA lỗi, chúng ta chỉ ghi log và cho phép người dùng đăng nhập bình thường
+            // Không nên làm gián đoạn trải nghiệm của người dùng
+            console.error(
+              `Failed to sync status for user ${user.email} from JBA. Error:`,
+              apiError.message
+            );
+          }
+        }
+
+        // 4. Tạo token
+        const [refreshToken, accessToken] = await Promise.all([
+          refreshTokenGenerator(String(user._id), clientId),
+          accessTokenGenerator(String(user._id), clientId),
+        ]);
+
+        // 5. Lưu token vào DB
+        await TokenModel.findOneAndUpdate(
+          { userId: user._id, clientId: clientId },
+          {
+            token: refreshToken,
+            status: "active",
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          },
+          { new: true, upsert: true, session: ses } // Thêm session
+        );
+
+        // 6. Lấy profile và trả về kết quả
+        const profile = await ProfileService.getProfile(
+          user._id.toString(),
+          ses
+        );
+
+        // Dùng lean() để lấy object thuần túy, tránh trả về các phương thức của Mongoose
+        const finalUser = await UserModel.findById(user._id)
+          .lean()
+          .session(ses);
+
+        return { user: finalUser, accessToken, refreshToken, profile };
       });
 
-      if (!user) {
-        throw new CustomError(400, "Không tìm thấy người dùng hoặc email");
-      }
-      // Validate password
-      const isPasswordValid = await comparePasswords(password, user.password);
-      if (!isPasswordValid) {
-        throw new CustomError(400, "Mật khẩu không hợp lệ");
-      }
-
-      // Check if user is verified
-      // if (!user.verify) {
-      //   try {
-      //     // Delete existing OTP if any
-      //     await OtpModel.deleteOne({ userId: user._id });
-
-      //     // Generate and hash new OTP
-      //     const otp = generateOTP();
-      //     const hashedOtp = await hashOtp(otp);
-
-      //     // Create OTP record with expiration
-      //     await OtpModel.create({
-      //       userId: user._id,
-      //       otp: hashedOtp,
-      //       email: user.email,
-      //     });
-
-      //     // Prepare and send email
-      //     const mailOptions = {
-      //       from: process.env.EMAIL_USER,
-      //       to: user.email,
-      //       subject: "Xác thực tài khoản - Mã OTP",
-      //       html: `
-      //       <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-      //         <h2>Mã OTP của bạn</h2>
-      //         <p>Vui lòng sử dụng mã OTP sau để xác thực tài khoản của bạn:</p>
-      //         <div style="display: flex; align-items: center;">
-      //           <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
-      //         </div>
-      //         <p>Mã này sẽ hết hạn sau 10 phút.</p>
-      //         <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
-      //       </div>
-      //       `,
-      //     };
-
-      //     const checkSendMail = await sendMail(mailOptions);
-      //     if (!checkSendMail) {
-      //       throw new CustomError(
-      //         500,
-      //         "Gửi email thất bại. Vui lòng thử lại sau."
-      //       );
-      //     }
-
-      //     throw new CustomError(
-      //       400,
-      //       "Vui lòng kiểm tra email và xác thực tài khoản của bạn"
-      //     );
-      //   } catch (otpError) {
-      //     if (otpError instanceof CustomError) throw otpError;
-      //     throw new CustomError(500, "Lỗi trong quá trình tạo và gửi mã OTP");
-      //   }
-      // }
-
-      // Generate tokens and update token record
-      const [refreshToken, accessToken] = await Promise.all([
-        refreshTokenGenerator(String(user._id), clientId),
-        accessTokenGenerator(String(user._id), clientId),
-      ]);
-
-      await TokenModel.findOneAndUpdate(
-        { userId: user._id, clientId: clientId },
-        {
-          token: refreshToken,
-          status: "active",
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        },
-        { new: true, upsert: true }
-      );
-
-      const profile = await ProfileService.getProfile(user._id.toString());
-
-      return { user, accessToken, refreshToken, profile };
+      return result;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new CustomError(500, error as string);
+      console.error("Login failed:", error);
+      throw new CustomError(500, "Đã có lỗi xảy ra trong quá trình đăng nhập.");
+    } finally {
+      // Luôn kết thúc session
+      await session.endSession();
     }
   }
 
@@ -481,10 +598,6 @@ class AuthService {
             // Lưu lại thay đổi vào DB
             await user.save({ session: ses });
           }
-          // Các kịch bản còn lại (4, 5, 6) không cần làm gì thêm về subscription.
-          // - User thường, JBA thường -> Đăng nhập.
-          // - User premium, JBA premium -> Đăng nhập.
-          // - User premium, JBA thường -> Đăng nhập, giữ nguyên premium.
 
           // Cập nhật thông tin đăng nhập từ JBA nếu cần
           user.typeLogin = { type: "jba", id: data.id };
