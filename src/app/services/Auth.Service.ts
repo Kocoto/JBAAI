@@ -133,21 +133,22 @@ class AuthService {
             );
           }
           needsSave = true;
-        } else if (new Date() <= parseISO(process.env.DEMO_END_TIME!)) {
-          // Đang trong thời gian demo
-          await SubscriptionModel.create(
-            [
-              {
-                userId: newUser._id,
-                packageId: process.env.DEMO_PACKAGE_ID,
-              },
-            ],
-            { session: ses }
-          );
-
-          newUser.isSubscription = true;
-          needsSave = true;
         }
+        // else if (new Date() <= parseISO(process.env.DEMO_END_TIME!)) {
+        //   // Đang trong thời gian demo
+        //   await SubscriptionModel.create(
+        //     [
+        //       {
+        //         userId: newUser._id,
+        //         packageId: process.env.DEMO_PACKAGE_ID,
+        //       },
+        //     ],
+        //     { session: ses }
+        //   );
+
+        //   newUser.isSubscription = true;
+        //   needsSave = true;
+        // }
 
         // Tạo Profile (luôn truyền session)
         await ProfileService.createProfile(
