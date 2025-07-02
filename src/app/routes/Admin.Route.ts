@@ -35,4 +35,6 @@ router.get(
   AdminController.getFranchisePerformanceOverview
 );
 
+router.post("/invitation-code/create", AdminController.createInvitationCode);
+
 export default router;

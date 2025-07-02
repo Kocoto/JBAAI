@@ -26,6 +26,8 @@ export interface Campaign {
   // Renewal requirement percentage (e.g., 20 means 20% required for F0 to get new campaign)
   renewalRequirementPercentage: number;
 
+  packageId: Types.ObjectId;
+
   createdBy: Types.ObjectId;
 
   // Timestamps
@@ -48,6 +50,11 @@ const CampaignSchema = new Schema<Campaign>(
     startDate: { type: Date },
     endDate: { type: Date },
     renewalRequirementPercentage: { type: Number, required: true },
+    packageId: {
+      type: Schema.Types.ObjectId,
+      ref: "Package",
+      required: true,
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

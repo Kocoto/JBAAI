@@ -6,6 +6,10 @@ import UserModel from "../models/User.Model";
 import CustomError from "../utils/Error.Util";
 import { Types } from "mongoose";
 import FranchiseService from "./Franchise.Service";
+import InvitationCodeModel, {
+  IInvitationCode,
+  IInvitationCodeInput,
+} from "../models/InvitationCode.Model";
 
 export interface campaignFilter {
   status?: string;
@@ -173,7 +177,8 @@ class AdminService {
     startDate: Date,
     endDate: Date,
     renewalRequirement: number,
-    createdBy: string
+    createdBy: string,
+    packageId: string
   ) {
     try {
       console.log("[AdminService] Bắt đầu tạo và phân bổ Campaign.");
@@ -212,6 +217,7 @@ class AdminService {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         renewalRequirementPercentage: renewalRequirement,
+        packageId: packageId,
         createdBy: new Types.ObjectId(createdBy),
       });
 
@@ -1688,6 +1694,36 @@ class AdminService {
         500,
         "Lỗi không xác định khi lấy tổng quan hiệu suất franchise"
       );
+    }
+  }
+
+  async createInvitationCode(data: IInvitationCodeInput) {
+    try {
+      const code = await InvitationCodeModel.create({
+        code: data.code,
+        userId: new Types.ObjectId(data.userId),
+        status: data.status,
+        codeType: data.codeType,
+        currentActiveLedgerEntryId: data.currentActiveLedgerEntryId
+          ? new Types.ObjectId(data.currentActiveLedgerEntryId)
+          : undefined,
+      });
+      if (!code) {
+        throw new CustomError(500, "Lỗi không xác định khi tạo mã mời");
+      }
+
+      return code;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] Lỗi CustomError khi tạo mã mời: ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Lỗi không xác định khi tạo mã mời: ${error}`
+      );
+      throw new CustomError(500, "Lỗi không xác định khi tạo mã mời");
     }
   }
 }

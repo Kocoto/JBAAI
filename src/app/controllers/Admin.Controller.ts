@@ -2,6 +2,10 @@ import AdminService, { campaignFilter } from "../services/Admin.Service";
 import { NextFunction, Request, Response } from "express";
 import CustomError from "../utils/Error.Util";
 import { Types } from "mongoose";
+import {
+  IInvitationCode,
+  IInvitationCodeInput,
+} from "../models/InvitationCode.Model";
 
 class AdminController {
   /**
@@ -18,15 +22,16 @@ class AdminController {
         startDate,
         endDate,
         renewalRequirement,
+        packageId,
       } = req.body;
-      console.log("kiểm tra id của franchiseOwnerId", franchiseOwnerId);
       // Validate required fields
       if (
         !campaignName ||
         !franchiseOwnerId ||
         !totalAllocated ||
         !startDate ||
-        !endDate
+        !endDate ||
+        !packageId
       ) {
         return res.status(400).json({
           success: false,
@@ -42,7 +47,8 @@ class AdminController {
         new Date(startDate),
         new Date(endDate),
         parseInt(renewalRequirement) || 0,
-        req.user._id
+        req.user._id,
+        packageId
       );
 
       console.log(
@@ -697,6 +703,32 @@ class AdminController {
       console.error(
         `[AdminController] Lỗi khi lấy tổng quan hiệu suất franchise: ${error}`
       );
+      next(error);
+    }
+  }
+
+  async createInvitationCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      let data: IInvitationCodeInput;
+      const userId = req.user._id;
+      const { code, status, codeType, packageId } = req.body;
+      if (!code || !status || !codeType) {
+        throw new CustomError(400, "code,  status, codeType là bắt buộc");
+      }
+      data = {
+        code,
+        userId,
+        status,
+        codeType,
+        packageId,
+      };
+      const newInvitationCode = await AdminService.createInvitationCode(data);
+      res.status(200).json({
+        success: true,
+        message: "Tạo mã code thành công",
+        data: newInvitationCode,
+      });
+    } catch (error) {
       next(error);
     }
   }

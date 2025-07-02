@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import InvitationCodeModel from "../models/InvitationCode.Model";
 import CustomError from "../utils/Error.Util";
 import { generateInviteCode, generateOTP } from "../utils/OTP.Util";
+import CampaignModel from "../models/Campaign.Model";
 
 class InvitationCodeService {
   async createInvitationCode(
@@ -21,6 +22,7 @@ class InvitationCodeService {
           code: validCode,
           userId: userId,
           codeType,
+          status: "inactive",
         },
       ],
       { session }
@@ -62,6 +64,37 @@ class InvitationCodeService {
     try {
       const code = await InvitationCodeModel.findOne({ userId: userId });
       return code;
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, error as string);
+    }
+  }
+
+  async activeInvitationCode(
+    userId: string,
+    currentActiveLedgerEntryId: string,
+    sourceCampaignId: string
+  ) {
+    try {
+      const campaign = await CampaignModel.findById(sourceCampaignId);
+      if (!campaign) {
+        throw new CustomError(400, "Không tìm thấy chiến dịch");
+      }
+
+      const packageId = campaign.packageId;
+
+      const activeCode = await InvitationCodeModel.updateMany(
+        { userId: userId },
+        {
+          status: "active",
+          currentActiveLedgerEntryId: currentActiveLedgerEntryId,
+          packageId,
+        }
+      );
+      if (activeCode.modifiedCount === 0) {
+        throw new CustomError(400, "Không thể kích hoạt mã mời");
+      }
+      return activeCode;
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(500, error as string);

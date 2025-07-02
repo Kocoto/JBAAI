@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import FranchiseService from "../services/Franchise.Service";
 import CustomError from "../utils/Error.Util";
 import { Types } from "mongoose";
+import InvitationCodeService from "../services/InvitationCode.Service";
 
 class FranchiseController {
   /**
@@ -885,6 +886,40 @@ class FranchiseController {
       console.error(
         `[FranchiseController] Lỗi khi lấy thông tin sử dụng quota: ${error}`
       );
+      next(error);
+    }
+  }
+  async activeInitationCode(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user.id;
+      const currentActiveLedgerEntryId = req.body.currentActiveLedgerEntryId;
+      const sourceCampaignId = req.body.sourceCampaignId;
+      if (!currentActiveLedgerEntryId) {
+        throw new CustomError(400, "currentActiveLedgerEntryId là bắt buộc");
+      }
+      if (!Types.ObjectId.isValid(currentActiveLedgerEntryId)) {
+        throw new CustomError(
+          400,
+          "ID currentActiveLedgerEntryId không hợp lệ"
+        );
+      }
+      if (!Types.ObjectId.isValid(sourceCampaignId)) {
+        throw new CustomError(400, "ID sourceCampaignId không hợp lệ");
+      }
+      const activeCode = await InvitationCodeService.activeInvitationCode(
+        userId,
+        currentActiveLedgerEntryId,
+        sourceCampaignId
+      );
+      if (!activeCode) {
+        throw new CustomError(400, "Không thể kích hoạt mã mời");
+      }
+      res.status(200).json({
+        success: true,
+        message: "Kích hoạt mã mời thành công",
+        data: activeCode,
+      });
+    } catch (error) {
       next(error);
     }
   }
