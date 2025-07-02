@@ -20,7 +20,7 @@ class AuthController {
       } = req.body;
 
       // Validate required fields
-      if (!email || !password || !username || !phone) {
+      if (!email || !password || !username) {
         throw new CustomError(
           400,
           "Email, mật khẩu, tên người dùng và số điện thoại là bắt buộc"
