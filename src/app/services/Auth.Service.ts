@@ -125,10 +125,17 @@ class AuthService {
     try {
       const result = await session.withTransaction(async (ses) => {
         // 2. Kiểm tra User đã tồn tại (tối ưu hơn)
-        const existingUser = await UserModel.findOne({
-          $or: [{ email }, { username }, { phone }],
-        }).session(ses);
-
+        let existingUser;
+        if (phone) {
+          existingUser = await UserModel.findOne({
+            $or: [{ email }, { username }, { phone }],
+          }).session(ses);
+        } else {
+          existingUser = await UserModel.findOne({
+            $or: [{ email }, { username }],
+          }).session(ses);
+        }
+        console.log("phoneeeeeee: ", phone);
         if (existingUser) {
           let message = "Thông tin đăng ký đã tồn tại.";
           if (existingUser.email === email)
@@ -144,7 +151,7 @@ class AuthService {
         const userData: any = {
           username,
           email,
-          phone,
+          phone: phone ? phone : null,
           role: role || "user",
           password: hashedPassword,
           ...(optionEmail && { optionEmail }), // Cú pháp gọn hơn
