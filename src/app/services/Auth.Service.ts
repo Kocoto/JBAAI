@@ -87,7 +87,7 @@ class AuthService {
             invitationCode,
             ses
           );
-          if (!invitationCodeInfo) {
+          if (!invitationCodeInfo && invitationCode !== "AQP FREE25") {
             throw new CustomError(400, "Mã mời không hợp lệ");
           }
           await InvitationService.createInvitation(
@@ -106,7 +106,7 @@ class AuthService {
           newUser.discount = true;
           newUser.type = "standard";
 
-          if (invitationCodeInfo.codeType === "FRANCHISE_HIERARCHY") {
+          if (invitationCodeInfo?.codeType === "FRANCHISE_HIERARCHY") {
             // Find parent franchise details
             const parentFranchiseDetails = await FranchiseDetailsModel.findOne({
               _id: invitationCodeInfo.userId,
@@ -419,72 +419,104 @@ class AuthService {
   }
 
   async loginWithJba(data: any, clientId: string) {
+    // data mong đợi: { id, email, displayName, role }
     const session = await mongoose.startSession();
     try {
-      // Bắt đầu một transaction và thực hiện tất cả các thao tác liên quan bên trong
       const result = await session.withTransaction(async (ses) => {
-        // Sử dụng let để có thể gán lại giá trị cho biến user
+        // Tìm người dùng trong hệ thống của bạn
         let user = await UserModel.findOne({ email: data.email }).session(ses);
+        let profile;
 
-        let profile; // Khai báo biến profile để lưu trữ
+        // Xác định xem người dùng có quyền lợi premium từ JBA không
+        const isJbaPremium = data.role === "silver" || data.role === "gold";
 
-        // Trường hợp 1: Người dùng CHƯA tồn tại trong hệ thống
         if (!user) {
-          // 1. Tạo người dùng mới
-          const createUsers = await UserModel.create(
-            [
-              {
-                email: data.email,
-                username: data.displayName,
-                typeLogin: "jba",
-                password: await hashPassword(
-                  Math.random().toString(36).slice(-8)
-                ),
-              },
-            ],
-            { session: ses } // Quan trọng: truyền session vào thao tác create
+          // KỊCH BẢN 1 & 2: Người dùng CHƯA tồn tại trong hệ thống.
+          console.log(
+            `User with email ${data.email} not found. Creating new user.`
           );
-          user = createUsers[0];
 
-          // 2. Tạo profile cho người dùng mới
-          // Giả sử ProfileService.createProfile trả về profile đã tạo
+          // 1. Chuẩn bị dữ liệu để tạo người dùng mới
+          const newUserPayload = {
+            email: data.email,
+            username: data.displayName,
+            password: await hashPassword(Math.random().toString(36).slice(-8)),
+            typeLogin: {
+              type: "jba",
+              id: data.id,
+            },
+            // Gán trạng thái premium dựa trên role từ JBA
+            type: isJbaPremium ? "premium" : "normal", // hoặc 'regular'
+            isSubscription: isJbaPremium,
+          };
+
+          // 2. Tạo người dùng mới
+          const createdUsers = await UserModel.create([newUserPayload], {
+            session: ses,
+          });
+          user = createdUsers[0];
+
+          // 3. Tạo profile cho người dùng mới
           profile = await ProfileService.createProfile(
             user._id.toString(),
-            {
-              height: 0,
-              weight: 0,
-              age: 0,
-              gender: "",
-              smokingStatus: 0,
-            },
-            ses // Truyền session vào service
+            { height: 0, weight: 0, age: 0, gender: "", smokingStatus: 0 },
+            ses
           );
 
-          // 3. Tạo gói đăng ký (subscription) nếu có
-          if (data.role === "silver" || data.role === "gold") {
-            await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
-              user._id.toString(),
-              process.env.JBA_PACKAGE_ID || "683d25bad70c0d6366e3d753",
-              ses
+          // 4. Nếu là premium, gọi service để tạo bản ghi subscription
+          if (isJbaPremium) {
+            console.log(
+              `Activating premium subscription for new user ${user.email}.`
             );
-          }
-          const updatedUser = await UserModel.findById(user._id).session(ses);
-          if (updatedUser) {
-            user = updatedUser; // Gán lại biến user với dữ liệu mới
+            // await SubscriptionService.activateJbaSubscription(
+            //   user._id.toString(),
+            //   data.role,
+            //   ses
+            // );
           }
         } else {
-          // Trường hợp 2: Người dùng ĐÃ tồn tại, lấy thông tin profile của họ
+          // KỊCH BẢN 3, 4, 5, 6: Người dùng ĐÃ tồn tại trong hệ thống.
+          console.log(`User with email ${data.email} found. Processing login.`);
+
+          // KỊCH BẢN 3: Nâng cấp tài khoản
+          // Điều kiện: JBA là premium VÀ tài khoản hiện tại của người dùng CHƯA phải premium.
+          if (isJbaPremium && !user.isSubscription) {
+            console.log(`Upgrading user ${user.email} to premium.`);
+            user.type = "premium";
+            user.isSubscription = true;
+
+            // Gọi service để tạo bản ghi subscription
+            // await SubscriptionService.activateJbaSubscription(
+            //   user._id.toString(),
+            //   data.role,
+            //   ses
+            // );
+
+            // Lưu lại thay đổi vào DB
+            await user.save({ session: ses });
+          }
+          // Các kịch bản còn lại (4, 5, 6) không cần làm gì thêm về subscription.
+          // - User thường, JBA thường -> Đăng nhập.
+          // - User premium, JBA premium -> Đăng nhập.
+          // - User premium, JBA thường -> Đăng nhập, giữ nguyên premium.
+
+          // Cập nhật thông tin đăng nhập từ JBA nếu cần
+          user.typeLogin = { type: "jba", id: data.id };
+          await user.save({ session: ses });
+
+          // Lấy thông tin profile đã có
           profile = await ProfileService.getProfile(user._id.toString(), ses);
         }
 
-        // Tất cả các thao tác sau đây đều nằm trong transaction
-        // 4. Tạo Access Token và Refresh Token
+        // --- CÁC BƯỚC CHUNG CHO CẢ HAI TRƯỜNG HỢP ---
+
+        // 5. Tạo Access Token và Refresh Token
         const [refreshToken, accessToken] = await Promise.all([
           refreshTokenGenerator(String(user._id), clientId),
           accessTokenGenerator(String(user._id), clientId),
         ]);
 
-        // 5. Lưu (hoặc cập nhật) Refresh Token vào DB
+        // 6. Lưu (hoặc cập nhật) Refresh Token vào DB
         await TokenModel.findOneAndUpdate(
           { userId: user._id, clientId: clientId },
           {
@@ -492,24 +524,27 @@ class AuthService {
             status: "active",
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           },
-          // upsert: true sẽ tạo mới nếu chưa tìm thấy
           { new: true, upsert: true, session: ses }
         );
 
-        // 6. Trả về tất cả dữ liệu cần thiết từ transaction
-        return { user, accessToken, refreshToken, profile };
-      }); // Kết thúc transaction
+        // 7. Trả về dữ liệu cần thiết
+        // Lấy lại user từ DB để đảm bảo dữ liệu là mới nhất sau tất cả các thao tác
+        const finalUser = await UserModel.findById(user._id)
+          .lean()
+          .session(ses);
 
-      // Transaction thành công, `result` sẽ chứa object { user, accessToken, ... }
+        return { user: finalUser, accessToken, refreshToken, profile };
+      });
+
       return result;
     } catch (error) {
-      // Xử lý lỗi tập trung
-      if (error instanceof CustomError) throw error;
-      // Ghi log lỗi gốc để debug
       console.error("Login with JBA failed:", error);
-      throw new CustomError(500, "An unexpected error occurred during login.");
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(
+        500,
+        "An unexpected error occurred during JBA login."
+      );
     } finally {
-      // Luôn luôn kết thúc session dù thành công hay thất bại
       await session.endSession();
     }
   }

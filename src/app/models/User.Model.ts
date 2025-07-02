@@ -32,7 +32,10 @@ export interface IUser {
   emailNotificationsEnabled: boolean;
   isPayment: boolean;
   isHideScore: boolean;
-  typeLogin: "email" | "phone" | "google" | "facebook" | "jba";
+  typeLogin: {
+    type: "email" | "phone" | "google" | "facebook" | "jba";
+    id: string;
+  };
   type?: "normal" | "standard" | "premium";
   franchiseName?: string;
   optionEmail?: string;
@@ -76,7 +79,14 @@ const UserSchema = new Schema<IUser>(
       enum: ["normal", "standard", "premium"],
       default: "normal",
     },
-    typeLogin: { type: String, default: "email" },
+    typeLogin: {
+      type: {
+        type: String,
+        enum: ["email", "phone", "google", "facebook", "jba"],
+        default: "email",
+      },
+      id: { type: String },
+    },
     franchiseName: { type: String },
     optionEmail: { type: String },
   },
