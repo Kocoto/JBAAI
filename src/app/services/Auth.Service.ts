@@ -135,7 +135,7 @@ class AuthService {
             message = "Email này đã được sử dụng.";
           if (existingUser.username === username)
             message = "Username này đã được sử dụng.";
-          if (existingUser.phone === phone)
+          if (phone && existingUser.phone === phone)
             message = "Số điện thoại này đã được sử dụng.";
           throw new CustomError(409, message);
         }
