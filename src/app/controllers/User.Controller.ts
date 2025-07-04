@@ -65,5 +65,23 @@ class UserController {
       next(error);
     }
   }
+
+  async deleteMyAccount(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = req.user;
+      const userId = user._id;
+      const isDelete = await UserService.deleteMyAccount(userId);
+      if (!isDelete) {
+        throw new CustomError(400, "Không thể xóa tài khoản");
+      }
+      return res.status(200).json({
+        message: "Xóa tài khoản thành công",
+        isDelete,
+      });
+    } catch (error) {
+      if (error instanceof CustomError) throw error;
+      throw new CustomError(500, error as string);
+    }
+  }
 }
 export default new UserController();
