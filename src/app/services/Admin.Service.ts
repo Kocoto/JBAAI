@@ -1730,6 +1730,36 @@ class AdminService {
       throw new CustomError(500, "Lỗi không xác định khi tạo mã mời");
     }
   }
+
+  async adminAllocateQuotaToFranchise(
+    campaignId: string,
+    parentUserId: string,
+    childFranchiseUserId: string,
+    amountToAllocate: number,
+    sourceLedgerEntryId: string
+  ) {
+    try {
+      const franchise = await FranchiseDetailsModel.findOne({
+        userId: childFranchiseUserId,
+      });
+      if (!franchise) {
+        console.log("[AdminService] Không tìm thấy franchise để tạo ");
+        throw new CustomError(404, "Không tìm thấy franchise");
+      }
+      const newLedgerEntry = {
+        _id: new Types.ObjectId(),
+        sourceCampaignId: new Types.ObjectId(campaignId),
+        sourceParentLedgerEntryId: null,
+        allocatedByUserId: new Types.ObjectId(parentUserId),
+        totalAllocated: amountToAllocate,
+        consumedByOwnInvites: 0,
+        allocatedToChildren: 0,
+        status: "active",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+    } catch (error) {}
+  }
 }
 
 export default new AdminService();

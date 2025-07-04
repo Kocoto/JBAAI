@@ -2,7 +2,7 @@ import mongoose, { Schema, Types } from "mongoose";
 
 export interface UserTrialQuotaLedger {
   _id: Types.ObjectId;
-  sourceCampaignId?: Types.ObjectId;
+  sourceCampaignId: Types.ObjectId;
   sourceParentLedgerEntryId?: Types.ObjectId;
   allocatedByUserId: Types.ObjectId;
   totalAllocated: number;

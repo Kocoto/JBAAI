@@ -1,7 +1,7 @@
 import PackageModel from "../models/Package.Model";
 import CustomError from "../utils/Error.Util";
 
-interface IQueryPayload {
+export interface IQueryPayload {
   type?: string;
   location?: string;
   status?: boolean;
@@ -58,15 +58,8 @@ class PackageService {
     }
   }
 
-  async getAllPackages(isoCode: string, queryPayload: IQueryPayload) {
+  async getAllPackages(queryPayload: IQueryPayload) {
     try {
-      if (!queryPayload.status) {
-        queryPayload.status = true;
-      }
-      if (!queryPayload.location) {
-        queryPayload.location = isoCode === "VN" ? "VN" : "other";
-      }
-
       const packages = await PackageModel.find(queryPayload);
       if (!packages) {
         throw new CustomError(404, "Packages not found");

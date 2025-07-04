@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import CustomError from "../utils/Error.Util";
-import PackageService from "../services/Package.Service";
+import PackageService, { IQueryPayload } from "../services/Package.Service";
 import { IPackage } from "../models/Package.Model";
 import { geoIpDbBuffer } from "../config/geoip.config";
 import { Reader as MaxMindGeoIPReader } from "@maxmind/geoip2-node";
@@ -78,55 +78,39 @@ class PackageController {
     }
   }
 
+  /**
+   * Lấy tất cả packages với bộ lọc động
+   * Chỉ áp dụng điều kiện tìm kiếm khi client truyền giá trị
+   */
   async getAllPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      // Get client IP address, fallback to USA if not available
-      const clientIp = req.ip ?? "8.8.8.8";
-      // const clientIp = "123.21.85.189";
-
-      // Check if GeoIP database is available
-      if (!geoIpDbBuffer) {
-        const errorMessage =
-          "[PackageController] GeoIP Database Buffer is not available!";
-        console.error(errorMessage);
-        return res.status(503).json({
-          success: false,
-          error: "GeoIP service is temporarily unavailable",
-          details: "Database buffer not loaded",
-        });
+      // Tạo query payload động - chỉ thêm field khi có giá trị
+      const queryPayload: IQueryPayload = {};
+      
+      // Chỉ thêm type vào query khi client truyền giá trị
+      if (req.query.type) {
+        queryPayload.type = req.query.type as string;
       }
-
-      // Get country information from IP address
-      const countryInformation = getCountryInfoFromIp(clientIp);
-
-      // Validate country information exists
-      if (!countryInformation) {
-        const errorMessage =
-          "[PackageController] Unable to determine country from IP";
-        console.error(errorMessage);
-        throw new CustomError(400, "Could not determine your location");
+      
+      // Chỉ thêm location vào query khi client truyền giá trị
+      if (req.query.location) {
+        queryPayload.location = req.query.location as string;
       }
-
-      // Extract and validate country code
-      const countryCode = countryInformation.countryCode;
-      if (!countryCode) {
-        const errorMessage =
-          "[PackageController] Country code not found in location data";
-        console.error(errorMessage);
-        throw new CustomError(400, "Invalid location data");
+      
+      // Chỉ thêm status vào query khi client truyền giá trị
+      if (req.query.status !== undefined) {
+        queryPayload.status = req.query.status === "true";
       }
-
-      // Fetch packages based on country code
-      const packages = await PackageService.getAllPackages(countryCode);
-
+      
+      // Fetch packages based on dynamic query parameters
+      const packages = await PackageService.getAllPackages(queryPayload);
+  
       // Return success response with packages
       return res.status(200).json({
         success: true,
         message: "Packages retrieved successfully",
         data: packages,
-        metadata: {
-          location: countryCode,
-        },
+        filters: queryPayload // Trả về các filter đã áp dụng để client biết
       });
     } catch (error) {
       next(error);

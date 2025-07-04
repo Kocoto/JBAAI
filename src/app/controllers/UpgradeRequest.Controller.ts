@@ -12,7 +12,7 @@ class UpgradeRequestController {
 
       if (!userId) throw new CustomError(400, "Không tìm thấy userId");
       const { phone, fullname, address, franchiseName } = req.body;
-      const franchiseName15 = franchiseName + "15";
+      const franchiseName15 = franchiseName;
       const franchiseNameUpCase = franchiseName15.toUpperCase();
       await InvitationCodeService.checkCodeIsInvalid(franchiseNameUpCase);
       if (!phone || !fullname || !address) {

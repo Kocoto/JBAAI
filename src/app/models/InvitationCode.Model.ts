@@ -54,7 +54,6 @@ const InvitationCodeSchema = new Schema<IInvitationCode>(
     packageId: {
       type: Schema.Types.ObjectId,
       ref: "Package",
-      required: true,
     },
   },
   {

@@ -92,7 +92,9 @@ class UserService {
 
   async deleteMyAccount(userId: string) {
     try {
-      const user = await UserModel.findByIdAndDelete(userId);
+      const user = await UserModel.findByIdAndUpdate(userId, {
+        status: false,
+      });
       if (!user) {
         throw new CustomError(404, "User not found");
       }
