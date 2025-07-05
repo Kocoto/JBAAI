@@ -1,4 +1,4 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Query, Schema } from "mongoose";
 
 export interface IUserOutput {
   _id: string;
@@ -16,6 +16,8 @@ export interface IUserOutput {
   emailNotificationsEnabled: boolean;
   typeLogin: string;
   optionEmail?: string;
+  isDeleted: boolean;
+  deletedAt: Date | null;
 }
 
 export interface IUser {
@@ -39,14 +41,16 @@ export interface IUser {
   type?: "normal" | "standard" | "premium";
   franchiseName?: string;
   optionEmail?: string;
+  isDeleted: boolean;
+  deletedAt: Date | null;
 }
 
 const UserSchema = new Schema<IUser>(
   {
-    username: { type: String, unique: true, required: true, index: true },
+    username: { type: String, required: true },
     password: { type: String, required: true },
-    email: { type: String, unique: true, required: true, index: true },
-    phone: { type: String, unique: true, sparse: true },
+    email: { type: String, required: true },
+    phone: { type: String },
     role: {
       type: String,
       enum: ["admin", "user", "franchise", "seller"],
@@ -89,11 +93,64 @@ const UserSchema = new Schema<IUser>(
     },
     franchiseName: { type: String },
     optionEmail: { type: String },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true, // Thêm index cho trường này để query nhanh hơn
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
+// Index cho 'username'
+UserSchema.index(
+  { username: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { isDeleted: { $ne: true } },
+  }
+);
+
+// Index cho 'email'
+UserSchema.index(
+  { email: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { isDeleted: { $ne: true } },
+  }
+);
+
+// Index cho 'phone'
+UserSchema.index(
+  { phone: 1 },
+  {
+    unique: true,
+    // Áp dụng cho các document chưa bị xóa VÀ có tồn tại trường phone
+    partialFilterExpression: {
+      isDeleted: { $ne: true },
+      phone: { $exists: true },
+    },
+  }
+);
+
+/**
+ * Pre-hook middleware để tự động lọc các document đã bị soft delete
+ * Áp dụng cho tất cả các query operations bắt đầu bằng 'find'
+ */
+UserSchema.pre(/^find/, function (this: Query<any, any>, next) {
+  try {
+    // Tự động thêm điều kiện `isDeleted` không phải là `true`
+    this.where({ isDeleted: { $ne: true } });
+    next();
+  } catch (error) {
+    next(error as Error);
+  }
+});
 const UserModel = mongoose.model<IUser>("User", UserSchema);
 export default UserModel;

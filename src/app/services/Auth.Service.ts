@@ -135,7 +135,6 @@ class AuthService {
             $or: [{ email }, { username }],
           }).session(ses);
         }
-        console.log("phoneeeeeee: ", phone);
         if (existingUser) {
           let message = "Thông tin đăng ký đã tồn tại.";
           if (existingUser.email === email)
