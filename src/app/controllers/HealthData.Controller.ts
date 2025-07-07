@@ -91,14 +91,15 @@ class HealthDataController {
       }
       const username = req.user.username;
       const type = user.type;
+      const languageCode = language === "system" ? "en" : language || "vi";
       // Send health data email with or without optional email settings
       const healthData = await HealthDataService.sentMailHealthData(
         email,
         username,
         rawData,
-        language,
+        languageCode,
         type,
-        optionEmail || undefined
+        optionEmail
       );
 
       return res.status(200).json({
