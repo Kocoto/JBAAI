@@ -233,19 +233,34 @@ class AdminService {
         `[AdminService] Bắt đầu khởi tạo sổ cái đầu tiên cho Franchise của Campaign vừa tạo`
       );
 
-      const newLedger = await FranchiseService.allocateQuotaToChild(
-        newCampaign.franchiseOwnerId.toString(),
-        newCampaign.franchiseOwnerId.toString(),
-        newCampaign.totalAllocated,
-        newCampaign._id.toString()
+      // const newLedger = await FranchiseService.allocateQuotaToChild(
+      //   newCampaign.franchiseOwnerId.toString(),
+      //   newCampaign.franchiseOwnerId.toString(),
+      //   newCampaign.totalAllocated,
+      //   newCampaign._id.toString()
+      // );
+      // if (!newLedger) {
+      //   throw new CustomError(500, "Lỗi khi tạo sổ cái cho Franchise");
+      // }
+      // console.log(
+      //   `[AdminService] Tạo sổ cái thành công với ID: ${newLedger.childLedgerEntryCreated._id}`
+      // );
+
+      const newLedger = await this.adminAllocateQuotaToFranchise(
+        newCampaign._id.toString(),
+        createdBy,
+        franchiseOwnerId,
+        totalAllocated,
+        startDate,
+        endDate
       );
       if (!newLedger) {
+        console.log(`[AdminService] Lỗi khi tạo sổ cái cho Franchise`);
         throw new CustomError(500, "Lỗi khi tạo sổ cái cho Franchise");
       }
       console.log(
-        `[AdminService] Tạo sổ cái thành công với ID: ${newLedger.childLedgerEntryCreated._id}`
+        `[AdminService] Tạo sổ cái thành công với ID: ${newLedger._id}`
       );
-
       return newCampaign;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -1733,10 +1748,11 @@ class AdminService {
 
   async adminAllocateQuotaToFranchise(
     campaignId: string,
-    parentUserId: string,
+    adminId: string,
     childFranchiseUserId: string,
     amountToAllocate: number,
-    sourceLedgerEntryId: string
+    startDate: Date,
+    endDate: Date
   ) {
     try {
       const franchise = await FranchiseDetailsModel.findOne({
@@ -1746,19 +1762,41 @@ class AdminService {
         console.log("[AdminService] Không tìm thấy franchise để tạo ");
         throw new CustomError(404, "Không tìm thấy franchise");
       }
+
       const newLedgerEntry = {
         _id: new Types.ObjectId(),
         sourceCampaignId: new Types.ObjectId(campaignId),
-        sourceParentLedgerEntryId: null,
-        allocatedByUserId: new Types.ObjectId(parentUserId),
+        allocatedByUserId: new Types.ObjectId(adminId),
         totalAllocated: amountToAllocate,
         consumedByOwnInvites: 0,
         allocatedToChildren: 0,
         status: "active",
+        originalCampaignStartDate: startDate,
+        originalCampaignEndDate: endDate,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-    } catch (error) {}
+      const updatedFranchise = await FranchiseDetailsModel.findOneAndUpdate(
+        { userId: childFranchiseUserId },
+        { $push: { userTrialQuotaLedger: newLedgerEntry } },
+        { new: true }
+      );
+      if (!updatedFranchise) {
+        throw new CustomError(500, "Lỗi không xác định sau khi phân bổ");
+      }
+      return newLedgerEntry;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] Lỗi CustomError khi phân bổ quota: ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Lỗi không xác định khi phân bổ quota: ${error}`
+      );
+      throw new CustomError(500, "Lỗi không xác định khi phân bổ quota");
+    }
   }
 }
 

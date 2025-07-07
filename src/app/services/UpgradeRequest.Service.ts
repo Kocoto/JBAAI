@@ -9,6 +9,14 @@ import { generateOTP } from "../utils/OTP.Util";
 class UpgradeRequestService {
   async createUpgradeRequest(userId: string, data: any) {
     try {
+      const checkRequest = await UpgradeRequestModel.findOne({
+        userId,
+        status: { $ne: "rejected" },
+      });
+      if (checkRequest) {
+        throw new CustomError(400, "Bạn đã có yêu cầu nâng cấp");
+      }
+
       const check = await InvitationCodeService.checkCodeIsInvalid(
         data.franchiseName
       );

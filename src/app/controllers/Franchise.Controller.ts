@@ -889,7 +889,7 @@ class FranchiseController {
       next(error);
     }
   }
-  async activeInitationCode(req: Request, res: Response, next: NextFunction) {
+  async activeInvitationCode(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user.id;
       const currentActiveLedgerEntryId = req.body.currentActiveLedgerEntryId;

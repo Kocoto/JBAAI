@@ -103,4 +103,11 @@ router.get(
   FranchiseController.getQuotaUtilization
 );
 
+// POST /api/v1/franchise/code/active - Kích hoạt mã mời
+router.post(
+  "/code/active",
+  checkFranchise,
+  FranchiseController.activeInvitationCode
+);
+
 export default router;
