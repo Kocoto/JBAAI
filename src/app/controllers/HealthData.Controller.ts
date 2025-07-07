@@ -6,6 +6,12 @@ class HealthDataController {
     try {
       const userId = req.user.id;
       const date = req.body.date;
+      const language = req.headers["accept-language"];
+
+      console.log(
+        "[HealthDataController] getHealthDataByDateeeeeee: ",
+        language
+      );
       if (!date) {
         const healthData = await HealthDataService.getOneHealthData(userId);
 
