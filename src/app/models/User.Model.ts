@@ -77,7 +77,7 @@ const UserSchema = new Schema<IUser>(
     isSubscription: { type: Boolean, default: false },
     emailNotificationsEnabled: { type: Boolean, default: false },
     isPayment: { type: Boolean, default: true },
-    isHideScore: { type: Boolean, default: true },
+    isHideScore: { type: Boolean, default: false },
     type: {
       type: String,
       enum: ["normal", "standard", "premium"],

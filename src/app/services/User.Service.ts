@@ -79,8 +79,8 @@ class UserService {
   async updateManyUser() {
     try {
       const users = await UserModel.updateMany(
-        { isPayment: false },
-        { isPayment: true }
+        { isHideScore: true },
+        { isHideScore: false }
       );
       return users;
     } catch (error) {
