@@ -1,10 +1,7 @@
 import e, { Request, Response, NextFunction } from "express";
 import CustomError from "../utils/Error.Util";
 import HealthDataService from "../services/HealthData.Service";
-import {
-  generateMonthlyHealthExcel,
-  MonthlyHealthReportData,
-} from "../utils/HealthReport.Util";
+import { MonthlyHealthReportData } from "../utils/HealthReport.Util";
 class HealthDataController {
   async getHealthDataByDate(req: Request, res: Response, next: NextFunction) {
     try {
@@ -148,79 +145,79 @@ class HealthDataController {
     }
   }
 
-  async exportMonthlyReport(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.user.id;
-      const { month, year } = req.query;
+  // async exportMonthlyReport(req: Request, res: Response, next: NextFunction) {
+  //   try {
+  //     const userId = req.user.id;
+  //     const { month, year } = req.query;
 
-      // Validate input
-      const monthNum = parseInt(month as string);
-      const yearNum = parseInt(year as string);
+  //     // Validate input
+  //     const monthNum = parseInt(month as string);
+  //     const yearNum = parseInt(year as string);
 
-      if (!month || !year || isNaN(monthNum) || isNaN(yearNum)) {
-        throw new CustomError(400, "Tháng và năm phải là số hợp lệ");
-      }
+  //     if (!month || !year || isNaN(monthNum) || isNaN(yearNum)) {
+  //       throw new CustomError(400, "Tháng và năm phải là số hợp lệ");
+  //     }
 
-      if (monthNum < 1 || monthNum > 12) {
-        throw new CustomError(400, "Tháng phải từ 1 đến 12");
-      }
+  //     if (monthNum < 1 || monthNum > 12) {
+  //       throw new CustomError(400, "Tháng phải từ 1 đến 12");
+  //     }
 
-      if (yearNum < 2020 || yearNum > new Date().getFullYear()) {
-        throw new CustomError(400, "Năm không hợp lệ");
-      }
+  //     if (yearNum < 2020 || yearNum > new Date().getFullYear()) {
+  //       throw new CustomError(400, "Năm không hợp lệ");
+  //     }
 
-      // Lấy dữ liệu báo cáo
-      const reportData = await HealthDataService.getMonthlyHealthDataReport(
-        userId,
-        monthNum,
-        yearNum
-      );
+  //     // Lấy dữ liệu báo cáo
+  //     const reportData = await HealthDataService.getMonthlyHealthDataReport(
+  //       userId,
+  //       monthNum,
+  //       yearNum
+  //     );
 
-      if (reportData.details.length === 0) {
-        return res.status(200).json({
-          success: true,
-          message: `Không có dữ liệu quét sức khỏe trong tháng ${monthNum}/${yearNum}`,
-          data: null,
-        });
-      }
+  //     if (reportData.details.length === 0) {
+  //       return res.status(200).json({
+  //         success: true,
+  //         message: `Không có dữ liệu quét sức khỏe trong tháng ${monthNum}/${yearNum}`,
+  //         data: null,
+  //       });
+  //     }
 
-      // Lấy thông tin user
-      const user = req.user;
+  //     // Lấy thông tin user
+  //     const user = req.user;
 
-      // Chuẩn bị dữ liệu cho Excel
-      const excelData: MonthlyHealthReportData = {
-        summary: reportData.summary,
-        details: reportData.details,
-        userInfo: {
-          username: user.username,
-          email: user.email,
-        },
-      };
+  //     // Chuẩn bị dữ liệu cho Excel
+  //     const excelData: MonthlyHealthReportData = {
+  //       summary: reportData.summary,
+  //       details: reportData.details,
+  //       userInfo: {
+  //         username: user.username,
+  //         email: user.email,
+  //       },
+  //     };
 
-      // Generate Excel file
-      const excelBuffer = await generateMonthlyHealthExcel(excelData);
+  //     // Generate Excel file
+  //     const excelBuffer = await generateMonthlyHealthExcel(excelData);
 
-      // Set response headers
-      const fileName = `BaoCaoSucKhoe_${user.username}_Thang${monthNum}_${yearNum}.xlsx`;
-      res.setHeader(
-        "Content-Type",
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-      );
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`
-      );
-      res.setHeader("Content-Length", excelBuffer.length.toString());
+  //     // Set response headers
+  //     const fileName = `BaoCaoSucKhoe_${user.username}_Thang${monthNum}_${yearNum}.xlsx`;
+  //     res.setHeader(
+  //       "Content-Type",
+  //       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  //     );
+  //     res.setHeader(
+  //       "Content-Disposition",
+  //       `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`
+  //     );
+  //     res.setHeader("Content-Length", excelBuffer.length.toString());
 
-      // Send file
-      res.send(excelBuffer);
-    } catch (error) {
-      console.error(
-        "[HealthDataController] Lỗi khi xuất báo cáo tháng:",
-        error
-      );
-      next(error);
-    }
-  }
+  //     // Send file
+  //     res.send(excelBuffer);
+  //   } catch (error) {
+  //     console.error(
+  //       "[HealthDataController] Lỗi khi xuất báo cáo tháng:",
+  //       error
+  //     );
+  //     next(error);
+  //   }
+  // }
 }
 export default new HealthDataController();

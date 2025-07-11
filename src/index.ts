@@ -25,6 +25,8 @@ import { route } from "./app/routes";
 import swaggerUi from "swagger-ui-express";
 import { initializeEmailWorker } from "./app/workers/Mail.Worker";
 import { initializeSubscriptionLifecycleWorker } from "./app/workers/SubscriptionLifecycle.Worker";
+import { scheduleMonthlyReportJobs } from "./app/schedulers/report.scheduler";
+import { initializeMonthlyReportWorker } from "./app/workers/MonthlyReport.Worker";
 
 const PORT = process.env.PORT || 4000;
 const DEEP_LINK_BASE_URL = "https://jbaai-y7mb.onrender.com";
@@ -103,10 +105,14 @@ async function startApplication() {
     // Initialize services
     initializeEmailWorker();
     initializeSubscriptionLifecycleWorker();
+    initializeMonthlyReportWorker();
     app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     // Initialize PayPal
     client;
+
+    // Initialize monthly report scheduler
+    scheduleMonthlyReportJobs();
 
     // Verify email transport
     await new Promise((resolve, reject) => {

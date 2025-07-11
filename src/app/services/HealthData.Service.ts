@@ -18,6 +18,7 @@ import { renderEmailTemplate, sendMail } from "../utils/Mail.Util";
 import * as path from "path";
 import mongoose, { Types } from "mongoose";
 import { emailQueue } from "../queues/Mail.Queue";
+import UserModel from "../models/User.Model";
 
 export interface IHealthDataEmailJobPayload {
   emailTo: string;
@@ -639,6 +640,79 @@ class HealthDataService {
     } catch (error) {
       console.error(`[HealthDataService] Lỗi khi lấy báo cáo tháng: ${error}`);
       throw new CustomError(500, "Lỗi khi lấy dữ liệu báo cáo tháng");
+    }
+  }
+
+  async getMonthlyHealthReportDataForExcel(
+    userId: string,
+    month: number,
+    year: number
+  ) {
+    try {
+      // Validate input parameters
+      if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+        throw new CustomError(400, "Invalid user ID");
+      }
+
+      if (!month || month < 1 || month > 12) {
+        throw new CustomError(
+          400,
+          "Invalid month value. Month must be between 1-12"
+        );
+      }
+
+      if (!year || year < 1900 || year > 9999) {
+        throw new CustomError(400, "Invalid year value");
+      }
+
+      console.log(
+        `[Service] Preparing monthly report data for user ${userId}, ${month}/${year}`
+      );
+
+      const startDate = startOfMonth(new Date(year, month - 1));
+      const endDate = endOfMonth(new Date(year, month - 1));
+
+      // Validate date range
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+        throw new CustomError(400, "Invalid date range");
+      }
+
+      const healthData = await HealthDataModel.find({
+        userId: new Types.ObjectId(userId),
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      })
+        .populate({
+          path: "userId",
+          select: "username email",
+        })
+        .sort({ createdAt: 1 });
+
+      if (!healthData) {
+        throw new CustomError(
+          404,
+          "No health data found for the specified period"
+        );
+      }
+
+      return healthData;
+    } catch (error) {
+      console.error(
+        "[Service] Error getting monthly health report data:",
+        error
+      );
+
+      if (error instanceof CustomError) {
+        throw error;
+      }
+
+      if (error instanceof mongoose.Error) {
+        throw new CustomError(500, "Database error while fetching health data");
+      }
+
+      throw new CustomError(500, "Error fetching monthly report data");
     }
   }
 }

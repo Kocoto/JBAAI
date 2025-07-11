@@ -23,215 +23,215 @@ export interface MonthlyHealthReportData {
   };
 }
 
-export async function generateMonthlyHealthExcel(
-  data: MonthlyHealthReportData
-): Promise<Buffer> {
-  const workbook = new ExcelJS.Workbook();
-  workbook.creator = "JBAAI Health System";
-  workbook.lastModifiedBy = "JBAAI Health System";
-  workbook.created = new Date();
-  workbook.modified = new Date();
+// export async function generateMonthlyHealthExcel(
+//   data: MonthlyHealthReportData
+// ): Promise<Buffer> {
+//   const workbook = new ExcelJS.Workbook();
+//   workbook.creator = "JBAAI Health System";
+//   workbook.lastModifiedBy = "JBAAI Health System";
+//   workbook.created = new Date();
+//   workbook.modified = new Date();
 
-  // Tạo sheet tổng quan
-  const summarySheet = workbook.addWorksheet("Tổng quan");
+//   // Tạo sheet tổng quan
+//   const summarySheet = workbook.addWorksheet("Tổng quan");
 
-  // Tiêu đề báo cáo
-  summarySheet.addRow([
-    `BÁO CÁO SỨC KHỎE THÁNG ${data.summary.month}/${data.summary.year}`,
-  ]);
-  summarySheet.mergeCells("A1:E1");
-  const titleCell = summarySheet.getCell("A1");
-  titleCell.font = {
-    name: "Arial",
-    size: 16,
-    bold: true,
-    color: { argb: "FF0070C0" },
-  };
-  titleCell.alignment = {
-    vertical: "middle",
-    horizontal: "center",
-  };
+//   // Tiêu đề báo cáo
+//   summarySheet.addRow([
+//     `BÁO CÁO SỨC KHỎE THÁNG ${data.summary.month}/${data.summary.year}`,
+//   ]);
+//   summarySheet.mergeCells("A1:E1");
+//   const titleCell = summarySheet.getCell("A1");
+//   titleCell.font = {
+//     name: "Arial",
+//     size: 16,
+//     bold: true,
+//     color: { argb: "FF0070C0" },
+//   };
+//   titleCell.alignment = {
+//     vertical: "middle",
+//     horizontal: "center",
+//   };
 
-  // Thông tin người dùng
-  summarySheet.addRow([]);
-  summarySheet.addRow(["Người dùng:", data.userInfo.username]);
-  summarySheet.addRow(["Email:", data.userInfo.email]);
-  summarySheet.addRow([
-    "Thời gian:",
-    `${format(data.summary.startDate, "dd/MM/yyyy", { locale: vi })} - ${format(
-      data.summary.endDate,
-      "dd/MM/yyyy",
-      { locale: vi }
-    )}`,
-  ]);
-  summarySheet.addRow([]);
+//   // Thông tin người dùng
+//   summarySheet.addRow([]);
+//   summarySheet.addRow(["Người dùng:", data.userInfo.username]);
+//   summarySheet.addRow(["Email:", data.userInfo.email]);
+//   summarySheet.addRow([
+//     "Thời gian:",
+//     `${format(data.summary.startDate, "dd/MM/yyyy", { locale: vi })} - ${format(
+//       data.summary.endDate,
+//       "dd/MM/yyyy",
+//       { locale: vi }
+//     )}`,
+//   ]);
+//   summarySheet.addRow([]);
 
-  // Thống kê tổng quan
-  summarySheet.addRow(["THỐNG KÊ TỔNG QUAN"]);
-  summarySheet.getCell(
-    `A${summarySheet.lastRow?.number ?? summarySheet.rowCount}`
-  ).font = {
-    bold: true,
-    size: 14,
-  };
+//   // Thống kê tổng quan
+//   summarySheet.addRow(["THỐNG KÊ TỔNG QUAN"]);
+//   summarySheet.getCell(
+//     `A${summarySheet.lastRow?.number ?? summarySheet.rowCount}`
+//   ).font = {
+//     bold: true,
+//     size: 14,
+//   };
 
-  summarySheet.addRow(["Tổng số lần quét:", data.summary.totalScans]);
-  summarySheet.addRow([]);
+//   summarySheet.addRow(["Tổng số lần quét:", data.summary.totalScans]);
+//   summarySheet.addRow([]);
 
-  // Chỉ số trung bình
-  summarySheet.addRow(["CHỈ SỐ TRUNG BÌNH"]);
-  summarySheet.getCell(
-    `A${summarySheet.lastRow?.number ?? summarySheet.rowCount}`
-  ).font = {
-    bold: true,
-    size: 14,
-  };
+//   // Chỉ số trung bình
+//   summarySheet.addRow(["CHỈ SỐ TRUNG BÌNH"]);
+//   summarySheet.getCell(
+//     `A${summarySheet.lastRow?.number ?? summarySheet.rowCount}`
+//   ).font = {
+//     bold: true,
+//     size: 14,
+//   };
 
-  const avgData = [
-    ["Nhịp tim:", `${data.summary.avgPulseRate} bpm`],
-    [
-      "Huyết áp:",
-      `${data.summary.avgBloodPressureSystolic}/${data.summary.avgBloodPressureDiastolic} mmHg`,
-    ],
-    ["Độ bão hòa oxy:", `${data.summary.avgOxygenSaturation}%`],
-    ["Mức độ stress:", getLevelText(data.summary.avgStressLevel)],
-    ["Chỉ số sức khỏe:", `${data.summary.avgWellnessIndex}/10`],
-  ];
+//   const avgData = [
+//     ["Nhịp tim:", `${data.summary.avgPulseRate} bpm`],
+//     [
+//       "Huyết áp:",
+//       `${data.summary.avgBloodPressureSystolic}/${data.summary.avgBloodPressureDiastolic} mmHg`,
+//     ],
+//     ["Độ bão hòa oxy:", `${data.summary.avgOxygenSaturation}%`],
+//     ["Mức độ stress:", getLevelText(data.summary.avgStressLevel)],
+//     ["Chỉ số sức khỏe:", `${data.summary.avgWellnessIndex}/10`],
+//   ];
 
-  avgData.forEach((row) => summarySheet.addRow(row));
+//   avgData.forEach((row) => summarySheet.addRow(row));
 
-  // Điều chỉnh độ rộng cột
-  summarySheet.getColumn(1).width = 25;
-  summarySheet.getColumn(2).width = 30;
+//   // Điều chỉnh độ rộng cột
+//   summarySheet.getColumn(1).width = 25;
+//   summarySheet.getColumn(2).width = 30;
 
-  // Tạo sheet chi tiết
-  const detailSheet = workbook.addWorksheet("Chi tiết các lần quét");
+//   // Tạo sheet chi tiết
+//   const detailSheet = workbook.addWorksheet("Chi tiết các lần quét");
 
-  // Header cho bảng chi tiết
-  const headers = [
-    "STT",
-    "Ngày giờ",
-    "Nhịp tim\n(bpm)",
-    "Huyết áp\n(mmHg)",
-    "SpO2\n(%)",
-    "Nhịp thở\n(lần/phút)",
-    "Stress",
-    "Wellness\nIndex",
-    "Hemoglobin\n(g/dL)",
-    "HbA1c\n(%)",
-    "RMSSD\n(ms)",
-    "SDNN\n(ms)",
-  ];
+//   // Header cho bảng chi tiết
+//   const headers = [
+//     "STT",
+//     "Ngày giờ",
+//     "Nhịp tim\n(bpm)",
+//     "Huyết áp\n(mmHg)",
+//     "SpO2\n(%)",
+//     "Nhịp thở\n(lần/phút)",
+//     "Stress",
+//     "Wellness\nIndex",
+//     "Hemoglobin\n(g/dL)",
+//     "HbA1c\n(%)",
+//     "RMSSD\n(ms)",
+//     "SDNN\n(ms)",
+//   ];
 
-  const headerRow = detailSheet.addRow(headers);
+//   const headerRow = detailSheet.addRow(headers);
 
-  // Style cho header
-  headerRow.eachCell((cell, colNumber) => {
-    cell.font = { bold: true, size: 11, color: { argb: "FFFFFFFF" } };
-    cell.fill = {
-      type: "pattern",
-      pattern: "solid",
-      fgColor: { argb: "FF0070C0" },
-    };
-    cell.alignment = {
-      vertical: "middle",
-      horizontal: "center",
-      wrapText: true,
-    };
-    cell.border = {
-      top: { style: "thin" },
-      left: { style: "thin" },
-      bottom: { style: "thin" },
-      right: { style: "thin" },
-    };
-  });
+//   // Style cho header
+//   headerRow.eachCell((cell, colNumber) => {
+//     cell.font = { bold: true, size: 11, color: { argb: "FFFFFFFF" } };
+//     cell.fill = {
+//       type: "pattern",
+//       pattern: "solid",
+//       fgColor: { argb: "FF0070C0" },
+//     };
+//     cell.alignment = {
+//       vertical: "middle",
+//       horizontal: "center",
+//       wrapText: true,
+//     };
+//     cell.border = {
+//       top: { style: "thin" },
+//       left: { style: "thin" },
+//       bottom: { style: "thin" },
+//       right: { style: "thin" },
+//     };
+//   });
 
-  // Thêm dữ liệu chi tiết
-  data.details.forEach((scan, index) => {
-    const row = detailSheet.addRow([
-      index + 1,
-      format(new Date(scan.createdAt), "dd/MM/yyyy HH:mm"),
-      scan.pulseRate?.value || "N/A",
-      scan.bpValue
-        ? `${scan.bpValue.systolic}/${scan.bpValue.diastolic}`
-        : "N/A",
-      scan.oxygenSaturation?.value || "N/A",
-      scan.respirationRate?.value || "N/A",
-      getLevelText(scan.stressLevel?.value),
-      scan.wellnessIndex?.value || "N/A",
-      scan.hemoglobin?.value?.toFixed(1) || "N/A",
-      scan.hemoglobinA1c?.value?.toFixed(2) || "N/A",
-      scan.rmssd?.value || "N/A",
-      scan.sdnn?.value || "N/A",
-    ]);
+//   // Thêm dữ liệu chi tiết
+//   data.details.forEach((scan, index) => {
+//     const row = detailSheet.addRow([
+//       index + 1,
+//       format(new Date(scan.createdAt), "dd/MM/yyyy HH:mm"),
+//       scan.pulseRate?.value || "N/A",
+//       scan.bpValue
+//         ? `${scan.bpValue.systolic}/${scan.bpValue.diastolic}`
+//         : "N/A",
+//       scan.oxygenSaturation?.value || "N/A",
+//       scan.respirationRate?.value || "N/A",
+//       getLevelText(scan.stressLevel?.value),
+//       scan.wellnessIndex?.value || "N/A",
+//       scan.hemoglobin?.value?.toFixed(1) || "N/A",
+//       scan.hemoglobinA1c?.value?.toFixed(2) || "N/A",
+//       scan.rmssd?.value || "N/A",
+//       scan.sdnn?.value || "N/A",
+//     ]);
 
-    // Style cho các hàng dữ liệu
-    row.eachCell((cell, colNumber) => {
-      cell.border = {
-        top: { style: "thin" },
-        left: { style: "thin" },
-        bottom: { style: "thin" },
-        right: { style: "thin" },
-      };
+//     // Style cho các hàng dữ liệu
+//     row.eachCell((cell, colNumber) => {
+//       cell.border = {
+//         top: { style: "thin" },
+//         left: { style: "thin" },
+//         bottom: { style: "thin" },
+//         right: { style: "thin" },
+//       };
 
-      // Căn giữa cho cột STT và các cột số
-      if ([1, 3, 5, 6, 8, 9, 10, 11, 12].includes(colNumber)) {
-        cell.alignment = { horizontal: "center" };
-      }
+//       // Căn giữa cho cột STT và các cột số
+//       if ([1, 3, 5, 6, 8, 9, 10, 11, 12].includes(colNumber)) {
+//         cell.alignment = { horizontal: "center" };
+//       }
 
-      // Highlight các giá trị bất thường
-      if (colNumber === 3 && typeof cell.value === "number") {
-        // Nhịp tim
-        if (cell.value < 60 || cell.value > 100) {
-          cell.font = { color: { argb: "FFFF0000" } };
-        }
-      }
+//       // Highlight các giá trị bất thường
+//       if (colNumber === 3 && typeof cell.value === "number") {
+//         // Nhịp tim
+//         if (cell.value < 60 || cell.value > 100) {
+//           cell.font = { color: { argb: "FFFF0000" } };
+//         }
+//       }
 
-      if (colNumber === 5 && typeof cell.value === "number") {
-        // SpO2
-        if (cell.value < 95) {
-          cell.font = { color: { argb: "FFFF0000" } };
-        }
-      }
-    });
+//       if (colNumber === 5 && typeof cell.value === "number") {
+//         // SpO2
+//         if (cell.value < 95) {
+//           cell.font = { color: { argb: "FFFF0000" } };
+//         }
+//       }
+//     });
 
-    // Tô màu xen kẽ các hàng
-    if (index % 2 === 1) {
-      row.eachCell((cell) => {
-        cell.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFF0F0F0" },
-        };
-      });
-    }
-  });
+//     // Tô màu xen kẽ các hàng
+//     if (index % 2 === 1) {
+//       row.eachCell((cell) => {
+//         cell.fill = {
+//           type: "pattern",
+//           pattern: "solid",
+//           fgColor: { argb: "FFF0F0F0" },
+//         };
+//       });
+//     }
+//   });
 
-  // Set độ rộng cột cho sheet chi tiết
-  detailSheet.getColumn(1).width = 8; // STT
-  detailSheet.getColumn(2).width = 20; // Ngày giờ
-  detailSheet.getColumn(3).width = 12; // Nhịp tim
-  detailSheet.getColumn(4).width = 15; // Huyết áp
-  detailSheet.getColumn(5).width = 10; // SpO2
-  detailSheet.getColumn(6).width = 15; // Nhịp thở
-  detailSheet.getColumn(7).width = 10; // Stress
-  detailSheet.getColumn(8).width = 12; // Wellness
-  detailSheet.getColumn(9).width = 15; // Hemoglobin
-  detailSheet.getColumn(10).width = 12; // HbA1c
-  detailSheet.getColumn(11).width = 12; // RMSSD
-  detailSheet.getColumn(12).width = 12; // SDNN
+//   // Set độ rộng cột cho sheet chi tiết
+//   detailSheet.getColumn(1).width = 8; // STT
+//   detailSheet.getColumn(2).width = 20; // Ngày giờ
+//   detailSheet.getColumn(3).width = 12; // Nhịp tim
+//   detailSheet.getColumn(4).width = 15; // Huyết áp
+//   detailSheet.getColumn(5).width = 10; // SpO2
+//   detailSheet.getColumn(6).width = 15; // Nhịp thở
+//   detailSheet.getColumn(7).width = 10; // Stress
+//   detailSheet.getColumn(8).width = 12; // Wellness
+//   detailSheet.getColumn(9).width = 15; // Hemoglobin
+//   detailSheet.getColumn(10).width = 12; // HbA1c
+//   detailSheet.getColumn(11).width = 12; // RMSSD
+//   detailSheet.getColumn(12).width = 12; // SDNN
 
-  // Set chiều cao cho header row
-  headerRow.height = 35;
+//   // Set chiều cao cho header row
+//   headerRow.height = 35;
 
-  // Freeze panes
-  detailSheet.views = [
-    { state: "frozen", xSplit: 0, ySplit: 1, topLeftCell: "A2" },
-  ];
+//   // Freeze panes
+//   detailSheet.views = [
+//     { state: "frozen", xSplit: 0, ySplit: 1, topLeftCell: "A2" },
+//   ];
 
-  const buffer = await workbook.xlsx.writeBuffer();
-  return buffer as Buffer;
-}
+//   const buffer = await workbook.xlsx.writeBuffer();
+//   return buffer as Buffer;
+// }
 
 // Helper function
 function getLevelText(value: number | undefined): string {
