@@ -519,129 +519,129 @@ class HealthDataService {
     return results[0] || null;
   }
 
-  async getMonthlyHealthDataReport(
-    userId: string,
-    month: number,
-    year: number
-  ) {
-    try {
-      console.log(
-        `[HealthDataService] Lấy báo cáo tháng ${month}/${year} cho user ${userId}`
-      );
+  // async getMonthlyHealthDataReport(
+  //   userId: string,
+  //   month: number,
+  //   year: number
+  // ) {
+  //   try {
+  //     console.log(
+  //       `[HealthDataService] Lấy báo cáo tháng ${month}/${year} cho user ${userId}`
+  //     );
 
-      // Tạo khoảng thời gian đầu tháng và cuối tháng
-      const startDate = startOfMonth(new Date(year, month - 1));
-      const endDate = endOfMonth(new Date(year, month - 1));
+  //     // Tạo khoảng thời gian đầu tháng và cuối tháng
+  //     const startDate = startOfMonth(new Date(year, month - 1));
+  //     const endDate = endOfMonth(new Date(year, month - 1));
 
-      // Lấy tất cả dữ liệu scan trong tháng
-      const healthData = await HealthDataModel.find({
-        userId: new Types.ObjectId(userId),
-        createdAt: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-      })
-        .sort({ createdAt: -1 })
-        .lean();
+  //     // Lấy tất cả dữ liệu scan trong tháng
+  //     const healthData = await HealthDataModel.find({
+  //       userId: new Types.ObjectId(userId),
+  //       createdAt: {
+  //         $gte: startDate,
+  //         $lte: endDate,
+  //       },
+  //     })
+  //       .sort({ createdAt: -1 })
+  //       .lean();
 
-      // Tính toán thống kê tổng quan
-      const totalScans = healthData.length;
+  //     // Tính toán thống kê tổng quan
+  //     const totalScans = healthData.length;
 
-      // Tính trung bình các chỉ số quan trọng
-      const avgMetrics = {
-        avgPulseRate: 0,
-        avgBloodPressureSystolic: 0,
-        avgBloodPressureDiastolic: 0,
-        avgOxygenSaturation: 0,
-        avgStressLevel: 0,
-        avgWellnessIndex: 0,
-      };
+  //     // Tính trung bình các chỉ số quan trọng
+  //     const avgMetrics = {
+  //       avgPulseRate: 0,
+  //       avgBloodPressureSystolic: 0,
+  //       avgBloodPressureDiastolic: 0,
+  //       avgOxygenSaturation: 0,
+  //       avgStressLevel: 0,
+  //       avgWellnessIndex: 0,
+  //     };
 
-      if (totalScans > 0) {
-        const sumMetrics = healthData.reduce(
-          (acc, scan) => {
-            acc.pulseRate += scan.pulseRate?.value || 0;
-            acc.systolic += scan.bpValue?.systolic || 0;
-            acc.diastolic += scan.bpValue?.diastolic || 0;
-            acc.oxygen += scan.oxygenSaturation?.value || 0;
-            acc.stress += scan.stressLevel?.value || 0;
-            acc.wellness += scan.wellnessIndex?.value || 0;
-            return acc;
-          },
-          {
-            pulseRate: 0,
-            systolic: 0,
-            diastolic: 0,
-            oxygen: 0,
-            stress: 0,
-            wellness: 0,
-          }
-        );
+  //     if (totalScans > 0) {
+  //       const sumMetrics = healthData.reduce(
+  //         (acc, scan) => {
+  //           acc.pulseRate += scan.pulseRate?.value || 0;
+  //           acc.systolic += scan.bpValue?.systolic || 0;
+  //           acc.diastolic += scan.bpValue?.diastolic || 0;
+  //           acc.oxygen += scan.oxygenSaturation?.value || 0;
+  //           acc.stress += scan.stressLevel?.value || 0;
+  //           acc.wellness += scan.wellnessIndex?.value || 0;
+  //           return acc;
+  //         },
+  //         {
+  //           pulseRate: 0,
+  //           systolic: 0,
+  //           diastolic: 0,
+  //           oxygen: 0,
+  //           stress: 0,
+  //           wellness: 0,
+  //         }
+  //       );
 
-        avgMetrics.avgPulseRate = Math.round(sumMetrics.pulseRate / totalScans);
-        avgMetrics.avgBloodPressureSystolic = Math.round(
-          sumMetrics.systolic / totalScans
-        );
-        avgMetrics.avgBloodPressureDiastolic = Math.round(
-          sumMetrics.diastolic / totalScans
-        );
-        avgMetrics.avgOxygenSaturation = Math.round(
-          sumMetrics.oxygen / totalScans
-        );
-        avgMetrics.avgStressLevel = Number(
-          (sumMetrics.stress / totalScans).toFixed(1)
-        );
-        avgMetrics.avgWellnessIndex = Math.round(
-          sumMetrics.wellness / totalScans
-        );
-      }
+  //       avgMetrics.avgPulseRate = Math.round(sumMetrics.pulseRate / totalScans);
+  //       avgMetrics.avgBloodPressureSystolic = Math.round(
+  //         sumMetrics.systolic / totalScans
+  //       );
+  //       avgMetrics.avgBloodPressureDiastolic = Math.round(
+  //         sumMetrics.diastolic / totalScans
+  //       );
+  //       avgMetrics.avgOxygenSaturation = Math.round(
+  //         sumMetrics.oxygen / totalScans
+  //       );
+  //       avgMetrics.avgStressLevel = Number(
+  //         (sumMetrics.stress / totalScans).toFixed(1)
+  //       );
+  //       avgMetrics.avgWellnessIndex = Math.round(
+  //         sumMetrics.wellness / totalScans
+  //       );
+  //     }
 
-      return {
-        summary: {
-          month,
-          year,
-          totalScans,
-          startDate,
-          endDate,
-          ...avgMetrics,
-        },
-        details: healthData,
-      };
-    } catch (error) {
-      console.error(`[HealthDataService] Lỗi khi lấy báo cáo tháng: ${error}`);
-      throw new CustomError(500, "Lỗi khi lấy dữ liệu báo cáo tháng");
-    }
-  }
+  //     return {
+  //       summary: {
+  //         month,
+  //         year,
+  //         totalScans,
+  //         startDate,
+  //         endDate,
+  //         ...avgMetrics,
+  //       },
+  //       details: healthData,
+  //     };
+  //   } catch (error) {
+  //     console.error(`[HealthDataService] Lỗi khi lấy báo cáo tháng: ${error}`);
+  //     throw new CustomError(500, "Lỗi khi lấy dữ liệu báo cáo tháng");
+  //   }
+  // }
 
-  async testReport(userId: string, year: number, month: number) {
-    try {
-      console.log(
-        `[HealthDataService] Lấy báo cáo tháng ${month}/${year} cho user ${userId}`
-      );
+  // async testReport(userId: string, year: number, month: number) {
+  //   try {
+  //     console.log(
+  //       `[HealthDataService] Lấy báo cáo tháng ${month}/${year} cho user ${userId}`
+  //     );
 
-      // Tạo khoảng thời gian đầu tháng và cuối tháng
-      const startDate = startOfMonth(new Date(year, month - 1));
-      const endDate = endOfMonth(new Date(year, month - 1));
+  //     // Tạo khoảng thời gian đầu tháng và cuối tháng
+  //     const startDate = startOfMonth(new Date(year, month - 1));
+  //     const endDate = endOfMonth(new Date(year, month - 1));
 
-      const healthData = await HealthDataModel.find({
-        userId: new Types.ObjectId(userId),
-        createdAt: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-      })
-        .populate({
-          path: "userId",
-          select: "username email",
-        })
-        .sort({ createdAt: 1 });
+  //     const healthData = await HealthDataModel.find({
+  //       userId: new Types.ObjectId(userId),
+  //       createdAt: {
+  //         $gte: startDate,
+  //         $lte: endDate,
+  //       },
+  //     })
+  //       .populate({
+  //         path: "userId",
+  //         select: "username email",
+  //       })
+  //       .sort({ createdAt: 1 });
 
-      return healthData;
-    } catch (error) {
-      console.error(`[HealthDataService] Lỗi khi lấy báo cáo tháng: ${error}`);
-      throw new CustomError(500, "Lỗi khi lấy dữ liệu báo cáo tháng");
-    }
-  }
+  //     return healthData;
+  //   } catch (error) {
+  //     console.error(`[HealthDataService] Lỗi khi lấy báo cáo tháng: ${error}`);
+  //     throw new CustomError(500, "Lỗi khi lấy dữ liệu báo cáo tháng");
+  //   }
+  // }
 
   async getMonthlyHealthReportDataForExcel(
     userId: string,

@@ -2,26 +2,26 @@ import ExcelJS from "exceljs";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
-export interface MonthlyHealthReportData {
-  summary: {
-    month: number;
-    year: number;
-    totalScans: number;
-    startDate: Date;
-    endDate: Date;
-    avgPulseRate: number;
-    avgBloodPressureSystolic: number;
-    avgBloodPressureDiastolic: number;
-    avgOxygenSaturation: number;
-    avgStressLevel: number;
-    avgWellnessIndex: number;
-  };
-  details: any[];
-  userInfo: {
-    username: string;
-    email: string;
-  };
-}
+// export interface MonthlyHealthReportData {
+//   summary: {
+//     month: number;
+//     year: number;
+//     totalScans: number;
+//     startDate: Date;
+//     endDate: Date;
+//     avgPulseRate: number;
+//     avgBloodPressureSystolic: number;
+//     avgBloodPressureDiastolic: number;
+//     avgOxygenSaturation: number;
+//     avgStressLevel: number;
+//     avgWellnessIndex: number;
+//   };
+//   details: any[];
+//   userInfo: {
+//     username: string;
+//     email: string;
+//   };
+// }
 
 // export async function generateMonthlyHealthExcel(
 //   data: MonthlyHealthReportData
@@ -248,7 +248,15 @@ function getLevelText(value: number | undefined): string {
   }
 }
 
-export async function exportHealthReportExcel(data: any): Promise<Buffer> {
+export async function exportHealthReportExcel(data: {
+  month: number;
+  year: number;
+  healthData: any[];
+  totalScans: number;
+}): Promise<Buffer> {
+  console.log(
+    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+  );
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "JBAAI Health System";
   workbook.lastModifiedBy = "JBAAI Health System";
@@ -271,8 +279,8 @@ export async function exportHealthReportExcel(data: any): Promise<Buffer> {
 
   // Set columns với width tối ưu
   reportSheet.columns = [
-    { header: "No.", key: "no", width: 6 },
-    { header: "Time", key: "time", width: 18 },
+    { header: "No.", key: "no", width: 24 },
+    { header: "Time", key: "time", width: 24 },
     { header: "Pulse Rate (bpm)", key: "pulseRate", width: 16 },
     { header: "Blood Pressure (mmHg)", key: "bloodPressure", width: 22 },
     { header: "SpO2 (%)", key: "oxygenSaturation", width: 10 },

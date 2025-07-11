@@ -17,6 +17,8 @@ router.post(
   HealthDataController.triggerMonthlyReportGeneration
 );
 router.post("/delete", HealthDataController.deleteHealthData);
+router.post("/get-file-excel", HealthDataController.getFileExcel);
+
 router.post("/", HealthDataController.getHealthDataByDate);
 
 export default router;

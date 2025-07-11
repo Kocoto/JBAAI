@@ -26,7 +26,14 @@ export const processMonthlyReportJob = async (
         year,
         month
       );
-    const excelBuffer = await exportHealthReportExcel(healthData);
+
+    const totalScans = healthData.length;
+    const excelBuffer = await exportHealthReportExcel({
+      month,
+      year,
+      healthData,
+      totalScans,
+    });
     const fileName = ``;
 
     const mailOptions = {

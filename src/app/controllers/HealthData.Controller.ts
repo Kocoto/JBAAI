@@ -1,7 +1,7 @@
 import e, { Request, Response, NextFunction } from "express";
 import CustomError from "../utils/Error.Util";
 import HealthDataService from "../services/HealthData.Service";
-import { MonthlyHealthReportData } from "../utils/HealthReport.Util";
+import { exportHealthReportExcel } from "../utils/HealthReport.Util";
 import UserModel from "../models/User.Model";
 import {
   IMonthlyReportJobData,
@@ -311,6 +311,79 @@ class HealthDataController {
       });
     } catch (error) {
       console.error("[API Trigger] Lỗi khi kích hoạt gửi báo cáo:", error);
+      next(error);
+    }
+  }
+
+  async getFileExcel(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { month, year, userId } = req.body;
+
+      // Validate required fields
+      if (!month || !year || !userId) {
+        throw new CustomError(400, "Month, year and userId are required");
+      }
+
+      // Validate month and year ranges
+      const monthNum = Number(month);
+      const yearNum = Number(year);
+
+      if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
+        throw new CustomError(400, "Month must be between 1 and 12");
+      }
+
+      if (
+        isNaN(yearNum) ||
+        yearNum < 2020 ||
+        yearNum > new Date().getFullYear()
+      ) {
+        throw new CustomError(400, "Invalid year value");
+      }
+
+      // Get report data
+      const reportData =
+        await HealthDataService.getMonthlyHealthReportDataForExcel(
+          userId,
+          monthNum,
+          yearNum
+        );
+
+      if (!reportData || reportData.length === 0) {
+        return res.status(200).json({
+          success: true,
+          message: `Không có dữ liệu quét sức khỏe trong tháng ${monthNum}/${yearNum}`,
+          data: null,
+        });
+      }
+
+      const totalScans = reportData.length;
+
+      // Generate Excel file
+      const fileExcel = await exportHealthReportExcel({
+        month: monthNum,
+        year: yearNum,
+        healthData: reportData,
+        totalScans,
+      });
+
+      if (!fileExcel) {
+        throw new CustomError(500, "Failed to generate Excel file");
+      }
+
+      // Set response headers for file download
+      const fileName = `BaoCaoSucKhoe_test_Thang${monthNum}_${yearNum}.xlsx`;
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`
+      );
+      res.setHeader("Content-Length", fileExcel.length.toString());
+
+      res.send(fileExcel);
+    } catch (error) {
       next(error);
     }
   }
