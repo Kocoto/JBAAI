@@ -256,9 +256,9 @@ export async function exportExcel(data: any): Promise<Buffer> {
   workbook.modified = new Date();
   const reportSheet = workbook.addWorksheet("Health Report");
 
-  reportSheet.addRow([
-    `HEALTH REPORT FOR ${data.month}/${data.year} - ${data.healthData[0].userId.username}`,
-  ]);
+  // reportSheet.addRow([
+  //   `HEALTH REPORT FOR ${data.month}/${data.year} - ${data.healthData[0].userId.username}`,
+  // ]);
   reportSheet.mergeCells("A1:E1");
   const titleCell = reportSheet.getCell("A1");
   titleCell.font = {
