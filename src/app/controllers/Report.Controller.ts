@@ -11,6 +11,8 @@ import {
   parseISO,
   startOfDay,
 } from "date-fns";
+import HealthDataService from "../services/HealthData.Service";
+import { exportExcel } from "../utils/HealthReport.Util";
 
 class ReportController {
   /**
@@ -159,6 +161,38 @@ class ReportController {
       );
       next(error);
     }
+  }
+
+  async test(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user._id;
+      const test = await HealthDataService.testReport(userId, 2025, 6);
+
+      const payload = {
+        totalScans: test.length,
+        healthData: test,
+        month: 6,
+        year: 2025,
+      };
+      const excel = await exportExcel(payload);
+      const fileName = `BaoCaoSucKhoe_${test[0].userId}_Thang6_2025.xlsx`;
+      res.setHeader(
+        "Content-Type",
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      );
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename*=UTF-8''${encodeURIComponent(fileName)}`
+      );
+      res.setHeader("Content-Length", excel.length.toString());
+      res.send(excel);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async exportExcel(req: Request, res: Response, next: NextFunction) {
+    const userId = req.user._id;
   }
 }
 
