@@ -2,6 +2,11 @@ import e, { Request, Response, NextFunction } from "express";
 import CustomError from "../utils/Error.Util";
 import HealthDataService from "../services/HealthData.Service";
 import { MonthlyHealthReportData } from "../utils/HealthReport.Util";
+import UserModel from "../models/User.Model";
+import {
+  IMonthlyReportJobData,
+  monthlyReportQueue,
+} from "../queues/MonthlyReport.Queue";
 class HealthDataController {
   async getHealthDataByDate(req: Request, res: Response, next: NextFunction) {
     try {
@@ -219,5 +224,95 @@ class HealthDataController {
   //     next(error);
   //   }
   // }
+
+  async triggerMonthlyReportGeneration(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) {
+    try {
+      const { userId, month, year } = req.body;
+
+      // 1. Validate input
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: "User ID is required",
+        });
+      }
+
+      if (!month || !year || isNaN(month) || isNaN(year)) {
+        return res.status(400).json({
+          success: false,
+          message: "Vui lòng cung cấp tháng (month) và năm (year) hợp lệ.",
+        });
+      }
+
+      // Validate month and year ranges
+      const monthNum = Number(month);
+      const yearNum = Number(year);
+
+      if (monthNum < 1 || monthNum > 12) {
+        return res.status(400).json({
+          success: false,
+          message: "Tháng phải từ 1 đến 12",
+        });
+      }
+
+      if (yearNum < 2020 || yearNum > new Date().getFullYear()) {
+        return res.status(400).json({
+          success: false,
+          message: "Năm không hợp lệ",
+        });
+      }
+
+      console.log(
+        `[API Trigger] Bắt đầu kích hoạt báo cáo cho tháng ${month}/${year}`
+      );
+
+      // 2. Get user data
+      const user = await UserModel.findById(userId)
+        .select("email username")
+        .lean();
+
+      if (!user) {
+        console.log("[API Trigger] Không tìm thấy user để gửi báo cáo.");
+        return res.status(404).json({
+          success: false,
+          message: "User không tồn tại",
+          data: { queuedJobs: 0 },
+        });
+      }
+
+      console.log(`[API Trigger] Tìm thấy user. Bắt đầu thêm job vào queue...`);
+
+      // 3. Add job to queue
+      const jobPayload: IMonthlyReportJobData = {
+        userId: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        month: monthNum,
+        year: yearNum,
+      };
+
+      const jobId = `manual-report-${user._id}-${yearNum}-${monthNum}`;
+      await monthlyReportQueue.add("sendMonthlyReport", jobPayload, {
+        jobId,
+      });
+
+      console.log(`[API Trigger] Đã thêm thành công job vào queue.`);
+
+      res.status(200).json({
+        success: true,
+        message: `Đã thêm thành công job gửi báo cáo cho tháng ${monthNum}/${yearNum} vào hàng đợi.`,
+        data: {
+          queuedJobs: 1,
+        },
+      });
+    } catch (error) {
+      console.error("[API Trigger] Lỗi khi kích hoạt gửi báo cáo:", error);
+      next(error);
+    }
+  }
 }
 export default new HealthDataController();

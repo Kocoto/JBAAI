@@ -238,11 +238,11 @@ function getLevelText(value: number | undefined): string {
   if (!value) return "N/A";
   switch (value) {
     case 1:
-      return "Thấp";
+      return "Low";
     case 2:
-      return "Bình thường";
+      return "Normal";
     case 3:
-      return "Cao";
+      return "High";
     default:
       return "N/A";
   }
@@ -555,15 +555,17 @@ export async function exportHealthReportExcel(data: any): Promise<Buffer> {
       sd2: scan.sd2?.value || "N/A",
       meanRRi: scan.meanRRi?.value || "N/A",
       normalizedStressIndex: scan.normalizedStressIndex?.value || "N/A",
-      pnsZone: scan.pnsZone?.value || "N/A",
-      snsZone: scan.snsZone?.value || "N/A",
+      pnsZone: getLevelText(scan.pnsZone?.value),
+      snsZone: getLevelText(scan.snsZone?.value),
       stressIndex: scan.stressIndex?.value || "N/A",
       wellnessLevel: scan.wellnessLevel?.value || "N/A",
-      highBloodPressureRisk: scan.highBloodPressureRisk?.value || "N/A",
-      highFastingGlucoseRisk: scan.highFastingGlucoseRisk?.value || "N/A",
-      highHemoglobinA1cRisk: scan.highHemoglobinA1cRisk?.value || "N/A",
-      highTotalCholesterolRisk: scan.highTotalCholesterolRisk?.value || "N/A",
-      lowHemoglobinRisk: scan.lowHemoglobinRisk?.value || "N/A",
+      highBloodPressureRisk: getLevelText(scan.highBloodPressureRisk?.value),
+      highFastingGlucoseRisk: getLevelText(scan.highFastingGlucoseRisk?.value),
+      highHemoglobinA1cRisk: getLevelText(scan.highHemoglobinA1cRisk?.value),
+      highTotalCholesterolRisk: getLevelText(
+        scan.highTotalCholesterolRisk?.value
+      ),
+      lowHemoglobinRisk: getLevelText(scan.lowHemoglobinRisk?.value),
     };
 
     const row = reportSheet.addRow(rowData);
