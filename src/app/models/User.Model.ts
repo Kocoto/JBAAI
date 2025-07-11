@@ -18,6 +18,7 @@ export interface IUserOutput {
   optionEmail?: string;
   isDeleted: boolean;
   deletedAt: Date | null;
+  isHideGLB1: boolean;
 }
 
 export interface IUser {
@@ -43,6 +44,7 @@ export interface IUser {
   optionEmail?: string;
   isDeleted: boolean;
   deletedAt: Date | null;
+  isHideGLB1: boolean;
 }
 
 const UserSchema = new Schema<IUser>(
@@ -102,6 +104,7 @@ const UserSchema = new Schema<IUser>(
       type: Date,
       default: null,
     },
+    isHideGLB1: { type: Boolean, default: true },
   },
   {
     timestamps: true,
