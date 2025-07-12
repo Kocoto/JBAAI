@@ -18,6 +18,10 @@ router.post(
 );
 router.post("/delete", HealthDataController.deleteHealthData);
 router.post("/get-file-excel", HealthDataController.getFileExcel);
+router.post(
+  "/send-mail-report-health",
+  HealthDataController.sendMailHealthData
+);
 
 router.post("/", HealthDataController.getHealthDataByDate);
 
