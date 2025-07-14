@@ -20,21 +20,23 @@ export const processMonthlyReportJob = async (
 
   try {
     const { userId, email, username, year, month } = job.data;
+    const yearNumber = Number(year);
+    const monthNumber = Number(month);
     const healthData =
       await HealthDataService.getMonthlyHealthReportDataForExcel(
         userId,
-        year,
-        month
+        monthNumber,
+        yearNumber
       );
 
     const totalScans = healthData.length;
     const excelBuffer = await exportHealthReportExcel({
-      month,
-      year,
+      month: monthNumber,
+      year: yearNumber,
       healthData,
       totalScans,
     });
-    const fileName = ``;
+    const fileName = `BaoCaoSucKhoe_${username}_Thang${month}_${year}.xlsx`;
 
     const mailOptions = {
       from: "JBA AI",

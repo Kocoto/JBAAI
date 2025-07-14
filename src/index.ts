@@ -154,6 +154,10 @@ async function gracefulShutdown() {
       await initializeSubscriptionLifecycleWorker().close();
       console.log("[Shutdown] Closed BullMQ workers");
     }
+    if (initializeMonthlyReportWorker().close) {
+      await initializeMonthlyReportWorker().close();
+      console.log("[Shutdown] Closed BullMQ workers");
+    }
 
     process.exit(0);
   } catch (error) {

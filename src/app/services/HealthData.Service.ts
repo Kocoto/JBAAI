@@ -653,7 +653,9 @@ class HealthDataService {
       if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
         throw new CustomError(400, "Invalid user ID");
       }
-
+      console.log(
+        `[Service] Getting monthly report data for user ${userId}, ${month}/${year}`
+      );
       if (!month || month < 1 || month > 12) {
         throw new CustomError(
           400,
