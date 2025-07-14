@@ -9,14 +9,14 @@ import { exportHealthReportExcel } from "../utils/HealthReport.Util";
 import { sendMail } from "../utils/Mail.Util";
 
 console.log(
-  `[Worker] Khởi tạo worker quản lý báo cáo hàng đợi: ${MONTHLY_REPORT_QUEUE_NAME}`
+  `[Worker] Initializing monthly report queue worker: ${MONTHLY_REPORT_QUEUE_NAME}`
 );
 
 export const processMonthlyReportJob = async (
   job: Job<IMonthlyReportJobData>
 ) => {
-  console.log(`[Worker] Đang xử lý công việc báo cáo tháng: ${job.id}`);
-  console.log(`[Worker] Tên công việc: ${JSON.stringify(job.name)}`);
+  console.log(`[Worker] Processing monthly report job: ${job.id}`);
+  console.log(`[Worker] Job name: ${JSON.stringify(job.name)}`);
 
   try {
     const { userId, email, username, year, month } = job.data;
@@ -36,19 +36,19 @@ export const processMonthlyReportJob = async (
       healthData,
       totalScans,
     });
-    const fileName = `BaoCaoSucKhoe_${username}_Thang${month}_${year}.xlsx`;
+    const fileName = `HealthReport_${username}_Month${month}_${year}.xlsx`;
 
     const mailOptions = {
       from: "JBA AI",
       to: email,
-      subject: `Báo cáo sức khỏe tháng ${month}/${year} của bạn`,
+      subject: `Your Health Report for ${month}/${year}`,
       html: `
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Báo cáo sức khỏe tháng ${month}/${year}</title>
+    <title>Health Report for ${month}/${year}</title>
 </head>
 <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f7fa;">
     <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f7fa; padding: 40px 0;">
@@ -59,7 +59,7 @@ export const processMonthlyReportJob = async (
                     <tr>
                         <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 40px 30px 40px; text-align: center;">
                             <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">JBA AI</h1>
-                            <p style="color: #e0e7ff; margin: 10px 0 0 0; font-size: 16px;">Đồng hành cùng sức khỏe của bạn</p>
+                            <p style="color: #e0e7ff; margin: 10px 0 0 0; font-size: 16px;">Your Health Companion</p>
                         </td>
                     </tr>
                     
@@ -68,26 +68,26 @@ export const processMonthlyReportJob = async (
                         <td style="padding: 40px;">
                             <!-- Greeting -->
                             <h2 style="color: #2d3748; margin: 0 0 20px 0; font-size: 24px; font-weight: 600;">
-                                Xin chào ${username}! 👋
+                                Hello ${username}! 👋
                             </h2>
                             
                             <!-- Main message -->
                             <div style="background-color: #f7fafc; border-left: 4px solid #667eea; padding: 20px; margin: 0 0 30px 0; border-radius: 0 8px 8px 0;">
                                 <p style="color: #4a5568; margin: 0; line-height: 1.6; font-size: 16px;">
-                                    Chúng tôi vui mừng gửi đến bạn <strong>Báo cáo Phân tích Sức khỏe</strong> tháng <strong style="color: #667eea;">${month}/${year}</strong>.
+                                    We are pleased to send you your <strong>Health Analysis Report</strong> for <strong style="color: #667eea;">${month}/${year}</strong>.
                                 </p>
                             </div>
                             
                             <!-- Info Box -->
                             <div style="background-color: #edf2f7; padding: 25px; border-radius: 8px; margin: 0 0 30px 0;">
                                 <h3 style="color: #2d3748; margin: 0 0 15px 0; font-size: 18px; font-weight: 600;">
-                                    📊 Nội dung báo cáo
+                                    📊 Report Contents
                                 </h3>
                                 <ul style="color: #4a5568; margin: 0; padding-left: 20px; line-height: 1.8;">
-                                    <li>Tổng quan các chỉ số sức khỏe</li>
-                                    <li>Phân tích xu hướng và biến động</li>
-                                    <li>Đánh giá và khuyến nghị</li>
-                                    <li>So sánh với các tháng trước</li>
+                                    <li>Overview of health indicators</li>
+                                    <li>Trend and variation analysis</li>
+                                    <li>Assessment and recommendations</li>
+                                    <li>Comparison with previous months</li>
                                 </ul>
                             </div>
                             
@@ -95,7 +95,7 @@ export const processMonthlyReportJob = async (
                             <div style="text-align: center; margin: 30px 0;">
                                 <div style="display: inline-block; background-color: #667eea; padding: 14px 30px; border-radius: 8px;">
                                     <span style="color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600;">
-                                        📎 File Excel đính kèm bên dưới
+                                        📎 Excel file attached below
                                     </span>
                                 </div>
                             </div>
@@ -103,23 +103,23 @@ export const processMonthlyReportJob = async (
                             <!-- Additional message -->
                             <div style="background-color: #f0fff4; border: 1px solid #9ae6b4; padding: 20px; border-radius: 8px; margin: 30px 0;">
                                 <p style="color: #22543d; margin: 0; line-height: 1.6; text-align: center;">
-                                    <strong>💚 Lời khuyên:</strong> Hãy duy trì lối sống lành mạnh và theo dõi sức khỏe thường xuyên để có cuộc sống tốt hơn!
+                                    <strong>💚 Advice:</strong> Maintain a healthy lifestyle and monitor your health regularly for a better life!
                                 </p>
                             </div>
                             
                             <!-- Closing -->
                             <p style="color: #4a5568; line-height: 1.6; margin: 30px 0 10px 0;">
-                                Cảm ơn bạn đã tin tưởng và sử dụng dịch vụ của chúng tôi. Nếu có bất kỳ thắc mắc nào, đừng ngần ngại liên hệ với chúng tôi.
+                                Thank you for trusting and using our services. If you have any questions, please don't hesitate to contact us.
                             </p>
                             
                             <p style="color: #4a5568; line-height: 1.6; margin: 0;">
-                                Chúc bạn luôn dồi dào sức khỏe! 🌟
+                                Wishing you abundant health! 🌟
                             </p>
                             
                             <!-- Signature -->
                             <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #e2e8f0;">
-                                <p style="color: #2d3748; margin: 0; font-weight: 600;">Trân trọng,</p>
-                                <p style="color: #667eea; margin: 5px 0; font-size: 18px; font-weight: 700;">Đội ngũ JBA AI</p>
+                                <p style="color: #2d3748; margin: 0; font-weight: 600;">Best regards,</p>
+                                <p style="color: #667eea; margin: 5px 0; font-size: 18px; font-weight: 700;">JBA AI Team</p>
                             </div>
                         </td>
                     </tr>
@@ -128,10 +128,10 @@ export const processMonthlyReportJob = async (
                     <tr>
                         <td style="background-color: #2d3748; padding: 30px 40px; text-align: center;">
                             <p style="color: #a0aec0; margin: 0 0 10px 0; font-size: 14px;">
-                                © 2024 JBA AI. Mọi quyền được bảo lưu.
+                                © 2024 JBA AI. All rights reserved.
                             </p>
                             <p style="color: #718096; margin: 0; font-size: 12px; line-height: 1.6;">
-                                Email này được gửi tự động. Vui lòng không trả lời trực tiếp email này.
+                                This email is sent automatically. Please do not reply directly to this email.
                             </p>
                         </td>
                     </tr>
@@ -159,7 +159,7 @@ export const processMonthlyReportJob = async (
       `[Worker] Failed to process job ${job.id} for user ${job.data.userId}. Error:`,
       error
     );
-    // Ném lỗi để BullMQ có thể thử lại job
+    // Throw error so BullMQ can retry the job
     throw error;
   }
 };
@@ -169,7 +169,7 @@ export const initializeMonthlyReportWorker = (): Worker => {
     processMonthlyReportJob,
     {
       connection: redisConnection,
-      concurrency: 5, // Xử lý 5 job đồng thời, có thể điều chỉnh
+      concurrency: 5, // Process 5 jobs concurrently, can be adjusted
     }
   );
 
