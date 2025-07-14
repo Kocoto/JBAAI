@@ -357,10 +357,10 @@ export async function exportHealthReportExcel(data: {
   const infoHeaderRow = reportSheet.insertRow(4, []);
   infoHeaderRow.height = 30;
 
-  // Tiêu đề "THÔNG TIN BỆNH NHÂN"
+  // Tiêu đề "PATIENT INFORMATION"
   reportSheet.mergeCells("A4:B4");
   const infoHeaderCell = reportSheet.getCell("A4");
-  infoHeaderCell.value = "THÔNG TIN BỆNH NHÂN";
+  infoHeaderCell.value = "PATIENT INFORMATION";
   infoHeaderCell.font = {
     name: "Arial",
     size: 14,
@@ -374,10 +374,10 @@ export async function exportHealthReportExcel(data: {
   };
   infoHeaderCell.alignment = { vertical: "middle", horizontal: "center" };
 
-  // Tiêu đề "THỐNG KÊ QUÉT"
+  // Tiêu đề "SCAN STATISTICS"
   reportSheet.mergeCells("D4:F4");
   const statsHeaderCell = reportSheet.getCell("D4");
-  statsHeaderCell.value = "THỐNG KÊ QUÉT";
+  statsHeaderCell.value = "SCAN STATISTICS";
   statsHeaderCell.font = {
     name: "Arial",
     size: 14,
@@ -408,10 +408,10 @@ export async function exportHealthReportExcel(data: {
 
   // Dữ liệu thông tin và thống kê
   const row5 = reportSheet.addRow([
-    "Họ và tên:",
+    "Full Name:",
     data.healthData[0]?.userId.username || "N/A",
     null,
-    "Tổng số lần quét:",
+    "Total Scans:",
     data.totalScans,
   ]);
 
@@ -419,11 +419,11 @@ export async function exportHealthReportExcel(data: {
     "Email:",
     data.healthData[0]?.userId.email || "N/A",
     null,
-    "Số ngày có quét:",
-    `${daysWithScans}/${daysInMonth} ngày (${scanPercentage}%)`,
+    "Days with Scans:",
+    `${daysWithScans}/${daysInMonth} days (${scanPercentage}%)`,
   ]);
   const row7 = reportSheet.addRow([
-    "Giai đoạn theo dõi:",
+    "Monitoring Period:",
     data.healthData.length > 0
       ? `${format(new Date(data.healthData[0].createdAt), "dd/MM/yyyy", {
           locale: vi,
@@ -434,7 +434,7 @@ export async function exportHealthReportExcel(data: {
         )}`
       : "N/A",
     null,
-    "TB số lần quét/ngày:",
+    "Avg Scans/Day:",
     avgScansPerDay,
   ]);
 
@@ -673,9 +673,9 @@ export async function exportHealthReportExcel(data: {
     const row = reportSheet.addRow(rowData);
     row.height = 20;
 
-    // Styling cho từng cell
+    // Styling for each cell
     row.eachCell((cell, colNumber) => {
-      // Border nhẹ
+      // Light border
       cell.border = {
         top: { style: "thin", color: { argb: "FFE0E0E0" } },
         left: { style: "thin", color: { argb: "FFE0E0E0" } },
@@ -683,21 +683,21 @@ export async function exportHealthReportExcel(data: {
         right: { style: "thin", color: { argb: "FFE0E0E0" } },
       };
 
-      // Font và alignment
+      // Font and alignment
       cell.font = {
         name: "Arial",
         size: 10,
         color: { argb: colors.darkText },
       };
 
-      // Căn giữa cho các cột số, trái cho time
+      // Center align for number columns, center for time
       if (colNumber === 2) {
         cell.alignment = { horizontal: "center", vertical: "middle" };
       } else {
         cell.alignment = { horizontal: "center", vertical: "middle" };
       }
 
-      // Conditional formatting cho các giá trị bất thường
+      // Conditional formatting for abnormal values
       // Pulse rate
       if (colNumber === 3 && typeof cell.value === "number") {
         if (cell.value < 60 || cell.value > 100) {
@@ -777,7 +777,7 @@ export async function exportHealthReportExcel(data: {
     // Alternating row colors
     if (index % 2 === 1) {
       row.eachCell((cell) => {
-        // Giữ nguyên conditional formatting, chỉ đổi màu nền cho cells bình thường
+        // Keep conditional formatting, only change background for normal cells
         if (
           !cell.fill ||
           (cell.fill.type === "pattern" &&
@@ -793,7 +793,7 @@ export async function exportHealthReportExcel(data: {
     }
   });
 
-  // Footer với thông tin tạo báo cáo
+  // Footer with report generation info
   const lastDataRow = reportSheet.lastRow?.number ?? reportSheet.rowCount;
   reportSheet.insertRow(lastDataRow + 2, []);
   const footerRow = reportSheet.insertRow(lastDataRow + 3, [
@@ -814,7 +814,7 @@ export async function exportHealthReportExcel(data: {
     vertical: "middle",
   };
 
-  // Page setup cho in ấn
+  // Page setup for printing
   reportSheet.pageSetup = {
     paperSize: 9, // A4
     orientation: "landscape",
@@ -831,12 +831,12 @@ export async function exportHealthReportExcel(data: {
     },
   };
 
-  // Freeze panes tại header của bảng dữ liệu
+  // Freeze panes at data table header
   reportSheet.views = [
     {
       state: "frozen",
-      xSplit: 2, // Freeze 2 cột đầu (No. và Time)
-      ySplit: 18, // Freeze đến header row
+      xSplit: 2, // Freeze first 2 columns (No. and Time)
+      ySplit: 18, // Freeze to header row
       topLeftCell: "C19",
     },
   ];
