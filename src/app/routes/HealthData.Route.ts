@@ -9,9 +9,20 @@ router.post(
   "/get-health-data-by-range",
   HealthDataController.getHealthDataByDateRange
 );
+// router.get("/monthly-report", HealthDataController.exportMonthlyReport);
 router.post("/sent-mail", HealthDataController.senMailHealthData);
 router.post("/update", HealthDataController.createHealthData);
+router.post(
+  "/trigger-report",
+  HealthDataController.triggerMonthlyReportGeneration
+);
 router.post("/delete", HealthDataController.deleteHealthData);
+router.post("/get-file-excel", HealthDataController.getFileExcel);
+router.post(
+  "/send-mail-report-health",
+  HealthDataController.sendMailHealthData
+);
+
 router.post("/", HealthDataController.getHealthDataByDate);
 
 export default router;

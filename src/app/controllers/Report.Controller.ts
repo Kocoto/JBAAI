@@ -11,6 +11,7 @@ import {
   parseISO,
   startOfDay,
 } from "date-fns";
+import HealthDataService from "../services/HealthData.Service";
 
 class ReportController {
   /**

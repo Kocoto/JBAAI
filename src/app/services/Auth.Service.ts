@@ -394,10 +394,7 @@ class AuthService {
         );
 
         // Dùng lean() để lấy object thuần túy, tránh trả về các phương thức của Mongoose
-        const finalUser = await UserModel.findById(user._id)
-          .lean()
-          .session(ses);
-
+        const finalUser = await UserModel.findById(user._id).session(ses);
         return { user: finalUser, accessToken, refreshToken, profile };
       });
 

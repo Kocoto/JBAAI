@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { hashOtp } from "../utils/OTP.Util";
 import { generateOTP } from "../utils/OTP.Util";
 import HomeService from "../services/Home.Service";
@@ -9,6 +9,7 @@ import { dirname } from "path";
 import { geoIpDbBuffer } from "../config/geoip.config";
 // Import lớp Reader từ thư viện
 import { Reader as MaxMindGeoIPReader } from "@maxmind/geoip2-node";
+import CustomError from "../utils/Error.Util";
 
 class HomeController {
   /**
@@ -123,6 +124,33 @@ class HomeController {
       status: "success",
       check: true,
     });
+  }
+
+  async checkVersion(req: Request, res: Response, next: NextFunction) {
+    try {
+      const version = req.body.version;
+      if (!version) {
+        throw new CustomError(400, "Version is required");
+      }
+      const currentVersion = "2.0";
+      if (version !== currentVersion) {
+        res.status(200).json({
+          latestVersion: currentVersion,
+          isForceUpdate: true,
+          releaseNote: "Cần cập nhật bản mới nhất",
+        });
+      }
+      res.status(200).json({
+        latestVersion: currentVersion,
+        isForceUpdate: false,
+        releaseNote: "Hiện tại đang là phiên bản mới nhất",
+      });
+    } catch (error) {
+      if (error instanceof CustomError) {
+        next(error);
+      }
+      next(error);
+    }
   }
 }
 

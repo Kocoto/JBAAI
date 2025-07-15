@@ -3,6 +3,7 @@ import { Router } from "express";
 import { checkLogin } from "../middlewares/Auth.Middleware";
 const router = Router();
 
+router.post("/check-version", HomeController.checkVersion);
 router.post("/hide-score", HomeController.hideScore);
 router.get("/test", HomeController.test);
 router.get("/success", HomeController.paymentSuccess);
