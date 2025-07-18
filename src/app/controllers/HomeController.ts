@@ -133,7 +133,8 @@ class HomeController {
         throw new CustomError(400, "Version is required");
       }
       const currentVersion = "2.0";
-      if (version !== currentVersion) {
+      const allowedTestVersion = "2.3";
+      if (version !== currentVersion && version !== allowedTestVersion) {
         res.status(200).json({
           latestVersion: currentVersion,
           isForceUpdate: true,
