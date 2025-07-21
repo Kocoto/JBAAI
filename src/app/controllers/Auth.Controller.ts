@@ -69,7 +69,11 @@ class AuthController {
         throw new CustomError(400, "Email, mật khẩu và clientId là bắt buộc");
       }
 
-      const user = await AuthService.login(email, password, clientId);
+      const user = await AuthService.login(
+        email.toLowerCase(),
+        password,
+        clientId
+      );
 
       res.status(200).json({
         success: true,
