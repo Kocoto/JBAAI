@@ -4,6 +4,7 @@ import InvitationCodeModel from "../models/InvitationCode.Model";
 import CustomError from "../utils/Error.Util";
 import { generateInviteCode, generateOTP } from "../utils/OTP.Util";
 import CampaignModel from "../models/Campaign.Model";
+import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
 
 class InvitationCodeService {
   async createInvitationCode(
@@ -72,15 +73,40 @@ class InvitationCodeService {
 
   async activeInvitationCode(
     userId: string,
-    currentActiveLedgerEntryId: string,
-    sourceCampaignId: string
+    currentActiveLedgerEntryId: string
   ) {
     try {
-      const campaign = await CampaignModel.findById(sourceCampaignId);
+      const franchiseDetail = await FranchiseDetailsModel.aggregate([
+        {
+          $match: { userId: userId },
+        },
+        {
+          $project: {
+            userId: 1,
+            parentId: 1,
+            franchiseLevel: 1,
+            ancestorPath: 1,
+            userTrialQuotaLedger: {
+              $filter: {
+                input: "$userTrialQuotaLedger",
+                cond: { $eq: ["$$this._id", currentActiveLedgerEntryId] },
+              },
+            },
+            createdAt: 1,
+            updatedAt: 1,
+          },
+        },
+      ]);
+
+      const activeLedger = franchiseDetail[0]?.userTrialQuotaLedger[0];
+
+      const campaign = await CampaignModel.findById(
+        activeLedger.sourceCampaignId
+      );
+
       if (!campaign) {
         throw new CustomError(400, "Không tìm thấy chiến dịch");
       }
-
       const packageId = campaign.packageId;
 
       const activeCode = await InvitationCodeModel.updateMany(
@@ -91,6 +117,7 @@ class InvitationCodeService {
           packageId,
         }
       );
+
       if (activeCode.modifiedCount === 0) {
         throw new CustomError(400, "Không thể kích hoạt mã mời");
       }

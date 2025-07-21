@@ -39,7 +39,7 @@ class AuthController {
 
       // Register user and handle subscription
       const user = await AuthService.register(
-        email,
+        email.toLowerCase(),
         password,
         username,
         phone,

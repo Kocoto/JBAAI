@@ -889,11 +889,10 @@ class FranchiseController {
       next(error);
     }
   }
-  async activeInitationCode(req: Request, res: Response, next: NextFunction) {
+  async activeInvitationCode(req: Request, res: Response, next: NextFunction) {
     try {
-      const userId = req.user.id;
+      const userId = req.user._id;
       const currentActiveLedgerEntryId = req.body.currentActiveLedgerEntryId;
-      const sourceCampaignId = req.body.sourceCampaignId;
       if (!currentActiveLedgerEntryId) {
         throw new CustomError(400, "currentActiveLedgerEntryId là bắt buộc");
       }
@@ -903,13 +902,9 @@ class FranchiseController {
           "ID currentActiveLedgerEntryId không hợp lệ"
         );
       }
-      if (!Types.ObjectId.isValid(sourceCampaignId)) {
-        throw new CustomError(400, "ID sourceCampaignId không hợp lệ");
-      }
       const activeCode = await InvitationCodeService.activeInvitationCode(
         userId,
-        currentActiveLedgerEntryId,
-        sourceCampaignId
+        currentActiveLedgerEntryId
       );
       if (!activeCode) {
         throw new CustomError(400, "Không thể kích hoạt mã mời");
