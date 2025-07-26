@@ -15,6 +15,13 @@ class UpgradeRequestService {
       if (!check) {
         throw new CustomError(400, "Mã franchise không hợp lệ");
       }
+      const checkRequest = await UpgradeRequestModel.findOne({
+        userId,
+        status: "pending",
+      });
+      if (checkRequest) {
+        throw new CustomError(400, "Bạn đã gửi yêu cầu nâng cấp");
+      }
       const newUpgradeRequest = await UpgradeRequestModel.create({
         userId,
         ...data,
@@ -244,7 +251,7 @@ class UpgradeRequestService {
           ),
         ]);
 
-        console.log("Tất cả các bước trong lần thử này đã thành công.");
+        // console.log("Tất cả các bước trong lần thử này đã thành công.");
         return upgradeRequest;
       });
       return result;

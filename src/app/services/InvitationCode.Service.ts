@@ -30,7 +30,7 @@ class InvitationCodeService {
     );
 
     // Bạn có thể giữ log này để debug, nhưng hãy hiểu nó chỉ là "thành công tạm thời"
-    console.log(`Đã xếp mã ${validCode} vào transaction.`);
+    // console.log(`Đã xếp mã ${validCode} vào transaction.`);
 
     return newCode[0].code;
   }
