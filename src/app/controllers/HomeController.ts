@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { Reader } from "@maxmind/geoip2-node";
 import { dirname } from "path";
 import { geoIpDbBuffer } from "../config/geoip.config";
-// Import lớp Reader từ thư viện
+// Import Reader class from library
 import { Reader as MaxMindGeoIPReader } from "@maxmind/geoip2-node";
 import CustomError from "../utils/Error.Util";
 
@@ -38,7 +38,7 @@ class HomeController {
     const ip = "8.8.8.8";
     console.log("[HomeController] Received request for /test. IP:", ip);
 
-    // Kiểm tra xem buffer có được load không
+    // Check if buffer is loaded
     if (!geoIpDbBuffer) {
       console.error("[HomeController] GeoIP Database Buffer is not available!");
       return res
@@ -52,14 +52,14 @@ class HomeController {
     }
 
     try {
-      // Tạo một instance Reader mới từ buffer
-      // TypeScript sẽ suy luận kiểu của localReader một cách chính xác ở đây
+      // Create a new Reader instance from buffer
+      // TypeScript will infer the correct type for localReader here
       const localReader = MaxMindGeoIPReader.openBuffer(geoIpDbBuffer);
       console.log(
         "[HomeController] Local GeoIP Reader instance created from buffer."
       );
 
-      // Sử dụng .country() vì file config đang tải GeoLite2-Country.mmdb
+      // Use .country() because config file is loading GeoLite2-Country.mmdb
       const locationResponse = localReader.country(ip);
 
       const countryIsoCode = locationResponse?.country?.isoCode;
@@ -137,13 +137,13 @@ class HomeController {
         res.status(200).json({
           latestVersion: currentVersion,
           isForceUpdate: true,
-          releaseNote: "Cần cập nhật bản mới nhất",
+          releaseNote: "Need to update to the latest version",
         });
       }
       res.status(200).json({
         latestVersion: currentVersion,
         isForceUpdate: false,
-        releaseNote: "Hiện tại đang là phiên bản mới nhất",
+        releaseNote: "You are on the latest version",
       });
     } catch (error) {
       if (error instanceof CustomError) {

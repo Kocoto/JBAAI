@@ -13,14 +13,14 @@ export const checkFranchise = async (
   try {
     // Kiểm tra user đã đăng nhập chưa
     if (!req.user) {
-      throw new CustomError(401, "Vui lòng đăng nhập để tiếp tục");
+      throw new CustomError(401, "Please login to continue");
     }
 
     // Kiểm tra role
     if (req.user.role !== "franchise") {
       throw new CustomError(
         403,
-        "Bạn không có quyền truy cập tính năng này. Chỉ dành cho franchise"
+        "You don't have permission to access this feature. Franchise only"
       );
     }
 
@@ -28,7 +28,7 @@ export const checkFranchise = async (
     if (req.user.status !== "active") {
       throw new CustomError(
         403,
-        "Tài khoản của bạn đã bị khóa hoặc chưa được kích hoạt"
+        "Your account has been locked or not activated"
       );
     }
 
@@ -36,12 +36,12 @@ export const checkFranchise = async (
     if (!req.user.franchiseName) {
       throw new CustomError(
         403,
-        "Tài khoản franchise của bạn chưa được xác nhận. Vui lòng liên hệ admin"
+        "Your franchise account has not been verified. Please contact admin"
       );
     }
 
     console.log(
-      `[FranchiseMiddleware] Franchise ${req.user.franchiseName} (${req.user._id}) đã được xác thực`
+      `[FranchiseMiddleware] Franchise ${req.user.franchiseName} (${req.user._id}) has been authenticated`
     );
 
     next();
@@ -62,19 +62,22 @@ export const checkFranchiseOrAdmin = async (
   try {
     // Kiểm tra user đã đăng nhập chưa
     if (!req.user) {
-      throw new CustomError(401, "Vui lòng đăng nhập để tiếp tục");
+      throw new CustomError(401, "Please login to continue");
     }
 
     // Kiểm tra role
     if (req.user.role !== "franchise" && req.user.role !== "admin") {
-      throw new CustomError(403, "Bạn không có quyền truy cập tính năng này");
+      throw new CustomError(
+        403,
+        "You don't have permission to access this feature"
+      );
     }
 
     // Kiểm tra trạng thái tài khoản
     if (req.user.status !== "active") {
       throw new CustomError(
         403,
-        "Tài khoản của bạn đã bị khóa hoặc chưa được kích hoạt"
+        "Your account has been locked or not activated"
       );
     }
 
@@ -82,12 +85,12 @@ export const checkFranchiseOrAdmin = async (
     if (req.user.role === "franchise" && !req.user.franchiseName) {
       throw new CustomError(
         403,
-        "Tài khoản franchise của bạn chưa được xác nhận"
+        "Your franchise account has not been verified"
       );
     }
 
     console.log(
-      `[FranchiseMiddleware] User ${req.user._id} (role: ${req.user.role}) đã được xác thực`
+      `[FranchiseMiddleware] User ${req.user._id} (role: ${req.user.role}) has been authenticated`
     );
 
     next();

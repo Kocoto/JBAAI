@@ -14,7 +14,7 @@ import InvitationCodeModel, {
 export interface campaignFilter {
   status?: string;
   ownerId?: string;
-  franchiseOwnerId?: string; // Thêm field này để filter theo franchiseOwnerId
+  franchiseOwnerId?: string; // Add this field to filter by franchiseOwnerId
 }
 
 export interface CampaignResponse {
@@ -36,7 +36,7 @@ export interface FranchisePerformanceOverview {
     ancestorPath: string[];
   };
   performance: {
-    // Hiệu suất tổng hợp (bao gồm cả cây con)
+    // Overall performance (including child tree)
     totalInvitesSent: number;
     totalTrialUsers: number;
     totalRenewedUsers: number;
@@ -44,13 +44,13 @@ export interface FranchisePerformanceOverview {
     overallConversionRate: number;
     overallRenewalRate: number;
 
-    // Hiệu suất riêng của franchise này (không bao gồm con)
+    // Individual franchise performance (excluding children)
     ownInvites: number;
     ownTrialUsers: number;
     ownRenewals: number;
     ownConversionRate: number;
 
-    // Phân tích theo thời gian
+    // Time analysis
     timeAnalysis: {
       periodStart: Date;
       periodEnd: Date;
@@ -59,7 +59,7 @@ export interface FranchisePerformanceOverview {
       averageRenewalsPerDay: number;
     };
 
-    // Top performers trong cây con
+    // Top performers in child tree
     topPerformers: {
       topInviters: Array<{
         franchiseId: string;
@@ -79,7 +79,7 @@ export interface FranchisePerformanceOverview {
       }>;
     };
 
-    // Phân tích theo cấp độ franchise
+    // Analysis by franchise level
     performanceByLevel: Array<{
       level: number;
       franchiseCount: number;
@@ -88,7 +88,7 @@ export interface FranchisePerformanceOverview {
       averageConversionRate: number;
     }>;
 
-    // Phân tích theo campaign
+    // Analysis by campaign
     campaignBreakdown: Array<{
       campaignId: string;
       campaignName: string;
@@ -97,7 +97,7 @@ export interface FranchisePerformanceOverview {
       conversionRate: number;
     }>;
   };
-  // Chi tiết hiệu suất từng franchise con trực tiếp
+  // Performance details of direct child franchises
   directChildren: Array<{
     franchiseId: string;
     franchiseName: string;
@@ -124,14 +124,14 @@ export interface CampaignPerformanceSummary {
     renewalRequirementPercentage: number;
   };
   performance: {
-    // Tổng quan
-    totalInvitesSent: number; // Tổng số lời mời đã gửi
-    totalTrialUsers: number; // Tổng số người dùng dùng thử
-    totalRenewedUsers: number; // Tổng số người dùng đã gia hạn
-    conversionRate: number; // Tỷ lệ chuyển đổi (%)
-    renewalRate: number; // Tỷ lệ gia hạn (%)
+    // Overview
+    totalInvitesSent: number; // Total invitations sent
+    totalTrialUsers: number; // Total trial users
+    totalRenewedUsers: number; // Total renewed users
+    conversionRate: number; // Conversion rate (%)
+    renewalRate: number; // Renewal rate (%)
 
-    // Phân tích theo cấp franchise
+    // Analysis by franchise level
     performanceByLevel: {
       level: number;
       franchiseName: string;
@@ -140,22 +140,22 @@ export interface CampaignPerformanceSummary {
       conversionRate: number;
     }[];
 
-    // Tiến độ đạt yêu cầu gia hạn
+    // Renewal requirement progress
     renewalProgress: {
-      required: number; // Số lượng gia hạn cần đạt
-      achieved: number; // Số lượng gia hạn đã đạt
-      percentage: number; // Phần trăm hoàn thành
-      isQualified: boolean; // Đã đủ điều kiện cho campaign mới chưa
+      required: number; // Required number of renewals
+      achieved: number; // Achieved number of renewals
+      percentage: number; // Completion percentage
+      isQualified: boolean; // Qualified for new campaign
     };
 
-    // Thống kê thời gian
+    // Time statistics
     timeAnalysis: {
-      daysActive: number; // Số ngày campaign đã hoạt động
-      daysRemaining: number; // Số ngày còn lại
-      averageConversionTime: number; // Thời gian chuyển đổi trung bình (ngày)
+      daysActive: number; // Days campaign has been active
+      daysRemaining: number; // Days remaining
+      averageConversionTime: number; // Average conversion time (days)
     };
   };
-  // Danh sách franchise con và hiệu suất của họ
+  // List of child franchises and their performance
   franchiseBreakdown: {
     franchiseId: string;
     franchiseName: string;
@@ -168,7 +168,7 @@ export interface CampaignPerformanceSummary {
 
 class AdminService {
   /**
-   * Tạo và phân bổ Campaign mới từ Admin
+   * Create and allocate new Campaign from Admin
    */
   async createAndAllocateCampaign(
     campaignName: string,
@@ -181,39 +181,39 @@ class AdminService {
     packageId: string
   ) {
     try {
-      console.log("[AdminService] Bắt đầu tạo và phân bổ Campaign.");
+      console.log("[AdminService] Starting to create and allocate Campaign.");
 
       // Validate input parameters
       if (!campaignName?.trim()) {
-        throw new CustomError(400, "Tên Campaign không được để trống");
+        throw new CustomError(400, "Campaign name cannot be empty");
       }
       if (!franchiseOwnerId?.trim()) {
         throw new CustomError(
           400,
-          "ID của Franchise Owner không được để trống"
+          "Franchise Owner ID cannot be empty"
         );
       }
       if (totalAllocated <= 0) {
-        throw new CustomError(400, "Số lượng phân bổ phải lớn hơn 0");
+        throw new CustomError(400, "Allocation amount must be greater than 0");
       }
       if (renewalRequirement < 0) {
-        throw new CustomError(400, "Yêu cầu gia hạn không được âm");
+        throw new CustomError(400, "Renewal requirement cannot be negative");
       }
       if (new Date(startDate) >= new Date(endDate)) {
-        throw new CustomError(400, "Ngày bắt đầu phải trước ngày kết thúc");
+        throw new CustomError(400, "Start date must be before end date");
       }
 
-      // Kiểm tra xem franchiseOwnerId có hợp lệ không
+      // Check if franchiseOwnerId is valid
       if (!Types.ObjectId.isValid(franchiseOwnerId)) {
-        throw new CustomError(400, "ID của Franchise Owner không hợp lệ");
+        throw new CustomError(400, "Invalid Franchise Owner ID");
       }
 
-      // Tạo Campaign mới
+      // Create new Campaign
       const newCampaign = await CampaignModel.create({
         campaignName: campaignName.trim(),
         franchiseOwnerId: new Types.ObjectId(franchiseOwnerId),
         totalAllocated: totalAllocated,
-        status: "active", // Mặc định là active khi tạo
+        status: "active", // Default to active when created
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         renewalRequirementPercentage: renewalRequirement,
@@ -222,15 +222,15 @@ class AdminService {
       });
 
       if (!newCampaign) {
-        throw new CustomError(500, "Lỗi khi tạo Campaign trong database");
+        throw new CustomError(500, "Error creating Campaign in database");
       }
 
       console.log(
-        `[AdminService] Tạo Campaign thành công với ID: ${newCampaign._id}`
+        `[AdminService] Successfully created Campaign with ID: ${newCampaign._id}`
       );
 
       console.log(
-        `[AdminService] Bắt đầu khởi tạo sổ cái đầu tiên cho Franchise của Campaign vừa tạo`
+        `[AdminService] Starting to initialize first ledger for Campaign's Franchise`
       );
 
       // const newLedger = await FranchiseService.allocateQuotaToChild(
@@ -255,29 +255,29 @@ class AdminService {
         endDate
       );
       if (!newLedger) {
-        console.log(`[AdminService] Lỗi khi tạo sổ cái cho Franchise`);
-        throw new CustomError(500, "Lỗi khi tạo sổ cái cho Franchise");
+        console.log(`[AdminService] Error creating ledger for Franchise`);
+        throw new CustomError(500, "Error creating ledger for Franchise");
       }
       console.log(
-        `[AdminService] Tạo sổ cái thành công với ID: ${newLedger._id}`
+        `[AdminService] Successfully created ledger with ID: ${newLedger._id}`
       );
       return newCampaign;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi tạo Campaign: ${error.message}`
+          `[AdminService] CustomError when creating Campaign: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi tạo Campaign: ${error}`
+        `[AdminService] Undefined error when creating Campaign: ${error}`
       );
-      throw new CustomError(500, "Lỗi không xác định khi tạo Campaign");
+      throw new CustomError(500, "Undefined error when creating Campaign");
     }
   }
 
   /**
-   * Lấy tất cả Campaigns với filter và phân trang
+   * Get all Campaigns with filter and pagination
    */
   async getAllCampaigns(
     campaignFilter: campaignFilter,
@@ -285,13 +285,13 @@ class AdminService {
     limit: number = 10
   ): Promise<CampaignResponse> {
     try {
-      console.log("[AdminService] Bắt đầu lấy danh sách Campaigns.");
+      console.log("[AdminService] Starting to get Campaigns list.");
 
-      // Validate và chuẩn hóa page và limit
+      // Validate and normalize page and limit
       const validPage = Math.max(1, Math.floor(page) || 1);
-      const validLimit = Math.min(Math.max(1, Math.floor(limit) || 10), 100); // Giới hạn tối đa 100 items
+      const validLimit = Math.min(Math.max(1, Math.floor(limit) || 10), 100); // Maximum 100 items
 
-      // Tạo filter object cho MongoDB
+      // Create filter object for MongoDB
       const mongoFilter: any = {};
 
       if (campaignFilter.status) {
@@ -300,14 +300,14 @@ class AdminService {
 
       if (campaignFilter.franchiseOwnerId) {
         if (!Types.ObjectId.isValid(campaignFilter.franchiseOwnerId)) {
-          throw new CustomError(400, "ID của Franchise Owner không hợp lệ");
+          throw new CustomError(400, "Invalid Franchise Owner ID");
         }
         mongoFilter.franchiseOwnerId = new Types.ObjectId(
           campaignFilter.franchiseOwnerId
         );
       }
 
-      // Đếm tổng số documents
+      // Count total documents
       const countCampaigns = await CampaignModel.countDocuments(mongoFilter);
 
       if (countCampaigns === 0) {
@@ -324,19 +324,19 @@ class AdminService {
       const totalPages = Math.ceil(countCampaigns / validLimit);
       const skip = (validPage - 1) * validLimit;
 
-      // Lấy campaigns với populate để lấy thông tin franchise owner
+      // Get campaigns with populated franchise owner information
       const campaigns = await CampaignModel.find(mongoFilter)
-        .populate("franchiseOwnerId") // Populate thông tin cơ bản của franchise owner
-        .sort({ createdAt: -1 }) // Sắp xếp theo thời gian tạo mới nhất
+        .populate("franchiseOwnerId") // Populate basic franchise owner information
+        .sort({ createdAt: -1 }) // Sort by creation time, newest first
         .skip(skip)
         .limit(validLimit)
-        .lean(); // Sử dụng lean() để tăng performance
+        .lean(); // Use lean() for better performance
 
       if (!campaigns) {
-        throw new CustomError(404, "Không tìm thấy Campaign nào");
+        throw new CustomError(404, "No Campaigns found");
       }
 
-      console.log(`[AdminService] Lấy được ${campaigns.length} Campaigns.`);
+      console.log(`[AdminService] Retrieved ${campaigns.length} Campaigns.`);
 
       return {
         campaigns,
@@ -349,30 +349,30 @@ class AdminService {
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi lấy Campaign: ${error.message}`
+          `[AdminService] CustomError when getting Campaign: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi lấy Campaign: ${error}`
+        `[AdminService] Undefined error when getting Campaign: ${error}`
       );
-      throw new CustomError(500, "Lỗi không xác định khi lấy Campaign");
+      throw new CustomError(500, "Undefined error when getting Campaign");
     }
   }
 
   /**
-   * Lấy thông tin chi tiết một Campaign theo ID
+   * Get Campaign details by ID
    */
   async getCampaignById(campaignId: string) {
     try {
-      console.log(`[AdminService] Lấy Campaign với ID: ${campaignId}`);
+      console.log(`[AdminService] Getting Campaign with ID: ${campaignId}`);
 
       if (!campaignId?.trim()) {
-        throw new CustomError(400, "ID Campaign không được để trống");
+        throw new CustomError(400, "Campaign ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(campaignId)) {
-        throw new CustomError(400, "ID Campaign không hợp lệ");
+        throw new CustomError(400, "Invalid Campaign ID");
       }
 
       const campaign = await CampaignModel.findById(campaignId)
@@ -380,29 +380,29 @@ class AdminService {
         .lean();
 
       if (!campaign) {
-        throw new CustomError(404, "Không tìm thấy Campaign");
+        throw new CustomError(404, "Campaign not found");
       }
 
       console.log(
-        `[AdminService] Lấy Campaign thành công: ${campaign.campaignName}`
+        `[AdminService] Successfully retrieved Campaign: ${campaign.campaignName}`
       );
       return campaign;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi lấy Campaign: ${error.message}`
+          `[AdminService] CustomError when getting Campaign: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi lấy Campaign: ${error}`
+        `[AdminService] Undefined error when getting Campaign: ${error}`
       );
-      throw new CustomError(500, "Lỗi không xác định khi lấy Campaign");
+      throw new CustomError(500, "Undefined error when getting Campaign");
     }
   }
 
   /**
-   * Cập nhật thông tin Campaign
+   * Update Campaign information
    */
   async updateCampaign(
     campaignId: string,
@@ -416,37 +416,37 @@ class AdminService {
     }
   ) {
     try {
-      console.log(`[AdminService] Cập nhật Campaign với ID: ${campaignId}`);
+      console.log(`[AdminService] Updating Campaign with ID: ${campaignId}`);
 
       if (!campaignId?.trim()) {
-        throw new CustomError(400, "ID Campaign không được để trống");
+        throw new CustomError(400, "Campaign ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(campaignId)) {
-        throw new CustomError(400, "ID Campaign không hợp lệ");
+        throw new CustomError(400, "Invalid Campaign ID");
       }
 
-      // Validate dữ liệu cập nhật
+      // Validate update data
       if (
         updateData.campaignName !== undefined &&
         !updateData.campaignName?.trim()
       ) {
-        throw new CustomError(400, "Tên Campaign không được để trống");
+        throw new CustomError(400, "Campaign name cannot be empty");
       }
       if (
         updateData.totalAllocated !== undefined &&
         updateData.totalAllocated <= 0
       ) {
-        throw new CustomError(400, "Số lượng phân bổ phải lớn hơn 0");
+        throw new CustomError(400, "Allocation amount must be greater than 0");
       }
       if (
         updateData.renewalRequirementPercentage !== undefined &&
         updateData.renewalRequirementPercentage < 0
       ) {
-        throw new CustomError(400, "Yêu cầu gia hạn không được âm");
+        throw new CustomError(400, "Renewal requirement cannot be negative");
       }
 
-      // Chuẩn bị dữ liệu cập nhật
+      // Prepare update data
       const dataToUpdate: any = {
         updatedAt: new Date(),
       };
@@ -471,10 +471,10 @@ class AdminService {
           updateData.renewalRequirementPercentage;
       }
 
-      // Kiểm tra ngày hợp lệ nếu cả startDate và endDate đều được cập nhật
+      // Check valid dates if both startDate and endDate are being updated
       if (dataToUpdate.startDate && dataToUpdate.endDate) {
         if (dataToUpdate.startDate >= dataToUpdate.endDate) {
-          throw new CustomError(400, "Ngày bắt đầu phải trước ngày kết thúc");
+          throw new CustomError(400, "Start date must be before end date");
         }
       }
 
@@ -485,40 +485,40 @@ class AdminService {
       ).populate("franchiseOwnerId", "name email");
 
       if (!updatedCampaign) {
-        throw new CustomError(404, "Không tìm thấy Campaign để cập nhật");
+        throw new CustomError(404, "Campaign not found for update");
       }
 
       console.log(
-        `[AdminService] Cập nhật Campaign thành công: ${updatedCampaign.campaignName}`
+        `[AdminService] Successfully updated Campaign: ${updatedCampaign.campaignName}`
       );
       return updatedCampaign;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi cập nhật Campaign: ${error.message}`
+          `[AdminService] CustomError when updating Campaign: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi cập nhật Campaign: ${error}`
+        `[AdminService] Undefined error when updating Campaign: ${error}`
       );
-      throw new CustomError(500, "Lỗi không xác định khi cập nhật Campaign");
+      throw new CustomError(500, "Undefined error when updating Campaign");
     }
   }
 
   /**
-   * Xóa Campaign (soft delete - chuyển status thành 'deleted')
+   * Delete Campaign (soft delete - change status to 'deleted')
    */
   async deleteCampaign(campaignId: string) {
     try {
-      console.log(`[AdminService] Xóa Campaign với ID: ${campaignId}`);
+      console.log(`[AdminService] Deleting Campaign with ID: ${campaignId}`);
 
       if (!campaignId?.trim()) {
-        throw new CustomError(400, "ID Campaign không được để trống");
+        throw new CustomError(400, "Campaign ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(campaignId)) {
-        throw new CustomError(400, "ID Campaign không hợp lệ");
+        throw new CustomError(400, "Invalid Campaign ID");
       }
 
       const deletedCampaign = await CampaignModel.findByIdAndUpdate(
@@ -531,39 +531,39 @@ class AdminService {
       );
 
       if (!deletedCampaign) {
-        throw new CustomError(404, "Không tìm thấy Campaign để xóa");
+        throw new CustomError(404, "Campaign not found for deletion");
       }
 
       console.log(
-        `[AdminService] Xóa Campaign thành công: ${deletedCampaign.campaignName}`
+        `[AdminService] Successfully deleted Campaign: ${deletedCampaign.campaignName}`
       );
       return deletedCampaign;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi xóa Campaign: ${error.message}`
+          `[AdminService] CustomError when deleting Campaign: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi xóa Campaign: ${error}`
+        `[AdminService] Undefined error when deleting Campaign: ${error}`
       );
-      throw new CustomError(500, "Lỗi không xác định khi xóa Campaign");
+      throw new CustomError(500, "Undefined error when deleting Campaign");
     }
   }
 
   async getCampaignsByFranchiseOwnerId(franchiseOwnerId: string) {
     try {
       console.log(
-        "[AdminService] Lấy danh sách Campaigns theo Franchise Owner ID."
+        "[AdminService] Getting Campaigns list by Franchise Owner ID."
       );
 
       if (!franchiseOwnerId?.trim()) {
-        throw new CustomError(400, "ID Franchise Owner không được để trống");
+        throw new CustomError(400, "Franchise Owner ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(franchiseOwnerId)) {
-        throw new CustomError(400, "ID Franchise Owner không hợp lệ");
+        throw new CustomError(400, "Invalid Franchise Owner ID");
       }
 
       const campaigns = await CampaignModel.find({ franchiseOwnerId })
@@ -571,26 +571,26 @@ class AdminService {
         .lean();
 
       if (!campaigns) {
-        throw new CustomError(404, "Không tìm thấy Campaigns");
+        throw new CustomError(404, "No Campaigns found");
       }
 
       console.log(
-        `[AdminService] Lấy danh sách Campaigns thành công: ${campaigns.length} Campaigns.`
+        `[AdminService] Successfully retrieved ${campaigns.length} Campaigns.`
       );
       return campaigns;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi lấy danh sách Campaigns: ${error.message}`
+          `[AdminService] CustomError when getting Campaigns list: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi lấy danh sách Campaigns: ${error}`
+        `[AdminService] Undefined error when getting Campaigns list: ${error}`
       );
       throw new CustomError(
         500,
-        "Lỗi không xác định khi lấy danh sách Campaigns"
+        "Undefined error when getting Campaigns list"
       );
     }
   }
@@ -600,34 +600,34 @@ class AdminService {
   ): Promise<CampaignPerformanceSummary> {
     try {
       console.log(
-        `[AdminService] Lấy tóm tắt hiệu suất Campaign với ID: ${campaignId}`
+        `[AdminService] Getting Campaign performance summary with ID: ${campaignId}`
       );
 
       if (!campaignId?.trim()) {
-        throw new CustomError(400, "ID Campaign không được để trống");
+        throw new CustomError(400, "Campaign ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(campaignId)) {
-        throw new CustomError(400, "ID Campaign không hợp lệ");
+        throw new CustomError(400, "Invalid Campaign ID");
       }
 
-      // Lấy thông tin campaign
+      // Get campaign information
       const campaign = await CampaignModel.findById(campaignId).lean();
       if (!campaign) {
-        throw new CustomError(404, "Không tìm thấy Campaign");
+        throw new CustomError(404, "Campaign not found");
       }
 
-      // Lấy tất cả invitations liên quan đến campaign này
+      // Get all invitations related to this campaign
       const invitations = await InvitationModel.find({
         linkedRootCampaignId: new Types.ObjectId(campaignId),
       }).lean();
 
-      // Lấy tất cả trial conversion logs liên quan đến campaign
+      // Get all trial conversion logs related to the campaign
       const trialLogs = await TrialConversionLogModel.find({
         rootCampaignId: new Types.ObjectId(campaignId),
       }).lean();
 
-      // Tính toán các metrics cơ bản
+      // Calculate basic metrics
       const totalInvitesSent = invitations.length;
       const totalTrialUsers = trialLogs.length;
       const totalRenewedUsers = trialLogs.filter((log) => log.didRenew).length;
@@ -640,7 +640,7 @@ class AdminService {
           ? Math.round((totalRenewedUsers / totalTrialUsers) * 100 * 100) / 100
           : 0;
 
-      // Tính toán renewal progress
+      // Calculate renewal progress
       const requiredRenewals = Math.ceil(
         (campaign.totalAllocated * campaign.renewalRequirementPercentage) / 100
       );
@@ -655,7 +655,7 @@ class AdminService {
         isQualified: totalRenewedUsers >= requiredRenewals,
       };
 
-      // Tính toán time analysis
+      // Calculate time analysis
       const now = new Date();
       const startDate = new Date(campaign.startDate || campaign.createdAt);
       const endDate = campaign.endDate ? new Date(campaign.endDate) : null;
@@ -672,7 +672,7 @@ class AdminService {
           )
         : -1; // -1 indicates no end date
 
-      // Tính average conversion time
+      // Calculate average conversion time
       let averageConversionTime = 0;
       if (totalRenewedUsers > 0) {
         const conversionTimes = trialLogs
@@ -693,7 +693,7 @@ class AdminService {
         }
       }
 
-      // Lấy thông tin franchise breakdown
+      // Get franchise breakdown information
       const franchisePerformanceMap = new Map<
         string,
         {
@@ -705,11 +705,11 @@ class AdminService {
         }
       >();
 
-      // Đếm invites theo franchise
+      // Count invites by franchise
       for (const invitation of invitations) {
         const franchiseId = invitation.inviterUserId.toString();
         if (!franchisePerformanceMap.has(franchiseId)) {
-          // Lấy thông tin franchise
+          // Get franchise information
           const franchiseDetails = await FranchiseDetailsModel.findOne({
             userId: invitation.inviterUserId,
           })
@@ -730,7 +730,7 @@ class AdminService {
         franchiseData.invitesSent++;
       }
 
-      // Đếm renewals theo franchise
+      // Count renewals by franchise
       for (const trialLog of trialLogs) {
         if (trialLog.didRenew) {
           const franchiseId = trialLog.referringFranchiseId.toString();
@@ -741,7 +741,7 @@ class AdminService {
         }
       }
 
-      // Chuyển map thành array và tính conversion rate
+      // Convert map to array and calculate conversion rate
       const franchiseBreakdown = Array.from(
         franchisePerformanceMap.values()
       ).map((data) => ({
@@ -752,7 +752,7 @@ class AdminService {
             : 0,
       }));
 
-      // Tính performance by level
+      // Calculate performance by level
       const performanceByLevelMap = new Map<
         number,
         {
@@ -790,7 +790,7 @@ class AdminService {
         }))
         .sort((a, b) => a.level - b.level);
 
-      // Cập nhật totalRenewed trong campaign nếu cần
+      // Update totalRenewed in campaign if needed
       if (campaign.totalRenewed !== totalRenewedUsers) {
         await CampaignModel.findByIdAndUpdate(campaignId, {
           totalRenewed: totalRenewedUsers,
@@ -829,21 +829,21 @@ class AdminService {
         ),
       };
 
-      console.log(`[AdminService] Lấy tóm tắt hiệu suất Campaign thành công`);
+      console.log(`[AdminService] Successfully retrieved Campaign performance summary`);
       return result;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi lấy tóm tắt hiệu suất: ${error.message}`
+          `[AdminService] CustomError when getting performance summary: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi lấy tóm tắt hiệu suất: ${error}`
+        `[AdminService] Undefined error when getting performance summary: ${error}`
       );
       throw new CustomError(
         500,
-        "Lỗi không xác định khi lấy tóm tắt hiệu suất Campaign"
+        "Undefined error when getting Campaign performance summary"
       );
     }
   }
@@ -992,60 +992,60 @@ class AdminService {
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi khi tìm kiếm tất cả các franchise ${error.message}`
+          `[AdminService] Error when searching all franchises: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi tìm kiếm tất cả các franchise ${error}`
+        `[AdminService] Undefined error when searching all franchises: ${error}`
       );
       throw new CustomError(
         500,
-        "Lỗi không xác định khi tìm kiếm tất cả các franchise"
+        "Undefined error when searching all franchises"
       );
     }
   }
 
   /**
-   * Hàm lấy cây phân cấp franchise và thống kê
-   * @param userId - ID của user cần lấy cây phân cấp
+   * Get franchise hierarchy tree and statistics
+   * @param userId - User ID to get hierarchy tree
    *
-   * Quy trình:
-   * 1. Validate input và kiểm tra user
-   * 2. Lấy thông tin franchise gốc
-   * 3. Xây dựng cây phân cấp bằng đệ quy:
-   *    - Lấy danh sách franchise con trực tiếp
-   *    - Với mỗi franchise con:
-   *      + Tính quota còn hoạt động
-   *      + Đếm số lượng lời mời
-   *      + Tính tỷ lệ chuyển đổi
-   *      + Đệ quy để lấy cây con
-   * 4. Tính thống kê tổng quan cho franchise gốc
-   * 5. Tính thống kê theo từng cấp độ franchise
-   * 6. Đóng gói kết quả trả về
+   * Process:
+   * 1. Validate input and check user
+   * 2. Get root franchise information
+   * 3. Build hierarchy tree recursively:
+   *    - Get list of direct child franchises
+   *    - For each child franchise:
+   *      + Calculate active quota
+   *      + Count number of invitations
+   *      + Calculate conversion rate
+   *      + Recursively get child tree
+   * 4. Calculate overall statistics for root franchise
+   * 5. Calculate statistics by franchise level
+   * 6. Package results for return
    */
   async getFranchiseHierarchy(userId: string) {
     try {
       console.log(
-        `[AdminService] Lấy cây phân cấp franchise cho user: ${userId}`
+        `[AdminService] Getting franchise hierarchy tree for user: ${userId}`
       );
 
-      // Validate đầu vào
+      // Validate input
       if (!userId?.trim()) {
-        throw new CustomError(400, "ID User không được để trống");
+        throw new CustomError(400, "User ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(userId)) {
-        throw new CustomError(400, "ID User không hợp lệ");
+        throw new CustomError(400, "Invalid User ID");
       }
 
-      // Kiểm tra user có tồn tại và có phải là franchise không
+      // Check if user exists and is a franchise
       const user = await UserModel.findById(userId).lean();
       if (!user) {
-        throw new CustomError(404, "Không tìm thấy người dùng");
+        throw new CustomError(404, "User not found");
       }
 
-      // Lấy thông tin franchise details của user gốc
+      // Get root franchise details
       const rootFranchise = await FranchiseDetailsModel.findOne({
         userId: new Types.ObjectId(userId),
       })
@@ -1053,15 +1053,15 @@ class AdminService {
         .lean();
 
       if (!rootFranchise) {
-        throw new CustomError(404, "Người dùng không phải là franchise");
+        throw new CustomError(404, "User is not a franchise");
       }
 
-      // Hàm đệ quy xây dựng cây phân cấp
+      // Recursive function to build hierarchy tree
       const buildHierarchyTree = async (
         parentId: Types.ObjectId,
         level: number = 0
       ): Promise<any> => {
-        // Lấy danh sách franchise con trực tiếp
+        // Get list of direct child franchises
         const childFranchises = await FranchiseDetailsModel.find({
           parentId: parentId,
         })
@@ -1071,10 +1071,10 @@ class AdminService {
           )
           .lean();
 
-        // Xử lý từng franchise con và build cây
+        // Process each child franchise and build tree
         const childrenWithSubTree = await Promise.all(
           childFranchises.map(async (child) => {
-            // Tính quota còn active
+            // Calculate active quota
             const activeQuota =
               child.userTrialQuotaLedger
                 ?.filter((ledger: any) => ledger.status === "active")
@@ -1086,12 +1086,12 @@ class AdminService {
                   return sum + Math.max(0, available);
                 }, 0) || 0;
 
-            // Đếm số lượng lời mời
+            // Count number of invitations
             const invitations = await InvitationModel.countDocuments({
               inviterUserId: child.userId,
             });
 
-            // Tính số lượng và tỷ lệ chuyển đổi
+            // Calculate number of conversions and conversion rate
             const trialConversions = await TrialConversionLogModel.find({
               referringFranchiseId: child.userId,
             }).lean();
@@ -1104,7 +1104,7 @@ class AdminService {
                 ? Math.round((totalRenewals / invitations) * 100 * 100) / 100
                 : 0;
 
-            // Đệ quy lấy cây con
+            // Recursively get child tree
             const subTree = await buildHierarchyTree(
               child.userId as Types.ObjectId,
               level + 1
@@ -1130,12 +1130,12 @@ class AdminService {
         return childrenWithSubTree;
       };
 
-      // Xây dựng cây từ franchise gốc
+      // Build tree from root franchise
       const hierarchyTree = await buildHierarchyTree(
         rootFranchise.userId as Types.ObjectId
       );
 
-      // Tính thống kê cho franchise gốc
+      // Calculate statistics for root franchise
       const rootInvitations = await InvitationModel.countDocuments({
         inviterUserId: rootFranchise.userId,
       });
@@ -1152,7 +1152,7 @@ class AdminService {
           ? Math.round((rootTotalRenewals / rootInvitations) * 100 * 100) / 100
           : 0;
 
-      // Tính quota active của franchise gốc
+      // Calculate active quota for root franchise
       const rootActiveQuota =
         rootFranchise.userTrialQuotaLedger
           ?.filter((ledger: any) => ledger.status === "active")
@@ -1164,7 +1164,7 @@ class AdminService {
             return sum + Math.max(0, available);
           }, 0) || 0;
 
-      // Hàm đếm tổng số franchise con
+      // Function to count total descendants
       const countTotalDescendants = (children: any[]): number => {
         let count = children.length;
         for (const child of children) {
@@ -1173,7 +1173,7 @@ class AdminService {
         return count;
       };
 
-      // Hàm tính thống kê theo cấp độ
+      // Function to calculate statistics by level
       const getLevelStatistics = (
         tree: any[],
         stats: Map<number, any> = new Map()
@@ -1204,7 +1204,7 @@ class AdminService {
         return stats;
       };
 
-      // Tính thống kê theo cấp và tỷ lệ chuyển đổi trung bình
+      // Calculate statistics by level and average conversion rate
       const levelStats = getLevelStatistics(hierarchyTree);
       const levelStatisticsArray = Array.from(levelStats.values()).map(
         (stat) => ({
@@ -1218,7 +1218,7 @@ class AdminService {
         })
       );
 
-      // Đóng gói kết quả
+      // Package results
       const result = {
         root: {
           _id: rootFranchise._id,
@@ -1249,21 +1249,21 @@ class AdminService {
         },
       };
 
-      console.log(`[AdminService] Lấy cây phân cấp franchise thành công`);
+      console.log(`[AdminService] Successfully retrieved franchise hierarchy tree`);
       return result;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi lấy cây phân cấp franchise: ${error.message}`
+          `[AdminService] CustomError when getting franchise hierarchy tree: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi lấy cây phân cấp franchise: ${error}`
+        `[AdminService] Undefined error when getting franchise hierarchy tree: ${error}`
       );
       throw new CustomError(
         500,
-        "Lỗi không xác định khi lấy cây phân cấp franchise"
+        "Undefined error when getting franchise hierarchy tree"
       );
     }
   }
@@ -1277,29 +1277,29 @@ class AdminService {
   ): Promise<FranchisePerformanceOverview> {
     try {
       console.log(
-        `[AdminService] Lấy tổng quan hiệu suất franchise cho user: ${userId}`
+        `[AdminService] Getting franchise performance overview for user: ${userId}`
       );
 
-      // Validate đầu vào
+      // Validate input
       if (!userId?.trim()) {
-        throw new CustomError(400, "ID User không được để trống");
+        throw new CustomError(400, "User ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(userId)) {
-        throw new CustomError(400, "ID User không hợp lệ");
+        throw new CustomError(400, "Invalid User ID");
       }
 
-      // Validate rootCampaignId nếu có
+      // Validate rootCampaignId if provided
       if (rootCampaignId && !Types.ObjectId.isValid(rootCampaignId)) {
-        throw new CustomError(400, "ID Campaign không hợp lệ");
+        throw new CustomError(400, "Invalid Campaign ID");
       }
 
-      // Validate ngày tháng
+      // Validate dates
       if (startDate && endDate && startDate >= endDate) {
-        throw new CustomError(400, "Ngày bắt đầu phải trước ngày kết thúc");
+        throw new CustomError(400, "Start date must be before end date");
       }
 
-      // Lấy thông tin franchise gốc
+      // Get root franchise information
       const rootFranchise = await FranchiseDetailsModel.findOne({
         userId: new Types.ObjectId(userId),
       })
@@ -1307,10 +1307,10 @@ class AdminService {
         .lean();
 
       if (!rootFranchise) {
-        throw new CustomError(404, "Không tìm thấy franchise");
+        throw new CustomError(404, "Franchise not found");
       }
 
-      // Xây dựng filter cho queries
+      // Build filter for queries
       const timeFilter: any = {};
       if (startDate) timeFilter.$gte = startDate;
       if (endDate) timeFilter.$lte = endDate;
@@ -1330,7 +1330,7 @@ class AdminService {
         trialLogFilter.rootCampaignId = new Types.ObjectId(rootCampaignId);
       }
 
-      // Hàm đệ quy để lấy tất cả franchise con
+      // Recursive function to get all descendant franchises
       const getAllDescendantIds = async (
         parentId: Types.ObjectId
       ): Promise<Types.ObjectId[]> => {
@@ -1351,7 +1351,7 @@ class AdminService {
         return allDescendants;
       };
 
-      // Lấy tất cả ID của franchise con
+      // Get all descendant franchise IDs
       const allDescendantIds = await getAllDescendantIds(
         rootFranchise.userId as Types.ObjectId
       );
@@ -1360,7 +1360,7 @@ class AdminService {
         ...allDescendantIds,
       ];
 
-      // Query tổng hợp cho toàn bộ cây
+      // Aggregate query for the entire tree
       const [totalInvitations, totalTrialLogs, directChildrenFranchises] =
         await Promise.all([
           InvitationModel.find({
@@ -1380,7 +1380,7 @@ class AdminService {
             .lean(),
         ]);
 
-      // Query riêng cho franchise gốc
+      // Separate query for root franchise
       const [ownInvitations, ownTrialLogs] = await Promise.all([
         InvitationModel.find({
           ...invitationFilter,
@@ -1393,7 +1393,7 @@ class AdminService {
         }).lean(),
       ]);
 
-      // Tính toán metrics tổng hợp
+      // Calculate aggregate metrics
       const totalInvitesSent = totalInvitations.length;
       const totalTrialUsers = totalTrialLogs.length;
       const totalRenewedUsers = totalTrialLogs.filter(
@@ -1408,7 +1408,7 @@ class AdminService {
           ? Math.round((totalRenewedUsers / totalTrialUsers) * 100 * 100) / 100
           : 0;
 
-      // Tính toán metrics riêng
+      // Calculate individual metrics
       const ownInvites = ownInvitations.length;
       const ownTrialUsers = ownTrialLogs.length;
       const ownRenewals = ownTrialLogs.filter((log) => log.didRenew).length;
@@ -1417,7 +1417,7 @@ class AdminService {
           ? Math.round((ownRenewals / ownInvites) * 100 * 100) / 100
           : 0;
 
-      // Tính quota còn active
+      // Calculate remaining active quota
       const totalActiveQuota =
         rootFranchise.userTrialQuotaLedger
           ?.filter((ledger: any) => ledger.status === "active")
@@ -1429,7 +1429,7 @@ class AdminService {
             return sum + Math.max(0, available);
           }, 0) || 0;
 
-      // Phân tích thời gian
+      // Time analysis
       const periodStart =
         startDate ||
         new Date(
@@ -1457,7 +1457,7 @@ class AdminService {
           Math.round((totalRenewedUsers / daysInPeriod) * 100) / 100,
       };
 
-      // Tính toán hiệu suất theo franchise
+      // Calculate performance by franchise
       const franchisePerformanceMap = new Map<
         string,
         {
@@ -1470,7 +1470,7 @@ class AdminService {
         }
       >();
 
-      // Collect performance data cho mỗi franchise
+      // Collect performance data for each franchise
       for (const invitation of totalInvitations) {
         const franchiseId = invitation.inviterUserId.toString();
         if (!franchisePerformanceMap.has(franchiseId)) {
@@ -1639,7 +1639,7 @@ class AdminService {
                 return sum + Math.max(0, available);
               }, 0) || 0;
 
-          // Tìm hoạt động gần nhất
+          // Find most recent activity
           const lastInvitation = await InvitationModel.findOne({
             inviterUserId: child.userId,
           })
@@ -1695,22 +1695,22 @@ class AdminService {
       };
 
       console.log(
-        `[AdminService] Lấy tổng quan hiệu suất franchise thành công`
+        `[AdminService] Successfully retrieved franchise performance overview`
       );
       return result;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi lấy tổng quan hiệu suất franchise: ${error.message}`
+          `[AdminService] CustomError when getting franchise performance overview: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi lấy tổng quan hiệu suất franchise: ${error}`
+        `[AdminService] Undefined error when getting franchise performance overview: ${error}`
       );
       throw new CustomError(
         500,
-        "Lỗi không xác định khi lấy tổng quan hiệu suất franchise"
+        "Undefined error when getting franchise performance overview"
       );
     }
   }
@@ -1728,21 +1728,21 @@ class AdminService {
           : undefined,
       });
       if (!code) {
-        throw new CustomError(500, "Lỗi không xác định sau khi tạo mã mời");
+        throw new CustomError(500, "Undefined error after creating invitation code");
       }
 
       return code;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi tạo mã mời: ${error.message}`
+          `[AdminService] CustomError when creating invitation code: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi tạo mã mời: ${error}`
+        `[AdminService] Undefined error when creating invitation code: ${error}`
       );
-      throw new CustomError(500, "Lỗi không xác định khi tạo mã mời");
+      throw new CustomError(500, "Undefined error when creating invitation code");
     }
   }
 
@@ -1759,8 +1759,8 @@ class AdminService {
         userId: childFranchiseUserId,
       });
       if (!franchise) {
-        console.log("[AdminService] Không tìm thấy franchise để tạo ");
-        throw new CustomError(404, "Không tìm thấy franchise");
+        console.log("[AdminService] Franchise not found for creation");
+        throw new CustomError(404, "Franchise not found");
       }
 
       const newLedgerEntry = {
@@ -1782,20 +1782,20 @@ class AdminService {
         { new: true }
       );
       if (!updatedFranchise) {
-        throw new CustomError(500, "Lỗi không xác định sau khi phân bổ");
+        throw new CustomError(500, "Undefined error after allocation");
       }
       return newLedgerEntry;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
-          `[AdminService] Lỗi CustomError khi phân bổ quota: ${error.message}`
+          `[AdminService] CustomError when allocating quota: ${error.message}`
         );
         throw error;
       }
       console.error(
-        `[AdminService] Lỗi không xác định khi phân bổ quota: ${error}`
+        `[AdminService] Undefined error when allocating quota: ${error}`
       );
-      throw new CustomError(500, "Lỗi không xác định khi phân bổ quota");
+      throw new CustomError(500, "Undefined error when allocating quota");
     }
   }
 }

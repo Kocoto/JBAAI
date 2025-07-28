@@ -14,21 +14,21 @@ class UpgradeRequestService {
         status: { $ne: "rejected" },
       });
       if (checkRequest) {
-        throw new CustomError(400, "Bạn đã có yêu cầu nâng cấp");
+        throw new CustomError(400, "You already have an upgrade request");
       }
 
       const check = await InvitationCodeService.checkCodeIsInvalid(
         data.franchiseName
       );
       if (!check) {
-        throw new CustomError(400, "Mã franchise không hợp lệ");
+        throw new CustomError(400, "Invalid franchise code");
       }
       const newUpgradeRequest = await UpgradeRequestModel.create({
         userId,
         ...data,
       });
       if (!newUpgradeRequest) {
-        throw new CustomError(400, "Tạo yêu cầu nâng cấp thất bại");
+        throw new CustomError(400, "Failed to create upgrade request");
       }
       return newUpgradeRequest;
     } catch (error) {
@@ -45,7 +45,7 @@ class UpgradeRequestService {
         userId,
       }).session(session || null);
 
-      //cần tìm ra các fix logic chỗ này( trang profile cần gửi về nhưng có những người dùng chưa có request thì sãy ra lỗi )
+      // Need to fix the logic here (the profile page needs to be returned, but some users don't have a request, which causes an error)
       return upgradeRequest;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -58,18 +58,18 @@ class UpgradeRequestService {
   async getUpgradeRequestById(upgradeRequestId: string) {
     try {
       if (!upgradeRequestId.trim()) {
-        throw new CustomError(400, "Id của yêu cầu không được để trống");
+        throw new CustomError(400, "Request ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(upgradeRequestId)) {
-        throw new CustomError(400, "Id của yêu cầu không hợp lệ");
+        throw new CustomError(400, "Invalid request ID");
       }
 
       const upgradeRequest = await UpgradeRequestModel.findById(
         upgradeRequestId
       );
       if (!upgradeRequest) {
-        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+        throw new CustomError(404, "Upgrade request not found");
       }
       return upgradeRequest;
     } catch (error) {
@@ -154,12 +154,12 @@ class UpgradeRequestService {
         upgradeRequestId
       );
       if (!upgradeRequest) {
-        throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
+        throw new CustomError(404, "Upgrade request not found");
       }
       if (upgradeRequest?.status === "reviewing") {
         throw new CustomError(
           400,
-          "Yêu cầu này đã được giao cho seller khác xử lý"
+          "This request has been assigned to another seller for processing"
         );
       }
       upgradeRequest.status = "reviewing";
@@ -210,7 +210,7 @@ class UpgradeRequestService {
           // Hoặc kiểm tra kiểu cụ thể hơn nếu bạn dùng interface/type cho User
           throw new CustomError(
             500,
-            "Không thể lấy thông tin người dùng từ yêu cầu nâng cấp."
+            "Could not retrieve user information from the upgrade request."
           );
         }
         upgradeRequest.status = "approved";
@@ -252,16 +252,16 @@ class UpgradeRequestService {
           ),
         ]);
 
-        console.log("Tất cả các bước trong lần thử này đã thành công.");
+        console.log("All steps in this attempt were successful.");
         return upgradeRequest;
       });
       return result;
     } catch (error) {
-      console.error("GIAO DỊCH THẤT BẠI SAU TẤT CẢ CÁC LẦN THỬ:", error);
+      console.error("TRANSACTION FAILED AFTER ALL ATTEMPTS:", error);
       if (error instanceof CustomError) throw error;
       throw new CustomError(
         500,
-        "Không thể duyệt yêu cầu nâng cấp do lỗi hệ thống."
+        "Could not approve the upgrade request due to a system error."
       );
     } finally {
       await session.endSession();

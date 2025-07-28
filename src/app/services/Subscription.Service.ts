@@ -51,7 +51,7 @@ class SubscriptionService {
           { new: true }
         );
         if (!updateSubscription) {
-          throw new CustomError(404, "Lỗi khi cập nhật Subscription");
+          throw new CustomError(404, "Error updating subscription");
         }
         return updateSubscription;
       }
@@ -65,7 +65,7 @@ class SubscriptionService {
         isActive: true,
       });
       if (!subscription) {
-        throw new CustomError(404, "Lỗi khi tạo Subscription");
+        throw new CustomError(404, "Error creating subscription");
       }
       return subscription;
     } catch (error) {
@@ -93,10 +93,10 @@ class SubscriptionService {
         }).session(session || null),
       ]);
       if (!newPackageData || typeof newPackageData.duration !== "number") {
-        // durationInDays là ví dụ
+        // durationInDays is an example
         throw new CustomError(
           404,
-          "Gói dịch vụ mới không tìm thấy hoặc thông tin thời hạn không hợp lệ."
+          "New service package not found or duration information is invalid."
         );
       }
 
@@ -148,20 +148,20 @@ class SubscriptionService {
           {
             userId: userId,
             packageId: newPackageId,
-            packageName: newPackageData.name, // Lấy từ packageData
-            price: newPackageData.price, // Lấy từ packageData
+            packageName: newPackageData.name, // Get from packageData
+            price: newPackageData.price, // Get from packageData
             startDate: startDate,
             endDate: newEndDate,
             isActive: true,
             status: SubscriptionStatus.ACTIVE,
-            // paymentDetails: paymentInfo, // Nếu bạn truyền thông tin thanh toán vào
+            // paymentDetails: paymentInfo, // If you pass payment information in
           },
         ],
         { session }
       );
 
       if (!finalActivatedSubscription) {
-        throw new CustomError(500, "Không thể tạo bản ghi subscription mới.");
+        throw new CustomError(500, "Could not create new subscription record.");
       }
       console.log(
         `[SubService] Created new active subscription ${finalActivatedSubscription[0]._id} for user ${userId} until ${finalActivatedSubscription[0].endDate}.`
@@ -207,8 +207,8 @@ class SubscriptionService {
           userId,
           {
             isSubscription: true,
-            type: newPackageData.type, // Ví dụ nếu bạn có trường 'type' trên User model
-            // currentPackageId: newPackageData._id, // Ví dụ
+            type: newPackageData.type, // Example if you have a 'type' field on the User model
+            // currentPackageId: newPackageData._id, // Example
           },
           { session: session }
         );
@@ -216,7 +216,7 @@ class SubscriptionService {
           `[SubService] User ${userId} status updated: isSubscription = true.`
         );
       } else {
-        // Nếu gói mới tạo ra mà hết hạn ngay, kiểm tra xem còn gói nào khác không
+        // If the newly created package expires immediately, check if there are any other active packages
         const anyOtherActiveStill = await SubscriptionModel.findOne({
           userId: userId,
           isActive: true,
@@ -242,7 +242,7 @@ class SubscriptionService {
       }
       throw new CustomError(
         500,
-        (error as Error).message || "Lỗi không xác định khi xử lý subscription."
+        (error as Error).message || "Unknown error when processing subscription."
       );
     }
   }

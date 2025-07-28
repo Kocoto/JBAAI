@@ -33,47 +33,47 @@ import axios from "axios";
 
 class AuthService {
   /**
-   * Xử lý logic liên quan đến mã mời trong một transaction.
+   * Handle invitation code logic within a transaction
    * @private
    */
   private async _handleInvitationFlow(
     invitationCode: string,
-    newUser: any, // Nên định nghĩa một interface cho User document
+    newUser: any, // Should define an interface for User document
     session: mongoose.ClientSession
   ) {
-    // 1. Kiểm tra và lấy thông tin mã mời
+    // 1. Check and get invitation code info
     const invitationCodeInfo = await InvitationCodeService.checkCode(
       invitationCode,
       session
     );
 
     if (!invitationCodeInfo) {
-      throw new CustomError(400, "Mã mời không hợp lệ hoặc đã hết hạn.");
+      throw new CustomError(400, "Invalid or expired invitation code.");
     }
 
-    // 2. Tạo bản ghi lời mời
+    // 2. Create invitation record
     await InvitationService.createInvitation(
       invitationCode,
       newUser._id.toString(),
       session
     );
 
-    // 3. Kích hoạt gói quà tặng/subscription
+    // 3. Activate gift package/subscription
     await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
       newUser._id.toString(),
       invitationCodeInfo.packageId.toString(),
       session
     );
 
-    // 4. Cập nhật trạng thái cho user mới
+    // 4. Update new user status
     newUser.isSubscription = true;
     newUser.discount = true;
-    newUser.type = "standard"; // Hoặc dựa trên thông tin gói
+    newUser.type = "standard"; // Or based on package info
 
-    // 5. Xử lý logic phân cấp (Franchise Hierarchy)
+    // 5. Handle franchise hierarchy logic
     if (invitationCodeInfo.codeType === "FRANCHISE_HIERARCHY") {
       const parentFranchiseDetails = await FranchiseDetailsModel.findOne({
-        // Tên trường `_id` rõ ràng hơn là `userId` trên invitation code
+        // _id field is clearer than userId on invitation code
         _id: invitationCodeInfo.userId,
       }).session(session);
 
@@ -86,7 +86,7 @@ class AuthService {
             userId: newUser._id,
             parentId: invitationCodeInfo.userId,
             franchiseLevel: newFranchiseLevel,
-            // Cần xây dựng ancestorPath đầy đủ hơn nếu cần
+            // Need to build complete ancestorPath if needed
             ancestorPath: [
               ...(parentFranchiseDetails?.ancestorPath || []),
               invitationCodeInfo.userId,
@@ -97,16 +97,16 @@ class AuthService {
       );
     }
 
-    // 6. Cập nhật lại thông tin mã mời (quan trọng: dùng session)
+    // 6. Update invitation code info (important: use session)
     if (invitationCodeInfo.totalCumulativeUses !== undefined) {
       invitationCodeInfo.totalCumulativeUses += 1;
     }
-    // **FIX QUAN TRỌNG NHẤT:** Phải truyền session vào save()
+    // **MOST IMPORTANT FIX:** Must pass session to save()
     await invitationCodeInfo.save({ session });
   }
 
   /**
-   * Đăng ký người dùng mới
+   * Register new user
    */
   async register(
     email: string,
@@ -118,13 +118,13 @@ class AuthService {
     invitationCode?: string,
     optionEmail?: string
   ) {
-    // 1. Hash password trước khi vào transaction
+    // 1. Hash password before transaction
     const hashedPassword = await hashPassword(password);
 
     const session = await mongoose.startSession();
     try {
       const result = await session.withTransaction(async (ses) => {
-        // 2. Kiểm tra User đã tồn tại (tối ưu hơn)
+        // 2. Check if User exists (optimized)
         let existingUser;
         if (phone) {
           existingUser = await UserModel.findOne({
@@ -136,39 +136,39 @@ class AuthService {
           }).session(ses);
         }
         if (existingUser) {
-          let message = "Thông tin đăng ký đã tồn tại.";
+          let message = "Registration information already exists.";
           if (existingUser.email === email)
-            message = "Email này đã được sử dụng.";
+            message = "This email is already in use.";
           if (existingUser.username === username)
-            message = "Username này đã được sử dụng.";
+            message = "This username is already in use.";
           if (phone && existingUser.phone === phone)
-            message = "Số điện thoại này đã được sử dụng.";
+            message = "This phone number is already in use.";
           throw new CustomError(409, message);
         }
 
-        // 3. Tạo đối tượng userData
+        // 3. Create userData object
         const userData: any = {
           username,
           email,
           phone: !phone || phone === "" ? null : phone,
           role: role || "user",
           password: hashedPassword,
-          ...(optionEmail && { optionEmail }), // Cú pháp gọn hơn
+          ...(optionEmail && { optionEmail }), // Cleaner syntax
           ...(address && { address }),
         };
 
-        // 4. Tạo User mới
+        // 4. Create new User
         const createdUsers = await UserModel.create([userData], {
           session: ses,
         });
         const newUser = createdUsers[0];
 
-        // 5. Xử lý luồng mã mời nếu có (tách ra hàm riêng)
+        // 5. Handle invitation flow if exists (separate function)
         if (invitationCode) {
           await this._handleInvitationFlow(invitationCode, newUser, ses);
         }
 
-        // 6. Tạo Profile (luôn thực hiện)
+        // 6. Create Profile (always execute)
         await ProfileService.createProfile(
           newUser._id.toString(),
           {
@@ -181,8 +181,8 @@ class AuthService {
           ses
         );
 
-        // 7. Lưu lại tất cả thay đổi trên newUser một lần duy nhất ở cuối
-        // Điều này đảm bảo các thay đổi từ _handleInvitationFlow cũng được lưu
+        // 7. Save all changes on newUser once at the end
+        // This ensures changes from _handleInvitationFlow are also saved
         await newUser.save({ session: ses });
 
         return newUser;
@@ -190,166 +190,60 @@ class AuthService {
 
       return result;
     } catch (error) {
-      // Ném lại lỗi đã được xử lý
+      // Throw handled errors
       if (error instanceof CustomError) throw error;
 
-      // Bắt các lỗi khác và đóng gói lại
+      // Catch other errors and wrap them
       const message = error instanceof Error ? error.message : String(error);
-      console.error("Registration Error:", message, error); // Log lỗi để debug
-      throw new CustomError(500, `Lỗi hệ thống khi đăng ký: ${message}`);
+      console.error("Registration Error:", message, error); // Log error for debugging
+      throw new CustomError(
+        500,
+        `System error during registration: ${message}`
+      );
     } finally {
-      // Luôn đóng session sau khi hoàn tất
+      // Always close session after completion
       await session.endSession();
     }
   }
 
-  // async login(email: string, password: string, clientId: string) {
-  //   try {
-  //     // Find user
-  //     const user = await UserModel.findOne({
-  //       $or: [
-  //         { email: { $regex: new RegExp(`^${email}$`, "i") } },
-  //         { username: { $regex: new RegExp(`^${email}$`, "i") } },
-  //       ],
-  //     });
-
-  //     if (!user) {
-  //       throw new CustomError(400, "Không tìm thấy người dùng hoặc email");
-  //     }
-  //     // Validate password
-  //     const isPasswordValid = await comparePasswords(password, user.password);
-  //     if (!isPasswordValid) {
-  //       throw new CustomError(400, "Mật khẩu không hợp lệ");
-  //     }
-
-  //     if (user.typeLogin.type === "jba") {
-  //       const uid = user.typeLogin.id;
-  //       const response = await axios.get(
-  //         `https://jbabrands.com/wp-json/jba/v1/member-info/${uid}`
-  //       );
-  //       const data = response.data;
-  //       if (data.role === "silver" || data.role === "gold") {
-  //         if (user.type === "normal" || user.type === "standard") {
-  //           user.type = "premium";
-  //         }
-  //       }
-  //     }
-  //     await user.save();
-  //     // Check if user is verified
-  //     // if (!user.verify) {
-  //     //   try {
-  //     //     // Delete existing OTP if any
-  //     //     await OtpModel.deleteOne({ userId: user._id });
-
-  //     //     // Generate and hash new OTP
-  //     //     const otp = generateOTP();
-  //     //     const hashedOtp = await hashOtp(otp);
-
-  //     //     // Create OTP record with expiration
-  //     //     await OtpModel.create({
-  //     //       userId: user._id,
-  //     //       otp: hashedOtp,
-  //     //       email: user.email,
-  //     //     });
-
-  //     //     // Prepare and send email
-  //     //     const mailOptions = {
-  //     //       from: process.env.EMAIL_USER,
-  //     //       to: user.email,
-  //     //       subject: "Xác thực tài khoản - Mã OTP",
-  //     //       html: `
-  //     //       <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-  //     //         <h2>Mã OTP của bạn</h2>
-  //     //         <p>Vui lòng sử dụng mã OTP sau để xác thực tài khoản của bạn:</p>
-  //     //         <div style="display: flex; align-items: center;">
-  //     //           <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
-  //     //         </div>
-  //     //         <p>Mã này sẽ hết hạn sau 10 phút.</p>
-  //     //         <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
-  //     //       </div>
-  //     //       `,
-  //     //     };
-
-  //     //     const checkSendMail = await sendMail(mailOptions);
-  //     //     if (!checkSendMail) {
-  //     //       throw new CustomError(
-  //     //         500,
-  //     //         "Gửi email thất bại. Vui lòng thử lại sau."
-  //     //       );
-  //     //     }
-
-  //     //     throw new CustomError(
-  //     //       400,
-  //     //       "Vui lòng kiểm tra email và xác thực tài khoản của bạn"
-  //     //     );
-  //     //   } catch (otpError) {
-  //     //     if (otpError instanceof CustomError) throw otpError;
-  //     //     throw new CustomError(500, "Lỗi trong quá trình tạo và gửi mã OTP");
-  //     //   }
-  //     // }
-
-  //     // Generate tokens and update token record
-  //     const [refreshToken, accessToken] = await Promise.all([
-  //       refreshTokenGenerator(String(user._id), clientId),
-  //       accessTokenGenerator(String(user._id), clientId),
-  //     ]);
-
-  //     await TokenModel.findOneAndUpdate(
-  //       { userId: user._id, clientId: clientId },
-  //       {
-  //         token: refreshToken,
-  //         status: "active",
-  //         expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  //       },
-  //       { new: true, upsert: true }
-  //     );
-
-  //     const profile = await ProfileService.getProfile(user._id.toString());
-
-  //     return { user, accessToken, refreshToken, profile };
-  //   } catch (error) {
-  //     if (error instanceof CustomError) throw error;
-  //     throw new CustomError(500, error as string);
-  //   }
-  // }
   async login(email: string, password: string, clientId: string) {
-    // Bắt đầu một transaction để đảm bảo tính toàn vẹn
+    // Start a transaction to ensure integrity
     const session = await mongoose.startSession();
     try {
       const result = await session.withTransaction(async (ses) => {
-        // 1. Tìm người dùng
+        // 1. Find user
         const user = await UserModel.findOne({
           $or: [
             { email: { $regex: new RegExp(`^${email}$`, "i") } },
             { username: { $regex: new RegExp(`^${email}$`, "i") } },
           ],
-        }).session(ses); // Thêm session vào query
+        }).session(ses); // Add session to query
 
         if (!user) {
-          throw new CustomError(400, "Email hoặc mật khẩu không chính xác");
+          throw new CustomError(400, "Invalid email or password");
         }
 
-        // 2. Xác thực mật khẩu
+        // 2. Validate password
         const isPasswordValid = await comparePasswords(password, user.password);
         if (!isPasswordValid) {
-          throw new CustomError(400, "Email hoặc mật khẩu không chính xác");
+          throw new CustomError(400, "Invalid email or password");
         }
 
-        // 3. Đồng bộ trạng thái với JBA nếu cần
+        // 3. Sync status with JBA if needed
         if (user.typeLogin?.type === "jba" && user.typeLogin?.id) {
           try {
-            // Gọi API JBA để lấy trạng thái mới nhất
+            // Call JBA API to get latest status
             const response = await axios.get(
               `https://jbabrands.com/wp-json/jba/v1/member-info/${user.typeLogin.id}`,
-              { timeout: 5000 } // Đặt timeout để tránh chờ quá lâu
+              { timeout: 5000 } // Set timeout to avoid long waits
             );
 
             const jbaData = response.data;
             const isJbaPremium =
               jbaData?.role === "silver" || jbaData?.role === "gold";
 
-            // LOGIC ĐÃ SỬA: Chỉ NÂNG CẤP, không bao giờ HẠ CẤP.
-            // Nếu JBA là premium VÀ người dùng hiện tại chưa phải premium, thì mới nâng cấp.
+            // FIXED LOGIC: Only UPGRADE, never DOWNGRADE
+            // Only upgrade if JBA is premium AND current user is not premium
             if (isJbaPremium && !user.isSubscription) {
               console.log(
                 `Upgrading user ${user.email} to premium based on JBA status.`
@@ -357,12 +251,12 @@ class AuthService {
               user.isSubscription = true;
               user.type = "premium";
 
-              // Lưu lại thay đổi vào DB. Cần AWAIT!
+              // Save changes to DB. Need AWAIT!
               await user.save({ session: ses });
             }
           } catch (apiError: any) {
-            // Nếu API của JBA lỗi, chúng ta chỉ ghi log và cho phép người dùng đăng nhập bình thường
-            // Không nên làm gián đoạn trải nghiệm của người dùng
+            // If JBA API fails, just log and allow user to login normally
+            // Don't disrupt user experience
             console.error(
               `Failed to sync status for user ${user.email} from JBA. Error:`,
               apiError.message
@@ -370,13 +264,13 @@ class AuthService {
           }
         }
 
-        // 4. Tạo token
+        // 4. Generate tokens
         const [refreshToken, accessToken] = await Promise.all([
           refreshTokenGenerator(String(user._id), clientId),
           accessTokenGenerator(String(user._id), clientId),
         ]);
 
-        // 5. Lưu token vào DB
+        // 5. Save token to DB
         await TokenModel.findOneAndUpdate(
           { userId: user._id, clientId: clientId },
           {
@@ -384,16 +278,16 @@ class AuthService {
             status: "active",
             expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           },
-          { new: true, upsert: true, session: ses } // Thêm session
+          { new: true, upsert: true, session: ses } // Add session
         );
 
-        // 6. Lấy profile và trả về kết quả
+        // 6. Get profile and return result
         const profile = await ProfileService.getProfile(
           user._id.toString(),
           ses
         );
 
-        // Dùng lean() để lấy object thuần túy, tránh trả về các phương thức của Mongoose
+        // Use lean() to get plain object, avoid returning Mongoose methods
         const finalUser = await UserModel.findById(user._id).session(ses);
         return { user: finalUser, accessToken, refreshToken, profile };
       });
@@ -402,9 +296,9 @@ class AuthService {
     } catch (error) {
       if (error instanceof CustomError) throw error;
       console.error("Login failed:", error);
-      throw new CustomError(500, "Đã có lỗi xảy ra trong quá trình đăng nhập.");
+      throw new CustomError(500, "An error occurred during login.");
     } finally {
-      // Luôn kết thúc session
+      // Always end session
       await session.endSession();
     }
   }
@@ -423,10 +317,7 @@ class AuthService {
       });
 
       if (!tokenDoc) {
-        throw new CustomError(
-          401,
-          "Refresh token không hợp lệ hoặc đã hết hạn"
-        );
+        throw new CustomError(401, "Invalid or expired refresh token");
       }
 
       // Generate new tokens
@@ -450,7 +341,7 @@ class AuthService {
       };
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new CustomError(401, "Token làm mới không hợp lệ hoặc đã hết hạn");
+      throw new CustomError(401, "Invalid or expired refresh token");
     }
   }
 
@@ -462,7 +353,7 @@ class AuthService {
         token: refreshToken,
         clientId: clientId,
       });
-      return { message: "Đăng xuất thành công" };
+      return { message: "Logout successful" };
     } catch (error) {
       if (error instanceof CustomError) throw error;
       throw new CustomError(500, error as string);
@@ -473,14 +364,14 @@ class AuthService {
     try {
       // Validate input
       if (!email || !password) {
-        throw new CustomError(400, "Email và mật khẩu là bắt buộc");
+        throw new CustomError(400, "Email and password are required");
       }
 
       // Find user and verify OTP status
       const [user] = await Promise.all([UserModel.findOne({ email: email })]);
 
       if (!user) {
-        throw new CustomError(400, "Không tìm thấy người dùng");
+        throw new CustomError(400, "User not found");
       }
 
       // Hash new password
@@ -493,13 +384,13 @@ class AuthService {
       );
 
       if (!updatedUser) {
-        throw new CustomError(500, "Cập nhật mật khẩu thất bại");
+        throw new CustomError(500, "Password update failed");
       }
 
       await TokenModel.deleteMany({ userId: user._id });
 
       return {
-        message: "Đặt lại mật khẩu thành công",
+        message: "Password reset successful",
         email: updatedUser.email,
       };
     } catch (error) {
@@ -517,7 +408,7 @@ class AuthService {
       const user = await UserModel.findById(userId);
 
       if (!user) {
-        throw new CustomError(404, "Không tìm thấy người dùng");
+        throw new CustomError(404, "User not found");
       }
       const isPasswordValid = await comparePasswords(
         currentPassword,
@@ -525,7 +416,7 @@ class AuthService {
       );
 
       if (!isPasswordValid) {
-        throw new CustomError(400, "Mật khẩu hiện tại không đúng");
+        throw new CustomError(400, "Current password is incorrect");
       }
 
       const hashedPassword = await hashPassword(newPassword);
@@ -537,11 +428,11 @@ class AuthService {
       );
 
       if (!updatedUser) {
-        throw new CustomError(500, "Cập nhật mật khẩu thất bại");
+        throw new CustomError(500, "Password update failed");
       }
 
       return {
-        message: "Đổi mật khẩu thành công",
+        message: "Password changed successfully",
       };
     } catch (error) {
       if (error instanceof CustomError) throw error;
@@ -550,24 +441,24 @@ class AuthService {
   }
 
   async loginWithJba(data: any, clientId: string) {
-    // data mong đợi: { id, email, displayName, role }
+    // Expected data: { id, email, displayName, role }
     const session = await mongoose.startSession();
     try {
       const result = await session.withTransaction(async (ses) => {
-        // Tìm người dùng trong hệ thống của bạn
+        // Find user in your system
         let user = await UserModel.findOne({ email: data.email }).session(ses);
         let profile;
 
-        // Xác định xem người dùng có quyền lợi premium từ JBA không
+        // Determine if user has premium benefits from JBA
         const isJbaPremium = data.role === "silver" || data.role === "gold";
 
         if (!user) {
-          // KỊCH BẢN 1 & 2: Người dùng CHƯA tồn tại trong hệ thống.
+          // SCENARIO 1 & 2: User does NOT exist in system
           console.log(
             `User with email ${data.email} not found. Creating new user.`
           );
 
-          // 1. Chuẩn bị dữ liệu để tạo người dùng mới
+          // 1. Prepare data for new user creation
           const newUserPayload = {
             email: data.email,
             username: data.displayName,
@@ -576,25 +467,25 @@ class AuthService {
               type: "jba",
               id: data.id,
             },
-            // Gán trạng thái premium dựa trên role từ JBA
-            type: isJbaPremium ? "premium" : "normal", // hoặc 'regular'
+            // Assign premium status based on JBA role
+            type: isJbaPremium ? "premium" : "normal", // or 'regular'
             isSubscription: isJbaPremium,
           };
 
-          // 2. Tạo người dùng mới
+          // 2. Create new user
           const createdUsers = await UserModel.create([newUserPayload], {
             session: ses,
           });
           user = createdUsers[0];
 
-          // 3. Tạo profile cho người dùng mới
+          // 3. Create profile for new user
           profile = await ProfileService.createProfile(
             user._id.toString(),
             { height: 0, weight: 0, age: 0, gender: "", smokingStatus: 0 },
             ses
           );
 
-          // 4. Nếu là premium, gọi service để tạo bản ghi subscription
+          // 4. If premium, call service to create subscription record
           if (isJbaPremium) {
             console.log(
               `Activating premium subscription for new user ${user.email}.`
@@ -606,44 +497,44 @@ class AuthService {
             // );
           }
         } else {
-          // KỊCH BẢN 3, 4, 5, 6: Người dùng ĐÃ tồn tại trong hệ thống.
+          // SCENARIO 3, 4, 5, 6: User ALREADY exists in system
           console.log(`User with email ${data.email} found. Processing login.`);
 
-          // KỊCH BẢN 3: Nâng cấp tài khoản
-          // Điều kiện: JBA là premium VÀ tài khoản hiện tại của người dùng CHƯA phải premium.
+          // SCENARIO 3: Upgrade account
+          // Condition: JBA is premium AND current user account is NOT premium
           if (isJbaPremium && !user.isSubscription) {
             console.log(`Upgrading user ${user.email} to premium.`);
             user.type = "premium";
             user.isSubscription = true;
 
-            // Gọi service để tạo bản ghi subscription
+            // Call service to create subscription record
             // await SubscriptionService.activateJbaSubscription(
             //   user._id.toString(),
             //   data.role,
             //   ses
             // );
 
-            // Lưu lại thay đổi vào DB
+            // Save changes to DB
             await user.save({ session: ses });
           }
 
-          // Cập nhật thông tin đăng nhập từ JBA nếu cần
+          // Update JBA login info if needed
           user.typeLogin = { type: "jba", id: data.id };
           await user.save({ session: ses });
 
-          // Lấy thông tin profile đã có
+          // Get existing profile info
           profile = await ProfileService.getProfile(user._id.toString(), ses);
         }
 
-        // --- CÁC BƯỚC CHUNG CHO CẢ HAI TRƯỜNG HỢP ---
+        // --- COMMON STEPS FOR BOTH CASES ---
 
-        // 5. Tạo Access Token và Refresh Token
+        // 5. Generate Access Token and Refresh Token
         const [refreshToken, accessToken] = await Promise.all([
           refreshTokenGenerator(String(user._id), clientId),
           accessTokenGenerator(String(user._id), clientId),
         ]);
 
-        // 6. Lưu (hoặc cập nhật) Refresh Token vào DB
+        // 6. Save (or update) Refresh Token to DB
         await TokenModel.findOneAndUpdate(
           { userId: user._id, clientId: clientId },
           {
@@ -654,8 +545,8 @@ class AuthService {
           { new: true, upsert: true, session: ses }
         );
 
-        // 7. Trả về dữ liệu cần thiết
-        // Lấy lại user từ DB để đảm bảo dữ liệu là mới nhất sau tất cả các thao tác
+        // 7. Return necessary data
+        // Get user from DB again to ensure data is latest after all operations
         const finalUser = await UserModel.findById(user._id)
           .lean()
           .session(ses);

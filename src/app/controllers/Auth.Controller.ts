@@ -23,7 +23,7 @@ class AuthController {
       if (!email || !password || !username) {
         throw new CustomError(
           400,
-          "Email, mật khẩu, tên người dùng và số điện thoại là bắt buộc"
+          "Email, password, username and phone number are required"
         );
       }
 
@@ -32,7 +32,7 @@ class AuthController {
         if (!address) {
           throw new CustomError(
             400,
-            "Địa chỉ là bắt buộc cho các vai trò khác user"
+            "Address is required for roles other than user"
           );
         }
       }
@@ -66,7 +66,7 @@ class AuthController {
       const { email, password, clientId } = req.body;
       // Validate input
       if (!email || !password || !clientId) {
-        throw new CustomError(400, "Email, mật khẩu và clientId là bắt buộc");
+        throw new CustomError(400, "Email, password and clientId are required");
       }
 
       const user = await AuthService.login(
@@ -103,11 +103,11 @@ class AuthController {
   async logout(req: Request, res: Response, next: NextFunction) {
     try {
       const { refreshToken, clientId } = req.body;
-      if (!refreshToken) throw new CustomError(400, "refreshToken là bắt buộc");
+      if (!refreshToken) throw new CustomError(400, "refreshToken is required");
       await AuthService.logout(refreshToken, clientId);
       res.status(200).json({
         success: true,
-        message: "Đăng xuất thành công",
+        message: "Logout successful",
       });
     } catch (error) {
       next(error);
@@ -136,7 +136,7 @@ class AuthController {
       const { email } = req.body;
       // Validate input
       if (!email) {
-        throw new CustomError(400, "Email là bắt buộc");
+        throw new CustomError(400, "Email is required");
       }
       const result = await OTPService.getOTP(email.toLowerCase());
       res.status(200).json({
@@ -184,12 +184,15 @@ class AuthController {
       const { oldPassword, newPassword } = req.body;
       const userId = req.user?._id;
       if (!userId || !oldPassword || !newPassword) {
-        throw new CustomError(400, "Mật khẩu cũ, mật khẩu mới là bắt buộc");
+        throw new CustomError(
+          400,
+          "Old password and new password are required"
+        );
       }
       await AuthService.changePassword(userId, oldPassword, newPassword);
       return res.status(200).json({
         success: true,
-        message: "Thay đổi mật khẩu thành công",
+        message: "Password changed successfully",
       });
     } catch (error) {
       next(error);
@@ -200,7 +203,7 @@ class AuthController {
     try {
       const { uid, clientId } = req.body;
       if (!uid || !clientId) {
-        throw new CustomError(400, "Thiếu thông tin đăng nhập");
+        throw new CustomError(400, "Missing login information");
       }
       console.log(uid, clientId);
       const response = await axios.get(
@@ -213,7 +216,6 @@ class AuthController {
         throw new CustomError(response.status, data.message);
       }
       const user = await AuthService.loginWithJba(data, clientId);
-
       res.status(200).json({
         success: true,
         data: user,

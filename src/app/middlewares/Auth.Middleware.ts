@@ -27,24 +27,24 @@ export const checkLogin = async (
     }
     // const authHeader = req.body.authorization;
     if (!authHeader) {
-      throw new CustomError(401, "Authorization header không tồn tại");
+      throw new CustomError(401, "Authorization header does not exist");
     }
 
     const token = authHeader.split(" ")[1];
     if (!token) {
-      throw new CustomError(401, "Token không tồn tại");
+      throw new CustomError(401, "Token does not exist");
     }
 
     const decoded = verifyToken(token) as TokenPayload;
 
     const currentTime = Math.floor(Date.now() / 1000);
     if (decoded.exp && decoded.exp < currentTime) {
-      throw new CustomError(401, "Token đã hết hạn");
+      throw new CustomError(401, "Token has expired");
     }
 
     const user = await UserModel.findById(decoded.userId).select("-password");
     if (!user) {
-      throw new CustomError(401, "User không tồn tại");
+      throw new CustomError(401, "User does not exist");
     }
 
     // if (user.verify == false) {
@@ -67,7 +67,7 @@ export const checkAdmin = async (
   if (req.user?.role !== "admin") {
     return res.status(403).json({
       success: false,
-      message: "Bạn không có quyền truy cập chức năng này",
+      message: "You do not have permission to access this feature",
     });
   }
   next();

@@ -7,51 +7,48 @@ import InvitationCodeService from "../services/InvitationCode.Service";
 class FranchiseController {
   /**
    * GET /me/details
-   * Lấy thông tin FranchiseDetails của franchise đang đăng nhập
+   * Get FranchiseDetails of currently logged in franchise
    */
   async getMyFranchiseDetails(req: Request, res: Response, next: NextFunction) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu lấy thông tin franchise details của user đang đăng nhập"
+        "[FranchiseController] Start getting franchise details for logged in user"
       );
 
-      // Lấy userId từ req.user (đã được set bởi middleware checkLogin)
+      // Get userId from req.user (set by checkLogin middleware)
       const userId = req.user?._id;
 
       if (!userId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
-      // Kiểm tra role của user
+      // Check user role
       const userRole = req.user?.role;
       if (userRole !== "franchise") {
         throw new CustomError(
           403,
-          "Bạn không có quyền truy cập tính năng này. Chỉ franchise mới có thể xem thông tin này"
+          "You don't have permission to access this feature. Only franchise can view this information"
         );
       }
 
-      // Gọi service để lấy thông tin
+      // Call service to get information
       const franchiseDetails = await FranchiseService.getMyFranchiseDetails(
         userId
       );
 
       console.log(
-        `[FranchiseController] Lấy thông tin franchise details thành công cho user: ${userId}`
+        `[FranchiseController] Successfully got franchise details for user: ${userId}`
       );
 
-      // Trả về response
+      // Return response
       return res.status(200).json({
         success: true,
-        message: "Lấy thông tin franchise thành công",
+        message: "Successfully retrieved franchise information",
         data: franchiseDetails,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy thông tin franchise details: ${error}`
+        `[FranchiseController] Error getting franchise details: ${error}`
       );
       next(error);
     }
@@ -59,37 +56,31 @@ class FranchiseController {
 
   /**
    * GET /me/quota
-   * Lấy thông tin quota hiện tại của franchise
+   * Get current quota information of franchise
    */
   async getMyQuota(req: Request, res: Response, next: NextFunction) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu lấy thông tin quota của franchise"
+        "[FranchiseController] Start getting quota information for franchise"
       );
 
       const userId = req.user?._id;
 
       if (!userId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
-      // Kiểm tra role
+      // Check role
       if (req.user?.role !== "franchise") {
-        throw new CustomError(
-          403,
-          "Chỉ franchise mới có thể xem thông tin quota"
-        );
+        throw new CustomError(403, "Only franchise can view quota information");
       }
 
-      // Lấy thông tin franchise details để extract quota info
+      // Get franchise details to extract quota info
       const franchiseDetails = await FranchiseService.getMyFranchiseDetails(
         userId
       );
 
-      // Chỉ trả về thông tin quota
+      // Only return quota information
       const quotaInfo = {
         totalActiveQuota: franchiseDetails.quotaInfo.totalActiveQuota,
         activeQuotaDetails: franchiseDetails.quotaInfo.activeQuotaDetails,
@@ -101,17 +92,17 @@ class FranchiseController {
       };
 
       console.log(
-        `[FranchiseController] Lấy thông tin quota thành công cho user: ${userId}`
+        `[FranchiseController] Successfully got quota information for user: ${userId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy thông tin quota thành công",
+        message: "Successfully retrieved quota information",
         data: quotaInfo,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy thông tin quota: ${error}`
+        `[FranchiseController] Error getting quota information: ${error}`
       );
       next(error);
     }
@@ -119,32 +110,29 @@ class FranchiseController {
 
   /**
    * GET /me/statistics
-   * Lấy thống kê hiệu suất của franchise
+   * Get performance statistics of franchise
    */
   async getMyStatistics(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[FranchiseController] Bắt đầu lấy thống kê franchise");
+      console.log("[FranchiseController] Start getting franchise statistics");
 
       const userId = req.user?._id;
 
       if (!userId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
-      // Kiểm tra role
+      // Check role
       if (req.user?.role !== "franchise") {
-        throw new CustomError(403, "Chỉ franchise mới có thể xem thống kê");
+        throw new CustomError(403, "Only franchise can view statistics");
       }
 
-      // Lấy thông tin franchise details để extract statistics
+      // Get franchise details to extract statistics
       const franchiseDetails = await FranchiseService.getMyFranchiseDetails(
         userId
       );
 
-      // Format lại statistics với thêm thông tin chi tiết
+      // Format statistics with additional details
       const statistics = {
         ...franchiseDetails.statistics,
         quotaSummary: {
@@ -178,64 +166,61 @@ class FranchiseController {
       };
 
       console.log(
-        `[FranchiseController] Lấy thống kê thành công cho user: ${userId}`
+        `[FranchiseController] Successfully got statistics for user: ${userId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy thống kê franchise thành công",
+        message: "Successfully retrieved franchise statistics",
         data: statistics,
       });
     } catch (error) {
-      console.error(`[FranchiseController] Lỗi khi lấy thống kê: ${error}`);
+      console.error(`[FranchiseController] Error getting statistics: ${error}`);
       next(error);
     }
   }
 
   /**
    * GET /me/invitation-codes
-   * Lấy danh sách các mã mời thuộc sở hữu của franchise đang đăng nhập
+   * Get list of invitation codes owned by currently logged in franchise
    */
   async getMyInvitationCodes(req: Request, res: Response, next: NextFunction) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu lấy danh sách mã mời của franchise"
+        "[FranchiseController] Start getting invitation codes list for franchise"
       );
 
       const userId = req.user?._id;
 
       if (!userId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
-      // Kiểm tra role
+      // Check role
       if (req.user?.role !== "franchise") {
         throw new CustomError(
           403,
-          "Chỉ franchise mới có thể xem danh sách mã mời"
+          "Only franchise can view invitation codes list"
         );
       }
 
-      // Gọi service để lấy danh sách invitation codes
+      // Call service to get invitation codes list
       const invitationCodes = await FranchiseService.getMyInvitationCodes(
         userId
       );
 
       console.log(
-        `[FranchiseController] Lấy danh sách mã mời thành công cho user: ${userId}`
+        `[FranchiseController] Successfully got invitation codes list for user: ${userId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy danh sách mã mời thành công",
+        message: "Successfully retrieved invitation codes list",
         data: invitationCodes,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy danh sách mã mời: ${error}`
+        `[FranchiseController] Error getting invitation codes list: ${error}`
       );
       next(error);
     }
@@ -243,7 +228,7 @@ class FranchiseController {
 
   /**
    * GET /me/user-trial-quota-ledger
-   * Lấy danh sách các "sổ cái" (ledger entries) quản lý quota mời dùng thử của franchise
+   * Get list of ledger entries managing trial invitation quota of franchise
    */
   async getMyUserTrialQuotaLedger(
     req: Request,
@@ -252,30 +237,24 @@ class FranchiseController {
   ) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu lấy danh sách quota ledger của franchise"
+        "[FranchiseController] Start getting quota ledger list for franchise"
       );
 
       const userId = req.user?._id;
 
       if (!userId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
-      // Kiểm tra role
+      // Check role
       if (req.user?.role !== "franchise") {
-        throw new CustomError(
-          403,
-          "Chỉ franchise mới có thể xem danh sách quota ledger"
-        );
+        throw new CustomError(403, "Only franchise can view quota ledger list");
       }
 
-      // Lấy query params
+      // Get query params
       const { status, rootCampaignId } = req.query;
 
-      // Chuẩn bị filters
+      // Prepare filters
       const filters: {
         status?: string;
         rootCampaignId?: string;
@@ -289,15 +268,15 @@ class FranchiseController {
         filters.rootCampaignId = rootCampaignId;
       }
 
-      // Gọi service để lấy danh sách quota ledger
+      // Call service to get quota ledger list
       const quotaLedgerEntries =
         await FranchiseService.getMyUserTrialQuotaLedger(userId, filters);
 
       console.log(
-        `[FranchiseController] Lấy danh sách quota ledger thành công cho user: ${userId}`
+        `[FranchiseController] Successfully got quota ledger list for user: ${userId}`
       );
 
-      // Tính tổng quan về quota
+      // Calculate quota summary
       const summary = {
         totalEntries: quotaLedgerEntries.length,
         totalAllocated: quotaLedgerEntries.reduce(
@@ -334,14 +313,14 @@ class FranchiseController {
 
       return res.status(200).json({
         success: true,
-        message: "Lấy danh sách quota ledger thành công",
+        message: "Successfully retrieved quota ledger list",
         data: quotaLedgerEntries,
         summary: summary,
         filters: filters,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy danh sách quota ledger: ${error}`
+        `[FranchiseController] Error getting quota ledger list: ${error}`
       );
       next(error);
     }
@@ -349,30 +328,27 @@ class FranchiseController {
 
   /**
    * POST /api/v1/franchise/manage-children-quota/allocate
-   * Franchise Fn cấp (chia sẻ) một phần quota mời dùng thử cho franchise con Fn+1
+   * Franchise Fn allocates (shares) a portion of trial invitation quota to child franchise Fn+1
    */
   async allocateQuotaToChild(req: Request, res: Response, next: NextFunction) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu cấp phát quota cho franchise con"
+        "[FranchiseController] Start allocating quota to child franchise"
       );
 
-      // Lấy userId của franchise đang đăng nhập
+      // Get userId of logged in franchise
       const parentUserId = req.user?._id;
 
       if (!parentUserId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
-      // Kiểm tra role
+      // Check role
       if (req.user?.role !== "franchise") {
-        throw new CustomError(403, "Chỉ franchise mới có thể cấp phát quota");
+        throw new CustomError(403, "Only franchise can allocate quota");
       }
 
-      // Lấy thông tin từ request body
+      // Get information from request body
       const { childFranchiseUserId, amountToAllocate, sourceLedgerEntryId } =
         req.body;
 
@@ -380,24 +356,24 @@ class FranchiseController {
       if (!childFranchiseUserId || !amountToAllocate || !sourceLedgerEntryId) {
         throw new CustomError(
           400,
-          "Thiếu thông tin bắt buộc: childFranchiseUserId, amountToAllocate, sourceLedgerEntryId"
+          "Missing required information: childFranchiseUserId, amountToAllocate, sourceLedgerEntryId"
         );
       }
 
       if (!Types.ObjectId.isValid(childFranchiseUserId)) {
-        throw new CustomError(400, "ID của franchise con không hợp lệ");
+        throw new CustomError(400, "Invalid child franchise ID");
       }
 
       if (!Types.ObjectId.isValid(sourceLedgerEntryId)) {
-        throw new CustomError(400, "ID của ledger entry không hợp lệ");
+        throw new CustomError(400, "Invalid ledger entry ID");
       }
 
       const amount = parseInt(amountToAllocate);
       if (isNaN(amount) || amount <= 0) {
-        throw new CustomError(400, "Số lượng quota phải là số nguyên dương");
+        throw new CustomError(400, "Quota amount must be a positive integer");
       }
 
-      // Gọi service để xử lý cấp phát quota
+      // Call service to process quota allocation
       const result = await FranchiseService.allocateQuotaToChild(
         parentUserId,
         childFranchiseUserId,
@@ -406,17 +382,17 @@ class FranchiseController {
       );
 
       console.log(
-        `[FranchiseController] Cấp phát quota thành công cho franchise con: ${childFranchiseUserId}`
+        `[FranchiseController] Successfully allocated quota to child franchise: ${childFranchiseUserId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Cấp phát quota cho franchise con thành công",
+        message: "Successfully allocated quota to child franchise",
         data: result,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi cấp phát quota cho franchise con: ${error}`
+        `[FranchiseController] Error allocating quota to child franchise: ${error}`
       );
       next(error);
     }
@@ -424,54 +400,51 @@ class FranchiseController {
 
   /**
    * PUT /api/v1/franchise/manage-children-quota/revoke-allocation/:childLedgerEntryId
-   * Franchise Fn thu hồi quota đã cấp cho Fn+1
+   * Franchise Fn revokes quota allocated to Fn+1
    */
   async revokeQuotaFromChild(req: Request, res: Response, next: NextFunction) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu thu hồi quota từ franchise con"
+        "[FranchiseController] Start revoking quota from child franchise"
       );
 
       const parentUserId = req.user?._id;
       const { childLedgerEntryId } = req.params;
 
       if (!parentUserId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
       if (req.user?.role !== "franchise") {
-        throw new CustomError(403, "Chỉ franchise mới có thể thu hồi quota");
+        throw new CustomError(403, "Only franchise can revoke quota");
       }
 
       if (!childLedgerEntryId) {
-        throw new CustomError(400, "ID của ledger entry không được để trống");
+        throw new CustomError(400, "Ledger entry ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(childLedgerEntryId)) {
-        throw new CustomError(400, "ID của ledger entry không hợp lệ");
+        throw new CustomError(400, "Invalid ledger entry ID");
       }
 
-      // Gọi service để xử lý thu hồi quota
+      // Call service to process quota revocation
       const result = await FranchiseService.revokeQuotaFromChild(
         parentUserId,
         childLedgerEntryId
       );
 
       console.log(
-        `[FranchiseController] Thu hồi quota thành công từ ledger entry: ${childLedgerEntryId}`
+        `[FranchiseController] Successfully revoked quota from ledger entry: ${childLedgerEntryId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Thu hồi quota từ franchise con thành công",
+        message: "Successfully revoked quota from child franchise",
         data: result,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi thu hồi quota từ franchise con: ${error}`
+        `[FranchiseController] Error revoking quota from child franchise: ${error}`
       );
       next(error);
     }
@@ -479,7 +452,7 @@ class FranchiseController {
 
   /**
    * GET /api/v1/franchise/manage-children-quota/allocation-history/child/:childFranchiseUserId
-   * Xem lịch sử các lần Fn đã cấp quota cho một childFranchiseUserId cụ thể
+   * View history of Fn quota allocations to a specific childFranchiseUserId
    */
   async getChildAllocationHistory(
     req: Request,
@@ -488,35 +461,32 @@ class FranchiseController {
   ) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu lấy lịch sử cấp phát quota cho franchise con"
+        "[FranchiseController] Start getting quota allocation history for child franchise"
       );
 
       const parentUserId = req.user?._id;
       const { childFranchiseUserId } = req.params;
 
       if (!parentUserId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
       if (req.user?.role !== "franchise") {
         throw new CustomError(
           403,
-          "Chỉ franchise mới có thể xem lịch sử cấp phát quota"
+          "Only franchise can view quota allocation history"
         );
       }
 
       if (!childFranchiseUserId) {
-        throw new CustomError(400, "ID của franchise con không được để trống");
+        throw new CustomError(400, "Child franchise ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(childFranchiseUserId)) {
-        throw new CustomError(400, "ID của franchise con không hợp lệ");
+        throw new CustomError(400, "Invalid child franchise ID");
       }
 
-      // Gọi service để lấy lịch sử cấp phát
+      // Call service to get allocation history
       const allocationHistory =
         await FranchiseService.getChildAllocationHistory(
           parentUserId,
@@ -524,17 +494,17 @@ class FranchiseController {
         );
 
       console.log(
-        `[FranchiseController] Lấy lịch sử cấp phát quota thành công cho franchise con: ${childFranchiseUserId}`
+        `[FranchiseController] Successfully got quota allocation history for child franchise: ${childFranchiseUserId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy lịch sử cấp phát quota thành công",
+        message: "Successfully retrieved quota allocation history",
         data: allocationHistory,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy lịch sử cấp phát quota: ${error}`
+        `[FranchiseController] Error getting quota allocation history: ${error}`
       );
       next(error);
     }
@@ -542,27 +512,24 @@ class FranchiseController {
 
   /**
    * GET /api/v1/franchise/reports/my-trial-performance
-   * Franchise xem hiệu suất mời dùng thử của chính mình
+   * Franchise views their own trial invitation performance
    */
   async getMyTrialPerformance(req: Request, res: Response, next: NextFunction) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu lấy hiệu suất mời dùng thử của franchise"
+        "[FranchiseController] Start getting trial invitation performance for franchise"
       );
 
       const userId = req.user?._id;
 
       if (!userId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
-      // Lấy query params
+      // Get query params
       const { startDate, endDate, rootCampaignId } = req.query;
 
-      // Validate dates nếu có
+      // Validate dates if present
       let parsedStartDate: Date | undefined;
       let parsedEndDate: Date | undefined;
 
@@ -571,7 +538,7 @@ class FranchiseController {
         if (isNaN(parsedStartDate.getTime())) {
           throw new CustomError(
             400,
-            "Định dạng startDate không hợp lệ. Sử dụng YYYY-MM-DD"
+            "Invalid startDate format. Use YYYY-MM-DD"
           );
         }
       }
@@ -579,23 +546,20 @@ class FranchiseController {
       if (endDate) {
         parsedEndDate = new Date(endDate as string);
         if (isNaN(parsedEndDate.getTime())) {
-          throw new CustomError(
-            400,
-            "Định dạng endDate không hợp lệ. Sử dụng YYYY-MM-DD"
-          );
+          throw new CustomError(400, "Invalid endDate format. Use YYYY-MM-DD");
         }
       }
 
       if (parsedStartDate && parsedEndDate && parsedStartDate > parsedEndDate) {
-        throw new CustomError(400, "startDate phải trước endDate");
+        throw new CustomError(400, "startDate must be before endDate");
       }
 
-      // Validate rootCampaignId nếu có
+      // Validate rootCampaignId if present
       if (rootCampaignId && !Types.ObjectId.isValid(rootCampaignId as string)) {
-        throw new CustomError(400, "ID Campaign không hợp lệ");
+        throw new CustomError(400, "Invalid Campaign ID");
       }
 
-      // Gọi service
+      // Call service
       const performanceData =
         await FranchiseService.getFranchiseTrialPerformance(
           userId,
@@ -605,17 +569,17 @@ class FranchiseController {
         );
 
       console.log(
-        `[FranchiseController] Lấy hiệu suất mời dùng thử thành công cho franchise: ${userId}`
+        `[FranchiseController] Successfully got trial invitation performance for franchise: ${userId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy hiệu suất mời dùng thử thành công",
+        message: "Successfully retrieved trial invitation performance",
         data: performanceData,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy hiệu suất mời dùng thử: ${error}`
+        `[FranchiseController] Error getting trial invitation performance: ${error}`
       );
       next(error);
     }
@@ -623,7 +587,7 @@ class FranchiseController {
 
   /**
    * GET /api/v1/franchise/reports/children-trial-performance-summary
-   * Franchise xem hiệu suất tổng hợp của các franchise con trực tiếp
+   * Franchise views aggregated performance of direct child franchises
    */
   async getChildrenTrialPerformanceSummary(
     req: Request,
@@ -632,16 +596,13 @@ class FranchiseController {
   ) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu lấy hiệu suất tổng hợp của franchise con"
+        "[FranchiseController] Start getting aggregated performance of child franchises"
       );
 
       const userId = req.user?._id;
 
       if (!userId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
       // Parse query params
@@ -653,22 +614,22 @@ class FranchiseController {
       if (startDate) {
         parsedStartDate = new Date(startDate as string);
         if (isNaN(parsedStartDate.getTime())) {
-          throw new CustomError(400, "Định dạng startDate không hợp lệ");
+          throw new CustomError(400, "Invalid startDate format");
         }
       }
 
       if (endDate) {
         parsedEndDate = new Date(endDate as string);
         if (isNaN(parsedEndDate.getTime())) {
-          throw new CustomError(400, "Định dạng endDate không hợp lệ");
+          throw new CustomError(400, "Invalid endDate format");
         }
       }
 
       if (rootCampaignId && !Types.ObjectId.isValid(rootCampaignId as string)) {
-        throw new CustomError(400, "ID Campaign không hợp lệ");
+        throw new CustomError(400, "Invalid Campaign ID");
       }
 
-      // Gọi service
+      // Call service
       const performanceSummary =
         await FranchiseService.getChildrenPerformanceSummary(
           userId,
@@ -678,17 +639,18 @@ class FranchiseController {
         );
 
       console.log(
-        `[FranchiseController] Lấy hiệu suất tổng hợp franchise con thành công`
+        `[FranchiseController] Successfully got aggregated performance of child franchises`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy hiệu suất tổng hợp franchise con thành công",
+        message:
+          "Successfully retrieved aggregated performance of child franchises",
         data: performanceSummary,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy hiệu suất tổng hợp franchise con: ${error}`
+        `[FranchiseController] Error getting aggregated performance of child franchises: ${error}`
       );
       next(error);
     }
@@ -696,7 +658,7 @@ class FranchiseController {
 
   /**
    * GET /api/v1/franchise/reports/child-trial-performance/:childFranchiseUserId
-   * Franchise xem hiệu suất chi tiết của một franchise con cụ thể
+   * Franchise views detailed performance of a specific child franchise
    */
   async getSingleChildTrialPerformance(
     req: Request,
@@ -705,25 +667,22 @@ class FranchiseController {
   ) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu lấy hiệu suất chi tiết của franchise con"
+        "[FranchiseController] Start getting detailed performance of child franchise"
       );
 
       const parentUserId = req.user?._id;
       const { childFranchiseUserId } = req.params;
 
       if (!parentUserId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
       if (!childFranchiseUserId) {
-        throw new CustomError(400, "ID của franchise con không được để trống");
+        throw new CustomError(400, "Child franchise ID cannot be empty");
       }
 
       if (!Types.ObjectId.isValid(childFranchiseUserId)) {
-        throw new CustomError(400, "ID của franchise con không hợp lệ");
+        throw new CustomError(400, "Invalid child franchise ID");
       }
 
       // Parse query params
@@ -735,22 +694,22 @@ class FranchiseController {
       if (startDate) {
         parsedStartDate = new Date(startDate as string);
         if (isNaN(parsedStartDate.getTime())) {
-          throw new CustomError(400, "Định dạng startDate không hợp lệ");
+          throw new CustomError(400, "Invalid startDate format");
         }
       }
 
       if (endDate) {
         parsedEndDate = new Date(endDate as string);
         if (isNaN(parsedEndDate.getTime())) {
-          throw new CustomError(400, "Định dạng endDate không hợp lệ");
+          throw new CustomError(400, "Invalid endDate format");
         }
       }
 
       if (rootCampaignId && !Types.ObjectId.isValid(rootCampaignId as string)) {
-        throw new CustomError(400, "ID Campaign không hợp lệ");
+        throw new CustomError(400, "Invalid Campaign ID");
       }
 
-      // Gọi service
+      // Call service
       const childPerformance = await FranchiseService.getSingleChildPerformance(
         parentUserId,
         childFranchiseUserId,
@@ -760,17 +719,18 @@ class FranchiseController {
       );
 
       console.log(
-        `[FranchiseController] Lấy hiệu suất chi tiết franchise con thành công: ${childFranchiseUserId}`
+        `[FranchiseController] Successfully got detailed performance of child franchise: ${childFranchiseUserId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy hiệu suất chi tiết franchise con thành công",
+        message:
+          "Successfully retrieved detailed performance of child franchise",
         data: childPerformance,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy hiệu suất chi tiết franchise con: ${error}`
+        `[FranchiseController] Error getting detailed performance of child franchise: ${error}`
       );
       next(error);
     }
@@ -778,7 +738,7 @@ class FranchiseController {
 
   /**
    * GET /api/v1/franchise/reports/full-hierarchy-performance/:rootCampaignId?
-   * Franchise xem hiệu suất của chính mình và toàn bộ cây con bên dưới
+   * Franchise views performance of themselves and entire tree below
    */
   async getFullHierarchyPerformance(
     req: Request,
@@ -787,22 +747,19 @@ class FranchiseController {
   ) {
     try {
       console.log(
-        "[FranchiseController] Bắt đầu lấy hiệu suất toàn bộ cây franchise"
+        "[FranchiseController] Start getting full franchise tree performance"
       );
 
       const userId = req.user?._id;
       const { rootCampaignId } = req.params;
 
       if (!userId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
-      // Validate rootCampaignId nếu có
+      // Validate rootCampaignId if present
       if (rootCampaignId && !Types.ObjectId.isValid(rootCampaignId)) {
-        throw new CustomError(400, "ID Campaign không hợp lệ");
+        throw new CustomError(400, "Invalid Campaign ID");
       }
 
       // Parse query params
@@ -814,18 +771,18 @@ class FranchiseController {
       if (startDate) {
         parsedStartDate = new Date(startDate as string);
         if (isNaN(parsedStartDate.getTime())) {
-          throw new CustomError(400, "Định dạng startDate không hợp lệ");
+          throw new CustomError(400, "Invalid startDate format");
         }
       }
 
       if (endDate) {
         parsedEndDate = new Date(endDate as string);
         if (isNaN(parsedEndDate.getTime())) {
-          throw new CustomError(400, "Định dạng endDate không hợp lệ");
+          throw new CustomError(400, "Invalid endDate format");
         }
       }
 
-      // Gọi service
+      // Call service
       const hierarchyPerformance =
         await FranchiseService.getFullHierarchyPerformance(
           userId,
@@ -835,17 +792,17 @@ class FranchiseController {
         );
 
       console.log(
-        `[FranchiseController] Lấy hiệu suất toàn bộ cây franchise thành công`
+        `[FranchiseController] Successfully got full franchise tree performance`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy hiệu suất toàn bộ cây franchise thành công",
+        message: "Successfully retrieved full franchise tree performance",
         data: hierarchyPerformance,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy hiệu suất toàn bộ cây franchise: ${error}`
+        `[FranchiseController] Error getting full franchise tree performance: ${error}`
       );
       next(error);
     }
@@ -853,58 +810,55 @@ class FranchiseController {
 
   /**
    * GET /api/v1/franchise/reports/quota-utilization
-   * Franchise xem tình hình sử dụng quota của chính mình và các con trực tiếp
+   * Franchise views quota utilization of themselves and direct children
    */
   async getQuotaUtilization(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[FranchiseController] Bắt đầu lấy thông tin sử dụng quota");
+      console.log(
+        "[FranchiseController] Start getting quota utilization information"
+      );
 
       const userId = req.user?._id;
 
       if (!userId) {
-        throw new CustomError(
-          401,
-          "Không tìm thấy thông tin người dùng đăng nhập"
-        );
+        throw new CustomError(401, "Could not find logged in user information");
       }
 
-      // Gọi service
+      // Call service
       const quotaUtilization = await FranchiseService.getQuotaUtilization(
         userId
       );
 
       console.log(
-        `[FranchiseController] Lấy thông tin sử dụng quota thành công`
+        `[FranchiseController] Successfully got quota utilization information`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy thông tin sử dụng quota thành công",
+        message: "Successfully retrieved quota utilization information",
         data: quotaUtilization,
       });
     } catch (error) {
       console.error(
-        `[FranchiseController] Lỗi khi lấy thông tin sử dụng quota: ${error}`
+        `[FranchiseController] Error getting quota utilization information: ${error}`
       );
       next(error);
     }
   }
+
   async activeInvitationCode(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user.id;
       const currentActiveLedgerEntryId = req.body.currentActiveLedgerEntryId;
       const sourceCampaignId = req.body.sourceCampaignId;
       if (!currentActiveLedgerEntryId) {
-        throw new CustomError(400, "currentActiveLedgerEntryId là bắt buộc");
+        throw new CustomError(400, "currentActiveLedgerEntryId is required");
       }
       if (!Types.ObjectId.isValid(currentActiveLedgerEntryId)) {
-        throw new CustomError(
-          400,
-          "ID currentActiveLedgerEntryId không hợp lệ"
-        );
+        throw new CustomError(400, "Invalid currentActiveLedgerEntryId");
       }
       if (!Types.ObjectId.isValid(sourceCampaignId)) {
-        throw new CustomError(400, "ID sourceCampaignId không hợp lệ");
+        throw new CustomError(400, "Invalid sourceCampaignId");
       }
       const activeCode = await InvitationCodeService.activeInvitationCode(
         userId,
@@ -912,11 +866,11 @@ class FranchiseController {
         sourceCampaignId
       );
       if (!activeCode) {
-        throw new CustomError(400, "Không thể kích hoạt mã mời");
+        throw new CustomError(400, "Could not activate invitation code");
       }
       res.status(200).json({
         success: true,
-        message: "Kích hoạt mã mời thành công",
+        message: "Successfully activated invitation code",
         data: activeCode,
       });
     } catch (error) {

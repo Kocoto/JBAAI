@@ -9,11 +9,11 @@ import {
 
 class AdminController {
   /**
-   * Tạo Campaign mới
+   * Create new Campaign
    */
   async createCampaign(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[AdminController] Bắt đầu tạo Campaign mới.");
+      console.log("[AdminController] Starting to create new Campaign.");
 
       const {
         campaignName,
@@ -35,7 +35,7 @@ class AdminController {
       ) {
         return res.status(400).json({
           success: false,
-          message: "Thiếu thông tin bắt buộc",
+          message: "Missing required information",
           data: null,
         });
       }
@@ -52,34 +52,34 @@ class AdminController {
       );
 
       console.log(
-        `[AdminController] Tạo Campaign thành công với ID: ${newCampaign._id}`
+        `[AdminController] Successfully created Campaign with ID: ${newCampaign._id}`
       );
 
       return res.status(201).json({
         success: true,
-        message: "Tạo Campaign thành công",
+        message: "Campaign created successfully",
         data: newCampaign,
       });
     } catch (error) {
-      console.error(`[AdminController] Lỗi khi tạo Campaign: ${error}`);
+      console.error(`[AdminController] Error creating Campaign: ${error}`);
       next(error);
     }
   }
 
   /**
-   * Lấy tất cả Campaigns với filter và phân trang
+   * Get all Campaigns with filters and pagination
    */
   async getAllCampaigns(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[AdminController] Bắt đầu lấy danh sách Campaigns.");
+      console.log("[AdminController] Starting to get Campaigns list.");
 
       const { status, ownerId, franchiseOwnerId } = req.query as campaignFilter;
       const { page, limit, search } = req.query;
 
-      // Tạo filter object
+      // Create filter object
       let filter: campaignFilter = {};
 
-      // Filter theo status - mặc định là active nếu không có
+      // Filter by status - default is active if not provided
       if (status) {
         // Validate status values
         const validStatuses = ["active", "inactive", "expired", "deleted"];
@@ -87,35 +87,34 @@ class AdminController {
           return res.status(400).json({
             success: false,
             message:
-              "Trạng thái không hợp lệ. Chỉ chấp nhận: " +
-              validStatuses.join(", "),
+              "Invalid status. Accepted values: " + validStatuses.join(", "),
             data: null,
           });
         }
         filter.status = status;
       } else {
-        filter.status = "active"; // Mặc định chỉ lấy campaigns active
+        filter.status = "active"; // Default to only active campaigns
       }
 
-      // Filter theo ownerId (deprecated, sử dụng franchiseOwnerId thay thế)
+      // Filter by ownerId (deprecated, use franchiseOwnerId instead)
       if (ownerId) {
         filter.franchiseOwnerId = ownerId;
       }
 
-      // Filter theo franchiseOwnerId
+      // Filter by franchiseOwnerId
       if (franchiseOwnerId) {
         filter.franchiseOwnerId = franchiseOwnerId;
       }
 
-      // Parse page và limit
+      // Parse page and limit
       const pageNumber = parseInt(page as string) || 1;
       const limitNumber = parseInt(limit as string) || 10;
 
-      // Validate page và limit
+      // Validate page and limit
       if (pageNumber < 1) {
         return res.status(400).json({
           success: false,
-          message: "Số trang phải lớn hơn hoặc bằng 1",
+          message: "Page number must be greater than or equal to 1",
           data: null,
         });
       }
@@ -123,7 +122,7 @@ class AdminController {
       if (limitNumber < 1 || limitNumber > 100) {
         return res.status(400).json({
           success: false,
-          message: "Số lượng items mỗi trang phải từ 1 đến 100",
+          message: "Items per page must be between 1 and 100",
           data: null,
         });
       }
@@ -135,12 +134,12 @@ class AdminController {
       );
 
       console.log(
-        `[AdminController] Lấy được ${result.campaigns.length} Campaigns.`
+        `[AdminController] Retrieved ${result.campaigns.length} Campaigns.`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy danh sách Campaigns thành công",
+        message: "Successfully retrieved Campaigns list",
         data: result,
         pagination: {
           currentPage: result.currentPage,
@@ -153,25 +152,25 @@ class AdminController {
       });
     } catch (error) {
       console.error(
-        `[AdminController] Lỗi khi lấy danh sách Campaigns: ${error}`
+        `[AdminController] Error retrieving Campaigns list: ${error}`
       );
       next(error);
     }
   }
 
   /**
-   * Lấy thông tin chi tiết một Campaign
+   * Get Campaign details by ID
    */
   async getCampaignById(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[AdminController] Bắt đầu lấy thông tin chi tiết Campaign.");
+      console.log("[AdminController] Starting to get Campaign details.");
 
       const { campaignId } = req.params;
 
       if (!campaignId) {
         return res.status(400).json({
           success: false,
-          message: "ID Campaign không được để trống",
+          message: "Campaign ID cannot be empty",
           data: null,
         });
       }
@@ -179,28 +178,28 @@ class AdminController {
       const campaign = await AdminService.getCampaignById(campaignId);
 
       console.log(
-        `[AdminController] Lấy thông tin Campaign thành công: ${campaign.campaignName}`
+        `[AdminController] Successfully retrieved Campaign: ${campaign.campaignName}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy thông tin Campaign thành công",
+        message: "Successfully retrieved Campaign details",
         data: campaign,
       });
     } catch (error) {
       console.error(
-        `[AdminController] Lỗi khi lấy thông tin Campaign: ${error}`
+        `[AdminController] Error retrieving Campaign details: ${error}`
       );
       next(error);
     }
   }
 
   /**
-   * Cập nhật thông tin Campaign
+   * Update Campaign information
    */
   async updateCampaign(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[AdminController] Bắt đầu cập nhật Campaign.");
+      console.log("[AdminController] Starting to update Campaign.");
 
       const { campaignId } = req.params;
       const updateData = req.body;
@@ -208,12 +207,12 @@ class AdminController {
       if (!campaignId) {
         return res.status(400).json({
           success: false,
-          message: "ID Campaign không được để trống",
+          message: "Campaign ID cannot be empty",
           data: null,
         });
       }
 
-      // Validate và convert số nếu cần
+      // Validate and convert numbers if needed
       if (updateData.totalAllocated) {
         updateData.totalAllocated = parseInt(updateData.totalAllocated);
       }
@@ -227,33 +226,33 @@ class AdminController {
       );
 
       console.log(
-        `[AdminController] Cập nhật Campaign thành công: ${updatedCampaign.campaignName}`
+        `[AdminController] Successfully updated Campaign: ${updatedCampaign.campaignName}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Cập nhật Campaign thành công",
+        message: "Campaign updated successfully",
         data: updatedCampaign,
       });
     } catch (error) {
-      console.error(`[AdminController] Lỗi khi cập nhật Campaign: ${error}`);
+      console.error(`[AdminController] Error updating Campaign: ${error}`);
       next(error);
     }
   }
 
   /**
-   * Xóa Campaign (soft delete)
+   * Delete Campaign (soft delete)
    */
   async deleteCampaign(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[AdminController] Bắt đầu xóa Campaign.");
+      console.log("[AdminController] Starting to delete Campaign.");
 
       const { campaignId } = req.params;
 
       if (!campaignId) {
         return res.status(400).json({
           success: false,
-          message: "ID Campaign không được để trống",
+          message: "Campaign ID cannot be empty",
           data: null,
         });
       }
@@ -261,26 +260,26 @@ class AdminController {
       const deletedCampaign = await AdminService.deleteCampaign(campaignId);
 
       console.log(
-        `[AdminController] Xóa Campaign thành công: ${deletedCampaign.campaignName}`
+        `[AdminController] Successfully deleted Campaign: ${deletedCampaign.campaignName}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Xóa Campaign thành công",
+        message: "Campaign deleted successfully",
         data: deletedCampaign,
       });
     } catch (error) {
-      console.error(`[AdminController] Lỗi khi xóa Campaign: ${error}`);
+      console.error(`[AdminController] Error deleting Campaign: ${error}`);
       next(error);
     }
   }
 
   /**
-   * Thay đổi trạng thái Campaign
+   * Change Campaign status
    */
   async changeCampaignStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[AdminController] Bắt đầu thay đổi trạng thái Campaign.");
+      console.log("[AdminController] Starting to change Campaign status.");
 
       const { campaignId } = req.params;
       const { status } = req.body;
@@ -288,7 +287,7 @@ class AdminController {
       if (!campaignId) {
         return res.status(400).json({
           success: false,
-          message: "ID Campaign không được để trống",
+          message: "Campaign ID cannot be empty",
           data: null,
         });
       }
@@ -296,7 +295,7 @@ class AdminController {
       if (!status) {
         return res.status(400).json({
           success: false,
-          message: "Trạng thái mới không được để trống",
+          message: "New status cannot be empty",
           data: null,
         });
       }
@@ -307,8 +306,7 @@ class AdminController {
         return res.status(400).json({
           success: false,
           message:
-            "Trạng thái không hợp lệ. Chỉ chấp nhận: " +
-            validStatuses.join(", "),
+            "Invalid status. Accepted values: " + validStatuses.join(", "),
           data: null,
         });
       }
@@ -318,30 +316,30 @@ class AdminController {
       });
 
       console.log(
-        `[AdminController] Thay đổi trạng thái Campaign thành công: ${updatedCampaign.campaignName} -> ${status}`
+        `[AdminController] Successfully changed Campaign status: ${updatedCampaign.campaignName} -> ${status}`
       );
 
       return res.status(200).json({
         success: true,
-        message: `Thay đổi trạng thái Campaign thành '${status}' thành công`,
+        message: `Successfully changed Campaign status to '${status}'`,
         data: updatedCampaign,
       });
     } catch (error) {
       console.error(
-        `[AdminController] Lỗi khi thay đổi trạng thái Campaign: ${error}`
+        `[AdminController] Error changing Campaign status: ${error}`
       );
       next(error);
     }
   }
 
   /**
-   * Lấy thống kê Campaigns
+   * Get Campaign statistics
    */
   async getCampaignStatistics(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[AdminController] Bắt đầu lấy thống kê Campaigns.");
+      console.log("[AdminController] Starting to get Campaign statistics.");
 
-      // Lấy thống kê từng loại status
+      // Get statistics for each status type
       const activeResult = await AdminService.getAllCampaigns(
         { status: "active" },
         1,
@@ -372,7 +370,7 @@ class AdminController {
         },
       };
 
-      // Tính phần trăm
+      // Calculate percentages
       if (statistics.total.all > 0) {
         statistics.percentage.active = Math.round(
           (statistics.total.active / statistics.total.all) * 100
@@ -385,16 +383,18 @@ class AdminController {
         );
       }
 
-      console.log(`[AdminController] Lấy thống kê Campaigns thành công.`);
+      console.log(
+        `[AdminController] Successfully retrieved Campaign statistics.`
+      );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy thống kê Campaigns thành công",
+        message: "Successfully retrieved Campaign statistics",
         data: statistics,
       });
     } catch (error) {
       console.error(
-        `[AdminController] Lỗi khi lấy thống kê Campaigns: ${error}`
+        `[AdminController] Error retrieving Campaign statistics: ${error}`
       );
       next(error);
     }
@@ -406,14 +406,16 @@ class AdminController {
     next: NextFunction
   ) {
     try {
-      console.log("[AdminController] Bắt đầu lấy tóm tắt hiệu suất Campaign.");
+      console.log(
+        "[AdminController] Starting to get Campaign performance summary."
+      );
 
       const { campaignId } = req.params;
 
       if (!campaignId) {
         return res.status(400).json({
           success: false,
-          message: "ID Campaign không được để trống",
+          message: "Campaign ID cannot be empty",
           data: null,
         });
       }
@@ -422,17 +424,17 @@ class AdminController {
         await AdminService.getCampaignPerformanceSummary(campaignId);
 
       console.log(
-        `[AdminController] Lấy tóm tắt hiệu suất Campaign thành công: ${performanceSummary.campaign.campaignName}`
+        `[AdminController] Successfully retrieved Campaign performance summary: ${performanceSummary.campaign.campaignName}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy tóm tắt hiệu suất Campaign thành công",
+        message: "Successfully retrieved Campaign performance summary",
         data: performanceSummary,
       });
     } catch (error) {
       console.error(
-        `[AdminController] Lỗi khi lấy tóm tắt hiệu suất Campaign: ${error}`
+        `[AdminController] Error retrieving Campaign performance summary: ${error}`
       );
       next(error);
     }
@@ -441,43 +443,43 @@ class AdminController {
   //GET /franchises
   async getAllFranchises(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[AdminController] Bắt đầu lấy danh sách Franchises.");
+      console.log("[AdminController] Starting to get Franchises list.");
 
-      // Lấy query parameters
+      // Get query parameters
       const { page, limit, status, level } = req.query;
 
-      // Parse và validate page và limit
+      // Parse and validate page and limit
       const pageNumber = parseInt(page as string) || 1;
       const limitNumber = parseInt(limit as string) || 10;
 
-      // Parse level nếu có
+      // Parse level if provided
       let franchiseLevel: number | undefined;
       if (level !== undefined && level !== "") {
         franchiseLevel = parseInt(level as string);
 
-        // Validate level là số hợp lệ
+        // Validate level is a valid number
         if (isNaN(franchiseLevel) || franchiseLevel < 0) {
           return res.status(400).json({
             success: false,
-            message: "Cấp franchise phải là số không âm",
+            message: "Franchise level must be a non-negative number",
             data: null,
           });
         }
       }
 
-      // Validate status nếu có
-      const validStatuses = ["active", "inactive", "suspended"]; // Thêm các status hợp lệ theo business logic
+      // Validate status if provided
+      const validStatuses = ["active", "inactive", "suspended"]; // Add valid statuses according to business logic
       if (status && !validStatuses.includes(status as string)) {
         return res.status(400).json({
           success: false,
-          message: `Trạng thái không hợp lệ. Chỉ chấp nhận: ${validStatuses.join(
+          message: `Invalid status. Accepted values: ${validStatuses.join(
             ", "
           )}`,
           data: null,
         });
       }
 
-      // Gọi service để lấy dữ liệu
+      // Call service to get data
       const result = await AdminService.getAllFranchises(
         pageNumber,
         limitNumber,
@@ -486,7 +488,7 @@ class AdminController {
       );
 
       console.log(
-        `[AdminController] Lấy được ${result.franchises.length} Franchises.`
+        `[AdminController] Retrieved ${result.franchises.length} Franchises.`
       );
 
       // Format response data
@@ -513,7 +515,7 @@ class AdminController {
 
       return res.status(200).json({
         success: true,
-        message: "Lấy danh sách Franchises thành công",
+        message: "Successfully retrieved Franchises list",
         data: {
           franchises: formattedFranchises,
           pagination: {
@@ -528,7 +530,7 @@ class AdminController {
       });
     } catch (error) {
       console.error(
-        `[AdminController] Lỗi khi lấy danh sách Franchises: ${error}`
+        `[AdminController] Error retrieving Franchises list: ${error}`
       );
       next(error);
     }
@@ -536,14 +538,14 @@ class AdminController {
 
   async getFranchiseHierarchy(req: Request, res: Response, next: NextFunction) {
     try {
-      console.log("[AdminController] Bắt đầu lấy cây phân cấp franchise.");
+      console.log("[AdminController] Starting to get franchise hierarchy.");
 
       const { userId } = req.params;
 
       if (!userId) {
         return res.status(400).json({
           success: false,
-          message: "ID User không được để trống",
+          message: "User ID cannot be empty",
           data: null,
         });
       }
@@ -552,7 +554,7 @@ class AdminController {
       if (!Types.ObjectId.isValid(userId)) {
         return res.status(400).json({
           success: false,
-          message: "ID User không hợp lệ",
+          message: "Invalid User ID",
           data: null,
         });
       }
@@ -560,17 +562,17 @@ class AdminController {
       const hierarchyData = await AdminService.getFranchiseHierarchy(userId);
 
       console.log(
-        `[AdminController] Lấy cây phân cấp franchise thành công cho user: ${userId}`
+        `[AdminController] Successfully retrieved franchise hierarchy for user: ${userId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy cây phân cấp franchise thành công",
+        message: "Successfully retrieved franchise hierarchy",
         data: hierarchyData,
       });
     } catch (error) {
       console.error(
-        `[AdminController] Lỗi khi lấy cây phân cấp franchise: ${error}`
+        `[AdminController] Error retrieving franchise hierarchy: ${error}`
       );
       next(error);
     }
@@ -583,7 +585,7 @@ class AdminController {
   ) {
     try {
       console.log(
-        "[AdminController] Bắt đầu lấy tổng quan hiệu suất franchise."
+        "[AdminController] Starting to get franchise performance overview."
       );
 
       const { userId } = req.params;
@@ -593,7 +595,7 @@ class AdminController {
       if (!userId) {
         return res.status(400).json({
           success: false,
-          message: "ID User không được để trống",
+          message: "User ID cannot be empty",
           data: null,
         });
       }
@@ -601,12 +603,12 @@ class AdminController {
       if (!Types.ObjectId.isValid(userId)) {
         return res.status(400).json({
           success: false,
-          message: "ID User không hợp lệ",
+          message: "Invalid User ID",
           data: null,
         });
       }
 
-      // Validate và parse dates nếu có
+      // Validate and parse dates if provided
       let parsedStartDate: Date | undefined;
       let parsedEndDate: Date | undefined;
 
@@ -616,7 +618,7 @@ class AdminController {
           return res.status(400).json({
             success: false,
             message:
-              "Định dạng startDate không hợp lệ. Sử dụng ISO format (YYYY-MM-DD hoặc YYYY-MM-DDTHH:mm:ss.sssZ)",
+              "Invalid startDate format. Use ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ)",
             data: null,
           });
         }
@@ -628,7 +630,7 @@ class AdminController {
           return res.status(400).json({
             success: false,
             message:
-              "Định dạng endDate không hợp lệ. Sử dụng ISO format (YYYY-MM-DD hoặc YYYY-MM-DDTHH:mm:ss.sssZ)",
+              "Invalid endDate format. Use ISO format (YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss.sssZ)",
             data: null,
           });
         }
@@ -642,21 +644,21 @@ class AdminController {
       ) {
         return res.status(400).json({
           success: false,
-          message: "startDate phải trước endDate",
+          message: "startDate must be before endDate",
           data: null,
         });
       }
 
-      // Validate rootCampaignId nếu có
+      // Validate rootCampaignId if provided
       if (rootCampaignId && !Types.ObjectId.isValid(rootCampaignId as string)) {
         return res.status(400).json({
           success: false,
-          message: "ID Campaign không hợp lệ",
+          message: "Invalid Campaign ID",
           data: null,
         });
       }
 
-      // Kiểm tra xem có quá nhiều ngày không (để tránh query quá nặng)
+      // Check if date range is too large (to avoid heavy queries)
       if (parsedStartDate && parsedEndDate) {
         const daysDifference = Math.ceil(
           (parsedEndDate.getTime() - parsedStartDate.getTime()) /
@@ -666,7 +668,7 @@ class AdminController {
         if (daysDifference > 365) {
           return res.status(400).json({
             success: false,
-            message: "Khoảng thời gian tối đa là 365 ngày",
+            message: "Maximum time range is 365 days",
             data: null,
           });
         }
@@ -682,12 +684,12 @@ class AdminController {
         );
 
       console.log(
-        `[AdminController] Lấy tổng quan hiệu suất franchise thành công cho user: ${userId}`
+        `[AdminController] Successfully retrieved franchise performance overview for user: ${userId}`
       );
 
       return res.status(200).json({
         success: true,
-        message: "Lấy tổng quan hiệu suất franchise thành công",
+        message: "Successfully retrieved franchise performance overview",
         data: performanceOverview,
         meta: {
           userId: userId,
@@ -701,7 +703,7 @@ class AdminController {
       });
     } catch (error) {
       console.error(
-        `[AdminController] Lỗi khi lấy tổng quan hiệu suất franchise: ${error}`
+        `[AdminController] Error retrieving franchise performance overview: ${error}`
       );
       next(error);
     }
@@ -713,7 +715,7 @@ class AdminController {
       const userId = req.user._id;
       const { code, packageId } = req.body;
       if (!code || !packageId) {
-        throw new CustomError(400, "code, packageId là bắt buộc");
+        throw new CustomError(400, "code and packageId are required");
       }
       data = {
         code,
@@ -725,7 +727,7 @@ class AdminController {
       const newInvitationCode = await AdminService.createInvitationCode(data);
       res.status(200).json({
         success: true,
-        message: "Tạo mã code thành công",
+        message: "Successfully created invitation code",
         data: newInvitationCode,
       });
     } catch (error) {

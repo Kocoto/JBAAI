@@ -8,7 +8,7 @@ class ProfileService {
     try {
       const user = await UserModel.findById(userId).session(session || null);
       if (!user) {
-        throw new CustomError(404, "Không tìm thấy người dùng");
+        throw new CustomError(404, "User not found");
       }
       let profile = await profileModel
         .findOne({ userId: userId })
@@ -37,7 +37,7 @@ class ProfileService {
         { session }
       );
       if (!newProfile) {
-        throw new CustomError(400, "Không thể tạo hồ sơ");
+        throw new CustomError(400, "Unable to create profile");
       }
       return newProfile[0];
     } catch (error) {

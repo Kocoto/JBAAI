@@ -16,7 +16,7 @@ class PaypalService {
         UserService.getUserById(userId),
         PackageService.getPackageById(packageId),
       ]);
-      const originalPackagePrice = packageData.price; // Giá gốc
+      const originalPackagePrice = packageData.price; // Original price
 
       // Calculate discount amount based on user eligibility and package discount
       let discountAmount = 0;
@@ -32,7 +32,7 @@ class PaypalService {
         intent: "CAPTURE",
         purchase_units: [
           {
-            description: `Mua ${packageData.name}`, // Mô tả hiển thị cho người dùng
+            description: `Purchase ${packageData.name}`, // Description shown to user
 
             amount: {
               currency_code: "USD",
@@ -59,12 +59,12 @@ class PaypalService {
                   value: "0.00",
                 },
                 item_total: {
-                  // Tổng giá trị gốc
+                  // Original total value
                   currency_code: "USD",
                   value: String(originalPackagePrice.toFixed(2)),
                 },
                 discount: {
-                  // Số tiền giảm giá cụ thể
+                  // Specific discount amount
                   currency_code: "USD",
                   value: String(discountAmount.toFixed(2)),
                 },
@@ -82,17 +82,17 @@ class PaypalService {
           brand_name: "JBAAI",
           landing_page: "LOGIN",
           user_action: "PAY_NOW",
-          return_url: `https://jbaai-y7mb.onrender.com/payment-success`, // URL thành công trên tên miền API backend
+          return_url: `https://jbaai-y7mb.onrender.com/payment-success`, // Success URL on API backend domain
           cancel_url: `https://jbaai-y7mb.onrender.com/payment-fail`,
         },
       });
-      console.log("[PayPal Create Order] Đang gửi yêu cầu tạo đơn hàng...");
+      console.log("[PayPal Create Order] Sending order creation request...");
       const order = await client.execute(request);
       console.log(
-        "[PayPal Create Order] Tạo đơn hàng thành công. Order ID:",
+        "[PayPal Create Order] Order created successfully. Order ID:",
         order.result.id
       );
-      console.log("Chi tiết đơn hàng:", JSON.stringify(order.result, null, 2));
+      console.log("Order details:", JSON.stringify(order.result, null, 2));
       const purchase: Partial<IPurchaseHistoryInput> = {};
       purchase.packageId = packageId;
       purchase.userId = userId;
@@ -101,7 +101,7 @@ class PaypalService {
       purchase.status = "pending";
       purchase.price = Number(packagePrice);
       purchase.type = packageData.type;
-      purchase.discount = discountAmount; // Lưu số tiền giảm giá vào purchase
+      purchase.discount = discountAmount; // Save discount amount to purchase
 
       const newPurchase = await PurchaseHistoryService.createPurchaseHistory(
         purchase
@@ -109,46 +109,46 @@ class PaypalService {
       return { order, newPurchase };
     } catch (err: any) {
       console.error(
-        "[PayPal Create Order] Lỗi khi tạo đơn hàng PayPal:",
+        "[PayPal Create Order] Error when creating PayPal order:",
         err.message
       );
       if (err.statusCode && err.message) {
-        // Lỗi có vẻ từ PayPal HTTP
+        // Seems to be a PayPal HTTP error
         console.error(
-          "[PayPal Create Order] Chi tiết lỗi PayPal (nếu có trong err.details hoặc err.response):",
-          // Thử log các thuộc tính này hoặc cả đối tượng err
+          "[PayPal Create Order] PayPal error details (if available in err.details or err.response):",
+          // Try logging these properties or the entire err object
           err.details || err.response?.data || err
         );
-        // Có thể bạn không cần JSON.parse nữa
+        // You may not need JSON.parse anymore
         const errorDetailsPayload =
           err.details ||
           (typeof err.message === "string"
             ? { message: err.message }
-            : err.message); // Lấy details nếu có, hoặc message
+            : err.message); // Get details if available, or message
 
         throw new CustomError(
           err.statusCode,
-          "Không thể tạo đơn hàng PayPal.",
+          "Cannot create PayPal order.",
           errorDetailsPayload // Truyền chi tiết lỗi tìm được
         );
       } else if (err instanceof Error) {
-        // Lỗi Javascript hoặc lỗi khác không có statusCode
-        console.error("[PayPal Create Order] Lỗi không xác định:", err);
+        // Javascript error or other error without statusCode
+        console.error("[PayPal Create Order] Undefined error:", err);
         throw new CustomError(
           500,
-          "Lỗi hệ thống khi tạo đơn hàng PayPal.",
-          err.message // Chỉ gửi message của lỗi gốc
+          "System error when creating PayPal order.",
+          err.message // Only send original error message
         );
       } else {
-        // Trường hợp rất hiếm
+        // Very rare case
         console.error(
-          "[PayPal Create Order] Đối tượng lỗi không xác định:",
+          "[PayPal Create Order] Undefined error object:",
           err
         );
         throw new CustomError(
           500,
-          "Không thể tạo đơn hàng PayPal.",
-          "Đã xảy ra lỗi không xác định."
+          "Cannot create PayPal order.",
+          "An undefined error occurred."
         );
       }
     }
@@ -179,138 +179,138 @@ class PaypalService {
         console.error(
           `[PayPal Capture Order] Lệch Order ID! Input: ${orderId}, DB: ${purchaseRecord.transactionId}. PurchaseID: ${purchaseHistoryId}`
         );
-        // Lỗi 400 nếu ID không khớp
-        throw new CustomError(400, `Lệch thông tin đơn hàng.`);
+        // 400 error if IDs don't match
+        throw new CustomError(400, `Order information mismatch.`);
       }
 
-      // Kiểm tra trạng thái đơn hàng
+      // Check order status
       if (purchaseRecord.status !== "pending") {
         console.warn(
-          `[PayPal Capture Order] Purchase ${purchaseHistoryId} không ở trạng thái pending (hiện tại: ${purchaseRecord.status}). Bỏ qua capture.`
+          `[PayPal Capture Order] Purchase ${purchaseHistoryId} is not in pending status (current: ${purchaseRecord.status}). Skipping capture.`
         );
-        // Nếu đã hoàn thành trước đó, trả về thông tin cũ
+        // If previously completed, return old information
         if (
           purchaseRecord.status === "completed" ||
           purchaseRecord.status === "success"
         ) {
           return {
-            message: "Đơn hàng đã được xử lý trước đó.",
+            message: "Order has been processed previously.",
             purchaseHistory: purchaseRecord,
           };
         } else {
-          // Lỗi 400 nếu trạng thái không hợp lệ để capture
+          // 400 error if status is invalid for capture
           throw new CustomError(
             400,
-            `Đơn hàng không thể capture ở trạng thái ${purchaseRecord.status}.`
+            `Order cannot be captured in ${purchaseRecord.status} status.`
           );
         }
       }
 
-      // Tạo yêu cầu capture tới PayPal
+      // Create capture request to PayPal
       const request = new paypal.orders.OrdersCaptureRequest(orderId);
 
       console.log(
-        `[PayPal Capture Order] Đang gửi yêu cầu capture cho đơn hàng ${orderId}...`
+        `[PayPal Capture Order] Sending capture request for order ${orderId}...`
       );
-      const capture = await client.execute(request); // Gọi API PayPal
+      const capture = await client.execute(request); // Call PayPal API
       const captureResult = capture.result;
       console.log(
-        `[PayPal Capture Order] Capture thành công cho đơn hàng ${orderId}. Phản hồi:`,
+        `[PayPal Capture Order] Capture successful for order ${orderId}. Response:`,
         JSON.stringify(captureResult, null, 2)
       );
 
-      // Lấy trạng thái từ phản hồi PayPal
+      // Get status from PayPal response
       const paymentStatus = captureResult.status;
       const captureDetails =
         captureResult.purchase_units?.[0]?.payments?.captures?.[0];
       const captureStatus = captureDetails?.status;
 
       console.log(
-        `[PayPal Capture Order] Trạng thái đơn hàng: ${paymentStatus}, Trạng thái capture: ${captureStatus}`
+        `[PayPal Capture Order] Order status: ${paymentStatus}, Capture status: ${captureStatus}`
       );
 
       // Xử lý khi thanh toán và capture thành công
       if (paymentStatus === "COMPLETED" && captureStatus === "COMPLETED") {
         if (!captureDetails) {
-          // Lỗi 500 nếu không tìm thấy chi tiết capture trong phản hồi hợp lệ
+          // 500 error if capture details not found in valid response
           throw new CustomError(
             500,
-            "Không tìm thấy chi tiết transaction trong phản hồi PayPal dù trạng thái là COMPLETED."
+            "Transaction details not found in PayPal response despite COMPLETED status."
           );
         }
 
         const capturedAmount = captureDetails.amount.value;
         const capturedCurrency = captureDetails.amount.currency_code;
-        const finalPaypalTxnId = captureDetails.id; // ID transaction cuối cùng từ PayPal
+        const finalPaypalTxnId = captureDetails.id; // Final transaction ID from PayPal
 
-        // --- Bắt đầu thay đổi ---
-        // Lấy thông tin user và package để tính lại giá cuối cùng (sau giảm giá)
+        // --- Start changes ---
+        // Get user and package info to recalculate final price (after discount)
         const [user, packageData] = await Promise.all([
-          UserService.getUserById(userId), // Sử dụng userId được truyền vào
+          UserService.getUserById(userId), // Use provided userId
           PackageService.getPackageById(String(purchaseRecord.packageId)),
         ]);
 
         if (!user || !packageData) {
           throw new CustomError(
             404,
-            "Không tìm thấy thông tin người dùng hoặc gói dịch vụ để xác thực giá."
+            "User or package information not found for price verification."
           );
         }
 
-        const originalPackagePrice = packageData.price; // Giá gốc từ DB
+        const originalPackagePrice = packageData.price; // Original price from DB
         let discountAmount = 0;
         if (user.discount === true && packageData.discount != null) {
           discountAmount = packageData.discount;
-        } // Lấy số tiền giảm giá từ purchaseRecord
+        } // Get discount amount from purchaseRecord
         const expectedFinalPrice = Math.max(
           0,
           originalPackagePrice - discountAmount
-        ); // Giá cuối cùng mong đợi
-        const expectedCurrency = "USD"; // Hoặc lấy từ cấu hình/DB
-        // --- Kết thúc thay đổi ---
+        ); // Expected final price
+        const expectedCurrency = "USD"; // Or get from config/DB
+        // --- End changes ---
 
-        // Kiểm tra số tiền và loại tiền tệ có khớp không (sử dụng expectedFinalPrice)
-        // So sánh với sai số nhỏ để tránh lỗi làm tròn dấu phẩy động
-        const priceDifference = Math.abs(
-          Number(capturedAmount) - expectedFinalPrice
-        );
-        const tolerance = 0.01; // Chấp nhận sai số 0.01 USD
+        // Check if amount and currency match (using expectedFinalPrice)
+         // Compare with small tolerance to avoid floating point rounding errors
+         const priceDifference = Math.abs(
+           Number(capturedAmount) - expectedFinalPrice
+         );
+         const tolerance = 0.01; // Accept 0.01 USD tolerance
 
-        if (
-          priceDifference > tolerance || // So sánh giá cuối cùng mong đợi
-          capturedCurrency !== expectedCurrency
-        ) {
-          console.error(
-            `[PayPal Capture Order] !!SAI LỆCH SỐ TIỀN!! Đơn hàng ${orderId}, Purchase ${purchaseHistoryId}. Mong đợi: ${expectedFinalPrice.toFixed(
-              2
-            )} ${expectedCurrency}. Thực tế: ${capturedAmount} ${capturedCurrency}`
-          );
-          // !! XỬ LÝ NGHIÊM TRỌNG: Cập nhật DB với trạng thái lỗi và có thể cần hoàn tiền !!
-          await PurchaseHistoryService.updatePurchaseHistory(
-            purchaseHistoryId,
-            "amount_mismatch", // Trạng thái mới cho lỗi không khớp số tiền
-            finalPaypalTxnId
-          );
-          // Lỗi 400 báo cho client biết số tiền không khớp
-          throw new CustomError(
-            400,
-            "Số tiền thanh toán không khớp với đơn hàng sau khi đã áp dụng giảm giá." // Cập nhật thông báo lỗi
-          );
-        }
+         if (
+           priceDifference > tolerance || // Compare expected final price
+           capturedCurrency !== expectedCurrency
+         ) {
+           console.error(
+             `[PayPal Capture Order] !!AMOUNT MISMATCH!! Order ${orderId}, Purchase ${purchaseHistoryId}. Expected: ${expectedFinalPrice.toFixed(
+               2
+             )} ${expectedCurrency}. Actual: ${capturedAmount} ${capturedCurrency}`
+           );
+           // !! CRITICAL HANDLING: Update DB with error status and may need refund !!
+           await PurchaseHistoryService.updatePurchaseHistory(
+             purchaseHistoryId,
+             "amount_mismatch", // New status for amount mismatch error
+             finalPaypalTxnId
+           );
+           // 400 error to inform client about amount mismatch
+           throw new CustomError(
+             400,
+             "Payment amount does not match order amount after applying discount." // Update error message
+           );
+         }
 
         console.log(
-          `[PayPal Capture Order] Thanh toán thành công hoàn tất cho đơn hàng ${orderId} với transaction ID: ${finalPaypalTxnId}`
-        );
+           `[PayPal Capture Order] Payment successfully completed for order ${orderId} with transaction ID: ${finalPaypalTxnId}`
+         );
 
-        // Cập nhật trạng thái thành công vào DB
-        const updatedPurchaseHistory =
-          await PurchaseHistoryService.updatePurchaseHistory(
-            purchaseHistoryId,
-            "completed", // Hoặc 'success' tùy theo quy ước của bạn
-            finalPaypalTxnId
-          );
+         // Update success status in DB
+         const updatedPurchaseHistory =
+           await PurchaseHistoryService.updatePurchaseHistory(
+             purchaseHistoryId,
+             "completed", // Or 'success' depending on your convention
+             finalPaypalTxnId
+           );
 
-        // Tạo subscription và cập nhật user
+         // Create subscription and update user
 
         const newActiveSubscription =
           await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
@@ -336,68 +336,68 @@ class PaypalService {
           captureResult,
         };
       } else {
-        // Xử lý khi trạng thái không phải là COMPLETED
+        // Handle when status is not COMPLETED
         console.warn(
-          `[PayPal Capture Order] Trạng thái thanh toán không hoàn tất cho đơn hàng ${orderId}. Payment: ${paymentStatus}, Capture: ${captureStatus}`
+          `[PayPal Capture Order] Payment status not completed for order ${orderId}. Payment: ${paymentStatus}, Capture: ${captureStatus}`
         );
-        // Cập nhật trạng thái thất bại/chưa hoàn tất vào DB
-        const finalPaypalTxnId = captureDetails?.id; // Có thể có hoặc không có ID transaction
+        // Update failed/incomplete status in DB
+        const finalPaypalTxnId = captureDetails?.id; // May or may not have transaction ID
         const updatedPurchaseHistory =
           await PurchaseHistoryService.updatePurchaseHistory(
             purchaseHistoryId,
-            captureStatus || paymentStatus || "failed", // Sử dụng trạng thái có sẵn hoặc 'failed'
-            finalPaypalTxnId // Lưu ID nếu có
+            captureStatus || paymentStatus || "failed", // Use available status or 'failed'
+            finalPaypalTxnId // Save ID if available
           );
 
-        // Trả về lỗi cho client biết capture không thành công như mong đợi
-        // Sử dụng 400 vì yêu cầu capture đã được gửi nhưng kết quả không như ý
+        // Return error to client indicating capture was not successful as expected
+        // Use 400 because capture request was sent but result was not as expected
         throw new CustomError(
           400,
-          `Thanh toán PayPal không hoàn tất. Trạng thái: ${
+          `PayPal payment not completed. Status: ${
             captureStatus || paymentStatus
           }`
         );
-        // Hoặc bạn có thể trả về thông tin cập nhật nếu không muốn báo lỗi:
+        // Or you can return update information if you don't want to report an error:
         // return { purchaseHistory: updatedPurchaseHistory, captureResult };
       }
     } catch (err: any) {
       console.error(
-        `[PayPal Capture Order] Lỗi trong quá trình capture đơn hàng ${orderId} (PurchaseID: ${purchaseHistoryId}):`,
-        err // Log toàn bộ lỗi để debug
+        `[PayPal Capture Order] Error during order capture ${orderId} (PurchaseID: ${purchaseHistoryId}):`,
+        err // Log entire error for debugging
       );
 
-      // === PHẦN QUAN TRỌNG: Xử lý lỗi ===
+      // === IMPORTANT: Error Handling ===
 
-      // 1. Kiểm tra xem có phải là CustomError đã được throw từ logic nghiệp vụ không
+      // 1. Check if it's a CustomError thrown from business logic
       if (err instanceof CustomError) {
         console.log(
-          `[PayPal Capture Order] Lỗi nghiệp vụ (${err.status}): ${err.message}`
+          `[PayPal Capture Order] Business error (${err.status}): ${err.message}`
         );
-        // Nếu là CustomError, ném lại lỗi đó để giữ nguyên status code (400, 404, etc.)
+        // If it's a CustomError, rethrow it to maintain status code (400, 404, etc.)
         throw err;
       }
 
-      // 2. Nếu không phải CustomError, xử lý như lỗi từ PayPal hoặc lỗi hệ thống khác
-      // Kiểm tra cấu trúc lỗi giống PayPal (có statusCode và message)
-      // Lưu ý: Lỗi từ SDK @paypal/checkout-server-sdk thường có dạng này
+      // 2. If not CustomError, handle as PayPal error or other system error
+      // Check error structure similar to PayPal (has statusCode and message)
+      // Note: Errors from @paypal/checkout-server-sdk usually have this structure
       if (err.statusCode && err.message) {
         try {
-          // Thử parse message như JSON (đây là nơi có thể gây lỗi 500 trước đây)
+          // Try to parse message as JSON (this is where 500 errors could occur before)
           const errorDetails = JSON.parse(err.message);
           const issue = errorDetails.details?.[0]?.issue;
           const description = errorDetails.details?.[0]?.description;
 
           console.error(
-            `[PayPal Capture Order] Chi tiết lỗi PayPal (${orderId}): Issue: ${issue}, Description: ${description}`,
+            `[PayPal Capture Order] PayPal error details (${orderId}): Issue: ${issue}, Description: ${description}`,
             JSON.stringify(errorDetails, null, 2)
           );
 
-          // Xử lý các mã lỗi cụ thể của PayPal
+          // Handle specific PayPal error codes
           if (issue === "ORDER_ALREADY_CAPTURED") {
             console.warn(
-              `[PayPal Capture Order] Đơn hàng ${orderId} đã được capture trước đó (lỗi từ PayPal).`
+              `[PayPal Capture Order] Order ${orderId} has been captured before (PayPal error).`
             );
-            // Có thể cập nhật lại DB nếu trạng thái chưa đúng và trả về thành công giả lập
+            // Can update DB if status is not correct and return simulated success
             try {
               const existingPurchase =
                 await PurchaseHistoryService.getPurchaseHistoryById(
@@ -412,95 +412,92 @@ class PaypalService {
                   purchaseHistoryId,
                   "completed",
                   existingPurchase.transactionId
-                ); // Giả sử transactionId đã đúng
+                ); // Assume transactionId is correct
                 console.log(
-                  `[PayPal Capture Order] Cập nhật trạng thái DB cho đơn hàng đã capture trước đó ${purchaseHistoryId}`
+                  `[PayPal Capture Order] Updated DB status for previously captured order ${purchaseHistoryId}`
                 );
               }
             } catch (dbError: any) {
               console.error(
-                `[PayPal Capture Order] Lỗi cập nhật DB cho đơn hàng đã capture (${purchaseHistoryId}):`,
+                `[PayPal Capture Order] Error updating DB for captured order (${purchaseHistoryId}):`,
                 dbError.message
               );
             }
-            // Trả về thông báo cho client, có thể kèm mã 200 hoặc 409 (Conflict)
-            // Sử dụng 409 để báo rằng hành động không thể thực hiện vì trạng thái hiện tại
+            // Return message to client, can include code 200 or 409 (Conflict)
+            // Use 409 to indicate action cannot be performed due to current state
             throw new CustomError(
               409,
-              "Đơn hàng này đã được thanh toán trước đó."
+              "This order has been paid previously."
             );
-            // return { message: "Đơn hàng này đã được thanh toán trước đó." };
+            // return { message: "This order has been paid previously." };
           } else if (issue === "ORDER_NOT_APPROVED") {
             console.warn(
-              `[PayPal Capture Order] Đơn hàng ${orderId} chưa được phê duyệt hoặc đã bị hủy (lỗi từ PayPal).`
+              `[PayPal Capture Order] Order ${orderId} not approved or has been cancelled (PayPal error).`
             );
             try {
-              // Cập nhật trạng thái trong DB thành 'cancelled' hoặc 'failed'
+              // Update status in DB to 'cancelled' or 'failed'
               await PurchaseHistoryService.updatePurchaseHistory(
                 purchaseHistoryId,
-                "cancelled" // Hoặc 'failed'
-                // Không cần transactionId ở đây
+                "cancelled" // Or 'failed'
+                // No transactionId needed here
               );
             } catch (dbError: any) {
               console.error(
-                `[PayPal Capture Order] Lỗi cập nhật DB (${purchaseHistoryId}) sau lỗi ORDER_NOT_APPROVED:`,
+                `[PayPal Capture Order] Error updating DB (${purchaseHistoryId}) after ORDER_NOT_APPROVED error:`,
                 dbError.message
               );
             }
-            // Ném lỗi 400 (Bad Request) hoặc 422 (Unprocessable Entity) cho client
+            // Throw 400 (Bad Request) or 422 (Unprocessable Entity) for client
             throw new CustomError(
-              400, // Hoặc 422
-              "Đơn hàng chưa được phê duyệt hoặc đã bị hủy bởi người dùng."
+              400, // Or 422
+              "The order has not been approved or has been canceled by the user."
             );
           } else {
-            // Các lỗi PayPal khác đã được parse nhưng không xử lý đặc biệt
+            // Other PayPal errors that have been parsed but not specially handled
             await PurchaseHistoryService.updatePurchaseHistory(
               purchaseHistoryId,
               "failed"
-            ); // Cập nhật trạng thái lỗi chung
+            ); // Update general error status
             throw new CustomError(
-              500, // Hoặc err.statusCode nếu muốn giữ mã lỗi gốc từ PayPal
-              `Lỗi từ PayPal khi xác nhận thanh toán: ${
+              500, // Or err.statusCode if you want to keep the original error code from PayPal
+              `Error from PayPal when confirming payment: ${
                 issue || errorDetails.message || "Unknown PayPal Error"
               }`
             );
           }
-        } catch (parseError) {
-          console.log(
-            "đã tới dòng số 383 trang paypal.service đâyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
-          );
-          // Lỗi khi parse JSON từ err.message (message không phải JSON hợp lệ)
+        } catch (parseError: any) {
+          // Error when parsing JSON from err.message (message is not valid JSON)
 
           if (parseError instanceof CustomError) {
             console.log(
-              `[PayPal Capture Order] Lỗi nghiệp vụ (${err.status}): ${err.message}`
+              `[PayPal Capture Order] Business error (${parseError.status}): ${parseError.message}`
             );
-            // Nếu là CustomError, ném lại lỗi đó để giữ nguyên status code (400, 404, etc.)
+            // If it's a CustomError, rethrow it to keep the original status code (400, 404, etc.)
             throw parseError;
           }
           console.error(
-            `[PayPal Capture Order] Không thể parse lỗi JSON từ PayPal (${orderId}), Raw message:`,
+            `[PayPal Capture Order] Cannot parse JSON error from PayPal (${orderId}), Raw message:`,
             err.message
           );
           await PurchaseHistoryService.updatePurchaseHistory(
             purchaseHistoryId,
             "failed"
-          ); // Cập nhật trạng thái lỗi chung
-          // Ném lỗi 500 vì không hiểu rõ phản hồi lỗi từ PayPal
+          ); // Update general error status
+          // Throw a 500 error because the error response from PayPal is not understood
           throw new CustomError(
             500,
-            "Lỗi không xác định khi xử lý phản hồi lỗi từ PayPal. Raw: " +
+            "Unknown error when processing error response from PayPal. Raw: " +
               err.message
           );
         }
       } else {
-        // 3. Lỗi không có cấu trúc như lỗi PayPal (ví dụ: lỗi mạng, lỗi code khác trong try)
+        // 3. Error without PayPal error structure (e.g., network error, other code error in try)
         console.error(
-          `[PayPal Capture Order] Lỗi hệ thống không xác định (${orderId}):`,
+          `[PayPal Capture Order] Unknown system error (${orderId}):`,
           err.message,
-          err.stack // Log stack trace nếu có
+          err.stack // Log stack trace if available
         );
-        // Cập nhật trạng thái lỗi chung vào DB nếu có thể
+        // Update general error status in DB if possible
         try {
           await PurchaseHistoryService.updatePurchaseHistory(
             purchaseHistoryId,
@@ -508,14 +505,14 @@ class PaypalService {
           );
         } catch (dbError: any) {
           console.error(
-            `[PayPal Capture Order] Lỗi cập nhật DB (${purchaseHistoryId}) sau lỗi hệ thống:`,
+            `[PayPal Capture Order] DB update error (${purchaseHistoryId}) after system error:`,
             dbError.message
           );
         }
-        // Ném lỗi 500 mặc định cho các lỗi không mong muốn
+        // Throw a default 500 error for unexpected errors
         throw new CustomError(
           500,
-          "Lỗi hệ thống khi xác nhận thanh toán PayPal. Message: " + err.message
+          "System error when confirming PayPal payment. Message: " + err.message
         );
       }
     }

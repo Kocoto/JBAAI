@@ -16,17 +16,17 @@ class OTPService {
     try {
       const user = await UserModel.findOne({ email: email });
       if (!user) {
-        throw new CustomError(400, "Không tìm thấy người dùng");
+        throw new CustomError(400, "User not found");
       }
 
       const otpDoc = await OtpModel.findOne({ userId: user._id });
       if (!otpDoc) {
-        throw new CustomError(400, "Mã OTP không tồn tại hoặc đã hết hạn");
+        throw new CustomError(400, "OTP code does not exist or has expired");
       }
 
       const isValidOtp = comparePasswords(otp, otpDoc.otp);
       if (!isValidOtp) {
-        throw new CustomError(400, "Mã OTP không hợp lệ");
+        throw new CustomError(400, "Invalid OTP code");
       }
 
       // Tối ưu: Thực hiện các thao tác cập nhật song song
@@ -61,7 +61,7 @@ class OTPService {
     try {
       const user = await UserModel.findOne({ email: email });
       if (!user) {
-        throw new CustomError(400, "Không tìm thấy người dùng");
+        throw new CustomError(400, "User not found");
       }
 
       // Thêm kiểm tra rate limiting để tránh spam
@@ -77,7 +77,7 @@ class OTPService {
         if (diffInMinutes < 1) {
           throw new CustomError(
             429,
-            "Vui lòng đợi ít nhất 1 phút trước khi yêu cầu mã OTP mới"
+            "Please wait at least 1 minute before requesting a new OTP code"
           );
         }
       }
@@ -96,26 +96,26 @@ class OTPService {
       const mailOptions = {
         from: process.env.EMAIL_USER, // Thêm thông tin người gửi
         to: user.email,
-        subject: "Mã OTP của bạn", // Thêm tiêu đề email
+        subject: "Your OTP Code", // Thêm tiêu đề email
         html: `
           <div style="font-family: Arial, sans-serif; line-height: 1.5;">
-            <h2>Mã OTP của bạn</h2>
-            <p>Vui lòng sử dụng mã OTP sau để tiếp tục:</p>
+            <h2>Your OTP Code</h2>
+            <p>Please use the following OTP code to continue:</p>
             <div style="display: flex; align-items: center;">
               <span style="font-size: 20px; font-weight: bold; margin-right: 10px;">${otp}</span>
             </div>
-            <p>Mã này sẽ hết hạn trong 10 phút.</p>
-            <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!</p>
+            <p>This code will expire in 10 minutes.</p>
+            <p>Thank you for using our service!</p>
           </div>
         `,
       };
 
       const checkSendMail = await sendMail(mailOptions);
       if (!checkSendMail) {
-        throw new CustomError(500, "Gửi email thất bại");
+        throw new CustomError(500, "Failed to send email");
       }
 
-      return { message: "Đã gửi mã OTP thành công" };
+      return { message: "OTP code sent successfully" };
     } catch (error) {
       // Xử lý lỗi
       if (error instanceof CustomError) throw error;
@@ -126,29 +126,29 @@ class OTPService {
   async verifyOTP(email: string, otp: string) {
     try {
       if (!email || !otp) {
-        throw new CustomError(400, "Email và mã OTP là bắt buộc");
+        throw new CustomError(400, "Email and OTP code are required");
       }
 
       const user = await UserModel.findOne({ email: email });
       if (!user) {
-        throw new CustomError(400, "Không tìm thấy người dùng");
+        throw new CustomError(400, "User not found");
       }
 
       const otpDoc = await OtpModel.findOne({ userId: user._id });
       if (!otpDoc) {
-        throw new CustomError(400, "Mã OTP không tồn tại hoặc đã hết hạn");
+        throw new CustomError(400, "OTP code does not exist or has expired");
       }
 
       const isValidOtp = compareOtp(otp, otpDoc.otp);
       if (!isValidOtp) {
         await OtpModel.deleteOne({ userId: user._id });
-        throw new CustomError(400, "Mã OTP không hợp lệ");
+        throw new CustomError(400, "Invalid OTP code");
       }
 
       await OtpModel.deleteOne({ userId: user._id });
 
       return {
-        message: "Xác thực mã OTP thành công",
+        message: "OTP verification successful",
         userId: user._id,
       };
     } catch (error) {
