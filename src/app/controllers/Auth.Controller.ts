@@ -39,7 +39,7 @@ class AuthController {
 
       // Register user and handle subscription
       const user = await AuthService.register(
-        email,
+        email.toLowerCase(),
         password,
         username,
         phone,
@@ -69,7 +69,11 @@ class AuthController {
         throw new CustomError(400, "Email, mật khẩu và clientId là bắt buộc");
       }
 
-      const user = await AuthService.login(email, password, clientId);
+      const user = await AuthService.login(
+        email.toLowerCase(),
+        password,
+        clientId
+      );
 
       res.status(200).json({
         success: true,
@@ -113,7 +117,11 @@ class AuthController {
   async verifyOTPtoLogin(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, otp, clientId } = req.body;
-      const user = await OTPService.verifyOTPtoLogin(email, otp, clientId);
+      const user = await OTPService.verifyOTPtoLogin(
+        email.toLowerCase(),
+        otp,
+        clientId
+      );
       res.status(200).json({
         success: true,
         data: user,
@@ -130,7 +138,7 @@ class AuthController {
       if (!email) {
         throw new CustomError(400, "Email là bắt buộc");
       }
-      const result = await OTPService.getOTP(email);
+      const result = await OTPService.getOTP(email.toLowerCase());
       res.status(200).json({
         success: true,
         data: {
@@ -145,7 +153,7 @@ class AuthController {
   async verifyOTP(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, otp } = req.body;
-      const result = await OTPService.verifyOTP(email, otp);
+      const result = await OTPService.verifyOTP(email.toLowerCase(), otp);
       res.status(200).json({
         success: true,
         message: result.message,
@@ -158,7 +166,10 @@ class AuthController {
   async resetPassword(req: Request, res: Response, next: NextFunction) {
     try {
       const { email, password } = req.body;
-      const result = await AuthService.resetPassword(email, password);
+      const result = await AuthService.resetPassword(
+        email.toLowerCase(),
+        password
+      );
       res.status(200).json({
         success: true,
         message: result.message,
@@ -196,6 +207,8 @@ class AuthController {
         `https://jbabrands.com/wp-json/jba/v1/member-info/${uid}`
       );
       const data = response.data;
+      console.log(data);
+
       if (response.status !== 200) {
         throw new CustomError(response.status, data.message);
       }
