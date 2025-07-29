@@ -71,10 +71,7 @@ class InvitationCodeService {
     }
   }
 
-  async activeInvitationCode(
-    userId: string,
-    currentActiveLedgerEntryId: string
-  ) {
+  async activeInvitationCode(userId: string) {
     try {
       const franchiseDetail = await FranchiseDetailsModel.aggregate([
         {
@@ -89,7 +86,7 @@ class InvitationCodeService {
             userTrialQuotaLedger: {
               $filter: {
                 input: "$userTrialQuotaLedger",
-                cond: { $eq: ["$$this._id", currentActiveLedgerEntryId] },
+                cond: { $eq: ["$$this.status", "active"] },
               },
             },
             createdAt: 1,
@@ -99,6 +96,10 @@ class InvitationCodeService {
       ]);
 
       const activeLedger = franchiseDetail[0]?.userTrialQuotaLedger[0];
+
+      if (!activeLedger) {
+        throw new CustomError(400, "No active trial quota ledger found");
+      }
 
       const campaign = await CampaignModel.findById(
         activeLedger.sourceCampaignId
@@ -113,7 +114,7 @@ class InvitationCodeService {
         { userId: userId },
         {
           status: "active",
-          currentActiveLedgerEntryId: currentActiveLedgerEntryId,
+          currentActiveLedgerEntryId: activeLedger._id, // Sử dụng _id từ activeLedger
           packageId,
         }
       );

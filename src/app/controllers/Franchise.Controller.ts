@@ -848,16 +848,8 @@ class FranchiseController {
   async activeInvitationCode(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = req.user._id;
-      const currentActiveLedgerEntryId = req.body.currentActiveLedgerEntryId;
-      if (!currentActiveLedgerEntryId) {
-        throw new CustomError(400, "currentActiveLedgerEntryId is required");
-      }
-      if (!Types.ObjectId.isValid(currentActiveLedgerEntryId)) {
-        throw new CustomError(400, "Invalid currentActiveLedgerEntryId");
-      }
       const activeCode = await InvitationCodeService.activeInvitationCode(
-        userId,
-        currentActiveLedgerEntryId
+        userId
       );
       if (!activeCode) {
         throw new CustomError(400, "Could not activate invitation code");
