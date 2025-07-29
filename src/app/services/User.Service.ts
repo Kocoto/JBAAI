@@ -79,8 +79,8 @@ class UserService {
   async updateManyUser() {
     try {
       const users = await UserModel.updateMany(
-        { isPayment: false },
-        { isPayment: true }
+        { isHideScore: true },
+        { isHideScore: false }
       );
       return users;
     } catch (error) {
@@ -92,26 +92,26 @@ class UserService {
   }
 
   /**
-   * Xóa mềm tài khoản người dùng
-   * Đánh dấu isDeleted = true và thêm timestamp vào các field unique để tránh conflict
+   * Soft delete user account
+   * Mark isDeleted as true and add timestamp to unique fields to avoid conflicts
    */
   async deleteMyAccount(userId: string) {
     const session = await mongoose.startSession();
 
     try {
       const result = await session.withTransaction(async (ses) => {
-        // 1. Tìm user trước để kiểm tra tồn tại
+        // 1. Find user first to check existence
         const user = await UserModel.findById(userId).session(ses);
         if (!user) {
           throw new CustomError(404, "User not found");
         }
 
-        // 2. Kiểm tra user đã bị xóa chưa
+        // 2. Check if user is already deleted
         if (user.isDeleted) {
           throw new CustomError(400, "User already deleted");
         }
 
-        // 3. Tạo timestamp và cập nhật tất cả trong một lần
+        // 3. Create timestamp and update all at once
         const timestamp = Date.now();
         const updateData = {
           isDeleted: true,
@@ -121,12 +121,12 @@ class UserService {
           ...(user.phone && { phone: `${timestamp}_${user.phone}` }),
         };
 
-        // 4. Cập nhật user với tất cả thay đổi cùng lúc
+        // 4. Update user with all changes at once
         const updatedUser = await UserModel.findByIdAndUpdate(
           userId,
           updateData,
           {
-            new: true, // Trả về document sau khi update
+            new: true, // Return document after update
             session: ses,
           }
         );
@@ -137,7 +137,7 @@ class UserService {
       return result;
     } catch (error) {
       if (error instanceof CustomError) throw error;
-      throw new CustomError(500, `Lỗi khi xóa tài khoản: ${error}`);
+      throw new CustomError(500, `Error deleting account: ${error}`);
     } finally {
       await session.endSession();
     }

@@ -16,7 +16,7 @@ class InvitationService {
         code,
       }).session(session || null);
       if (!invitationCode) {
-        throw new CustomError(400, "Lỗi khi xác thực mã mời");
+        throw new CustomError(400, "Error validating invitation code");
       }
 
       const franchise = await FranchiseDetailsModel.findOne({
@@ -37,7 +37,7 @@ class InvitationService {
         );
       } else {
         if (!franchise) {
-          throw new CustomError(400, "Lỗi khi xác thực mã mời");
+          throw new CustomError(400, "Error validating invitation code");
         }
         const inviterUserId = invitationCode.userId;
         const invitationCodeId = invitationCode._id;

@@ -10,13 +10,13 @@ class UpgradeRequestController {
       const userId = req.user?._id;
       const email = req.user?.email;
 
-      if (!userId) throw new CustomError(400, "Không tìm thấy userId");
+      if (!userId) throw new CustomError(400, "UserId not found");
       const { phone, fullname, address, franchiseName } = req.body;
       const franchiseName15 = franchiseName;
       const franchiseNameUpCase = franchiseName15.toUpperCase();
       await InvitationCodeService.checkCodeIsInvalid(franchiseNameUpCase);
       if (!phone || !fullname || !address) {
-        throw new CustomError(400, "Vui lòng nhập đầy đủ thông tin");
+        throw new CustomError(400, "Please enter all required information");
       }
       const data = {
         userId,
@@ -33,7 +33,7 @@ class UpgradeRequestController {
       );
       res.status(201).json({
         success: true,
-        message: "Tạo yêu cầu nâng cấp thành công",
+        message: "Upgrade request created successfully",
         data: upgradeRequest,
       });
     } catch (error) {
@@ -58,7 +58,7 @@ class UpgradeRequestController {
 
       res.status(200).json({
         success: true,
-        message: "Lấy danh sách yêu cầu nâng cấp thành công",
+        message: "Get upgrade requests list successfully",
         data: result.upgradeRequests,
         pagination: {
           total: result.total,
@@ -74,12 +74,12 @@ class UpgradeRequestController {
   }
 
   async acceptUpgradeRequest(req: Request, res: Response, next: NextFunction) {
-    log("Đã tới đây, endpoint: /upgrade-requests/:id/accept");
+    log("Reached endpoint: /upgrade-requests/:id/accept");
     try {
       const upgradeRequestId = req.params.requestId;
       const sellerId = req.user?._id;
       if (!upgradeRequestId) {
-        throw new CustomError(400, "Không tìm thấy id");
+        throw new CustomError(400, "ID not found");
       }
       const upgradeRequest = await UpgradeRequestService.acceptUpgradeRequest(
         upgradeRequestId,
@@ -87,7 +87,7 @@ class UpgradeRequestController {
       );
       res.status(200).json({
         success: true,
-        message: "Chấp nhận yêu cầu nâng cấp thành công",
+        message: "Upgrade request accepted successfully",
         data: upgradeRequest,
       });
     } catch (error) {
@@ -103,7 +103,7 @@ class UpgradeRequestController {
     try {
       const sellerId = req.user?._id;
       if (!sellerId) {
-        throw new CustomError(400, "Không tìm thấy id");
+        throw new CustomError(400, "ID not found");
       }
       const status = req.params.status;
       const upgradeRequest =
@@ -113,7 +113,7 @@ class UpgradeRequestController {
         );
       res.status(200).json({
         success: true,
-        message: "Lấy danh sách yêu cầu nâng cấp thành công",
+        message: "Get upgrade requests list successfully",
         data: upgradeRequest,
       });
     } catch (error) {
@@ -125,7 +125,7 @@ class UpgradeRequestController {
     try {
       const upgradeRequestId = req.params.requestId;
       if (!upgradeRequestId) {
-        throw new CustomError(400, "Không tìm thấy id");
+        throw new CustomError(400, "ID not found");
       }
       const upgradeRequest = await UpgradeRequestService.approveUpgradeRequest(
         upgradeRequestId
@@ -133,7 +133,7 @@ class UpgradeRequestController {
 
       res.status(200).json({
         success: true,
-        message: "Xác nhận yêu cầu nâng cấp thành công",
+        message: "Upgrade request approved successfully",
         data: upgradeRequest,
       });
     } catch (error) {

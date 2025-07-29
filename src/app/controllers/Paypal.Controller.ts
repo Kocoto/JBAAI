@@ -9,7 +9,7 @@ class PaypalController {
     try {
       const packageId = req.body.packageId;
       if (!packageId) {
-        throw new CustomError(400, "PackageId không tồn tại");
+        throw new CustomError(400, "PackageId does not exist");
       }
       const userId = req.user._id;
       const data = {
@@ -19,7 +19,7 @@ class PaypalController {
       const order = await PaypalService.createOrder(data);
       res.status(200).json({
         success: true,
-        message: "Tạo đơn hàng thành công",
+        message: "Order created successfully",
         data: order,
       });
     } catch (error) {
@@ -31,13 +31,13 @@ class PaypalController {
     try {
       const orderId = req.body.orderId;
       if (!orderId) {
-        throw new CustomError(400, "OrderId không tồn tại");
+        throw new CustomError(400, "OrderId does not exist");
       }
       const userId = req.user._id;
       const purchaseHistory =
         await PurchaseHistoryService.getPurchaseHistoryByTransactionId(orderId);
       if (!purchaseHistory) {
-        throw new CustomError(400, "Không tìm thấy lịch sử mua hàng");
+        throw new CustomError(400, "Purchase history not found");
       }
       const purchaseHistoryId = String(purchaseHistory._id);
       const captureData = await PaypalService.captureOrder(
@@ -47,7 +47,7 @@ class PaypalController {
       );
       res.status(200).json({
         success: true,
-        message: "Capture đơn hàng thành công",
+        message: "Order captured successfully",
         data: captureData,
       });
     } catch (error) {

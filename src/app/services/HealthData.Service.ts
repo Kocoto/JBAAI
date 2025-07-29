@@ -27,6 +27,7 @@ export interface IHealthDataEmailJobPayload {
   language: string;
   type: string;
   chart?: string;
+  glp?: string;
 }
 
 class HealthDataService {
@@ -35,7 +36,7 @@ class HealthDataService {
       const data = transformIncomingData(rawData);
       const healthData = await HealthDataModel.create({ userId, ...data });
       if (!healthData) {
-        throw new CustomError(400, "Không thể tạo health data");
+        throw new CustomError(400, "Could not create health data");
       }
       return healthData;
     } catch (error) {
@@ -67,7 +68,7 @@ class HealthDataService {
     try {
       const healthData = await HealthDataModel.findByIdAndDelete(healthDataId);
       if (!healthData) {
-        throw new CustomError(400, "Không thể xóa health data");
+        throw new CustomError(400, "Could not delete health data");
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -97,12 +98,13 @@ class HealthDataService {
     rawData: any,
     language: string,
     type: string,
-    optionEmail?: string
+    optionEmail?: string,
+    glp?: string
   ): Promise<void> {
     try {
       const transformedData = transformIncomingData(rawData);
       if (!transformedData) {
-        throw new CustomError(400, "Không thể lấy health data");
+        throw new CustomError(400, "Could not get health data");
       }
 
       const jobPayload: IHealthDataEmailJobPayload = {
@@ -111,11 +113,12 @@ class HealthDataService {
         healthReportData: transformedData,
         language: language,
         type: type,
+        glp: glp,
       };
 
       await emailQueue.add("sendHealthReportEmail", jobPayload);
       console.log(
-        `[Service] Job 'sendHealthReportEmail' cho ${email} đã được thêm vào hàng đợi.`
+        `[Service] Job 'sendHealthReportEmail' for ${email} has been added to the queue.`
       );
       if (optionEmail) {
         const jobPayload: IHealthDataEmailJobPayload = {
@@ -124,17 +127,18 @@ class HealthDataService {
           healthReportData: transformedData,
           language: language,
           type: type,
+          glp: glp,
         };
 
         await emailQueue.add("sendHealthReportEmail", jobPayload);
         console.log(
-          `[Service] Job'sendHealthReportEmail' cho ${optionEmail} đã được thêm vào hàng đợi.`
+          `[Service] Job 'sendHealthReportEmail' for ${optionEmail} has been added to the queue.`
         );
       }
     } catch (error) {
-      // << Xử lý lỗi trong catch block >>
+      // << Error handling in catch block >>
       console.error(
-        `[Service] Lỗi khi chuẩn bị hoặc thêm job gửi health data email cho ${email} vào queue:`,
+        `[Service] Error preparing or adding send health data email job for ${email} to the queue:`,
         error
       );
 
@@ -143,10 +147,10 @@ class HealthDataService {
         // Nếu là lỗi đã biết (như lỗi transform), ném lại nó
         throw error;
       } else {
-        // Nếu là lỗi khác (ví dụ: lỗi kết nối Redis khi .add()), ném lỗi chung
+        // For other errors (e.g., Redis connection error during .add()), throw a generic error
         throw new CustomError(
           500,
-          `Không thể xếp hàng tác vụ gửi email health data. Lỗi hệ thống.`
+          `Could not queue the task to send health data email. System error.`
         );
       }
     }
@@ -166,7 +170,7 @@ class HealthDataService {
       const currentYear = parseInt(year, 10);
 
       if (isNaN(currentYear) || year.length !== 4) {
-        throw new CustomError(400, "Không tìm thấy năm yêu cầu");
+        throw new CustomError(400, "Could not find the requested year");
       }
 
       switch (type) {
@@ -176,7 +180,7 @@ class HealthDataService {
           if (isNaN(date.getTime())) {
             throw new CustomError(
               400,
-              "Định dạng ngày không hợp lệ hoặc ngày không tồn tại."
+              "Invalid date format or the date does not exist."
             );
           }
           startDate = startOfDay(date);
@@ -188,7 +192,7 @@ class HealthDataService {
           const weekNum = parseInt(dayValue, 10);
 
           if (isNaN(weekNum) || weekNum < 1 || weekNum > 53) {
-            throw new CustomError(400, "Số tuần không hợp lệ.");
+            throw new CustomError(400, "Invalid week number.");
           }
           const dateInWeek = setWeek(dateInYear, +dayValue, {
             weekStartsOn: 1,
@@ -198,7 +202,7 @@ class HealthDataService {
           if (isNaN(dateInWeek.getTime())) {
             throw new CustomError(
               400,
-              "Không tìm thấy tuần yêu cầu từ giá trị đã cho."
+              "Could not find the requested week from the given value."
             );
           }
           startDate = startOfWeek(dateInWeek, { weekStartsOn: 1 });
@@ -209,7 +213,7 @@ class HealthDataService {
           const monthNum = parseInt(dayValue, 10);
 
           if (isNaN(monthNum) || monthNum < 1 || monthNum > 12) {
-            throw new CustomError(400, "Không tìm thấy tháng yêu cầu");
+            throw new CustomError(400, "Could not find the requested month");
           }
           const dateInTargetMonth = new Date(currentYear, monthNum - 1, 1);
 
@@ -218,7 +222,7 @@ class HealthDataService {
           break;
         }
         default:
-          throw new CustomError(400, "Không xử lý được loại dữ liệu yêu cầu");
+          throw new CustomError(400, "Could not process the requested data type");
       }
 
       if (
@@ -229,7 +233,7 @@ class HealthDataService {
       ) {
         throw new CustomError(
           500,
-          "Không thể xác định khoảng ngày hợp lệ để xử lý."
+          "Could not determine a valid date range for processing."
         );
       }
 
@@ -390,7 +394,7 @@ class HealthDataService {
       if (error instanceof CustomError) {
         throw error;
       }
-      throw new CustomError(500, "Lỗi máy chủ khi lấy dữ liệu sức khỏe.");
+      throw new CustomError(500, "Server error when fetching health data.");
     }
   }
 
@@ -515,7 +519,7 @@ class HealthDataService {
 
     const results = await HealthDataModel.aggregate(aggregationPipeline);
 
-    // aggregate trả về một mảng, kể cả khi chỉ có 1 kết quả
+    // aggregate returns an array, even if there is only one result
     return results[0] || null;
   }
 
@@ -526,14 +530,14 @@ class HealthDataService {
   // ) {
   //   try {
   //     console.log(
-  //       `[HealthDataService] Lấy báo cáo tháng ${month}/${year} cho user ${userId}`
+  //       `[HealthDataService] Getting monthly report for ${month}/${year} for user ${userId}`
   //     );
 
-  //     // Tạo khoảng thời gian đầu tháng và cuối tháng
+  //     // Create time range for start and end of the month
   //     const startDate = startOfMonth(new Date(year, month - 1));
   //     const endDate = endOfMonth(new Date(year, month - 1));
 
-  //     // Lấy tất cả dữ liệu scan trong tháng
+  //     // Get all scan data within the month
   //     const healthData = await HealthDataModel.find({
   //       userId: new Types.ObjectId(userId),
   //       createdAt: {
@@ -544,10 +548,10 @@ class HealthDataService {
   //       .sort({ createdAt: -1 })
   //       .lean();
 
-  //     // Tính toán thống kê tổng quan
+  //     // Calculate overview statistics
   //     const totalScans = healthData.length;
 
-  //     // Tính trung bình các chỉ số quan trọng
+  //     // Calculate average of important metrics
   //     const avgMetrics = {
   //       avgPulseRate: 0,
   //       avgBloodPressureSystolic: 0,
@@ -608,18 +612,18 @@ class HealthDataService {
   //       details: healthData,
   //     };
   //   } catch (error) {
-  //     console.error(`[HealthDataService] Lỗi khi lấy báo cáo tháng: ${error}`);
-  //     throw new CustomError(500, "Lỗi khi lấy dữ liệu báo cáo tháng");
+  //     console.error(`[HealthDataService] Error getting monthly report: ${error}`);
+  //     throw new CustomError(500, "Error getting monthly report data");
   //   }
   // }
 
   // async testReport(userId: string, year: number, month: number) {
   //   try {
   //     console.log(
-  //       `[HealthDataService] Lấy báo cáo tháng ${month}/${year} cho user ${userId}`
+  //       `[HealthDataService] Getting monthly report for ${month}/${year} for user ${userId}`
   //     );
 
-  //     // Tạo khoảng thời gian đầu tháng và cuối tháng
+  //     // Create time range for start and end of the month
   //     const startDate = startOfMonth(new Date(year, month - 1));
   //     const endDate = endOfMonth(new Date(year, month - 1));
 
@@ -638,8 +642,8 @@ class HealthDataService {
 
   //     return healthData;
   //   } catch (error) {
-  //     console.error(`[HealthDataService] Lỗi khi lấy báo cáo tháng: ${error}`);
-  //     throw new CustomError(500, "Lỗi khi lấy dữ liệu báo cáo tháng");
+  //     console.error(`[HealthDataService] Error getting monthly report: ${error}`);
+  //     throw new CustomError(500, "Error getting monthly report data");
   //   }
   // }
 

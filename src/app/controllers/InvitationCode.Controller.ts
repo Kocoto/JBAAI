@@ -6,7 +6,7 @@ class InvitationCodeController {
     try {
       const userId = req.user._id;
       if (!userId) {
-        throw new CustomError(400, "Không để xác thực người dùng");
+        throw new CustomError(400, "Unable to authenticate user");
       }
       const code = await InvitationCodeService.getCodeByUserId(userId);
       res.status(200).json({

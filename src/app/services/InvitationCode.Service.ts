@@ -16,7 +16,7 @@ class InvitationCodeService {
     const otp = generateOTP(4);
     const validCode = code + otp;
 
-    // Lỗi sẽ được ném thẳng ra ngoài để withTransaction ở hàm cha xử lý
+    // Errors will be thrown directly for parent withTransaction to handle
     const newCode = await InvitationCodeModel.create(
       [
         {
@@ -41,7 +41,7 @@ class InvitationCodeService {
         status: "active",
       }).session(session || null);
       if (!checkCode) {
-        throw new CustomError(400, "Mã mời không hợp lệ");
+        throw new CustomError(400, "Invalid invitation code");
       }
       return checkCode;
     } catch (error) {
@@ -53,7 +53,7 @@ class InvitationCodeService {
     try {
       const checkCode = await InvitationCodeModel.findOne({ code: code });
       if (checkCode) {
-        throw new CustomError(400, "Mã mời đã tồn tại");
+        throw new CustomError(400, "Invitation code already exists");
       }
       return true;
     } catch (error) {
@@ -105,7 +105,7 @@ class InvitationCodeService {
       );
 
       if (!campaign) {
-        throw new CustomError(400, "Không tìm thấy chiến dịch");
+        throw new CustomError(400, "Campaign not found");
       }
       const packageId = campaign.packageId;
 
@@ -119,7 +119,7 @@ class InvitationCodeService {
       );
 
       if (activeCode.modifiedCount === 0) {
-        throw new CustomError(400, "Không thể kích hoạt mã mời");
+        throw new CustomError(400, "Cannot activate invitation code");
       }
       return activeCode;
     } catch (error) {

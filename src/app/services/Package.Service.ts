@@ -21,7 +21,7 @@ class PackageService {
         !packageData.location ||
         !packageData.currency
       ) {
-        throw new CustomError(400, "Missing required package fields");
+        throw new CustomError(400, "Required fields are missing");
       }
 
       // Validate price and duration are positive numbers
@@ -34,7 +34,7 @@ class PackageService {
 
       // Validate type is either standard or premium
       if (!["standard", "premium"].includes(packageData.type)) {
-        throw new CustomError(400, "Invalid package type");
+        throw new CustomError(400, "Package type is invalid");
       }
 
       // Validate location is either VN or other
@@ -42,12 +42,12 @@ class PackageService {
         packageData.location &&
         !["VN", "other"].includes(packageData.location)
       ) {
-        throw new CustomError(400, "Invalid location");
+        throw new CustomError(400, "Location is invalid");
       }
 
       const newPackage = await PackageModel.create(packageData);
       if (!newPackage) {
-        throw new CustomError(400, "Package creation failed");
+        throw new CustomError(400, "Failed to create package");
       }
       return newPackage;
     } catch (error) {
@@ -62,7 +62,7 @@ class PackageService {
     try {
       const packages = await PackageModel.find(queryPayload);
       if (!packages) {
-        throw new CustomError(404, "Packages not found");
+        throw new CustomError(404, "No packages found");
       }
       return packages;
     } catch (error) {
@@ -81,7 +81,7 @@ class PackageService {
         location: isoCode === "VN" ? "VN" : "other",
       });
       if (!packages) {
-        throw new CustomError(404, "Packages not found");
+        throw new CustomError(404, "No packages found");
       }
       return packages;
     } catch (error) {

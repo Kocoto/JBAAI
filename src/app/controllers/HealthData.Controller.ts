@@ -85,6 +85,7 @@ class HealthDataController {
       const email = req.user.email;
       const rawData = req.body.healthData;
       const optionEmail = req.user.optionEmail;
+      const glp = req.user.glp;
       const language = req.headers["accept-language"]
         ? req.headers["accept-language"]
         : "en"; // Get language from accept-language header
@@ -112,7 +113,8 @@ class HealthDataController {
         rawData,
         languageCode,
         type,
-        optionEmail
+        optionEmail,
+        glp
       );
 
       return res.status(200).json({

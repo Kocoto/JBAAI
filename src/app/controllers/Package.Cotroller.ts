@@ -79,38 +79,38 @@ class PackageController {
   }
 
   /**
-   * Lấy tất cả packages với bộ lọc động
-   * Chỉ áp dụng điều kiện tìm kiếm khi client truyền giá trị
+   * Get all packages with dynamic filters
+   * Search conditions are only applied when client provides values
    */
   async getAllPackages(req: Request, res: Response, next: NextFunction) {
     try {
-      // Tạo query payload động - chỉ thêm field khi có giá trị
+      // Create dynamic query payload - only add fields when they have values
       const queryPayload: IQueryPayload = {};
-      
-      // Chỉ thêm type vào query khi client truyền giá trị
+
+      // Only add type to query when client provides value
       if (req.query.type) {
         queryPayload.type = req.query.type as string;
       }
-      
-      // Chỉ thêm location vào query khi client truyền giá trị
+
+      // Only add location to query when client provides value
       if (req.query.location) {
         queryPayload.location = req.query.location as string;
       }
-      
-      // Chỉ thêm status vào query khi client truyền giá trị
+
+      // Only add status to query when client provides value
       if (req.query.status !== undefined) {
         queryPayload.status = req.query.status === "true";
       }
-      
+
       // Fetch packages based on dynamic query parameters
       const packages = await PackageService.getAllPackages(queryPayload);
-  
+
       // Return success response with packages
       return res.status(200).json({
         success: true,
         message: "Packages retrieved successfully",
         data: packages,
-        filters: queryPayload // Trả về các filter đã áp dụng để client biết
+        filters: queryPayload, // Return applied filters for client reference
       });
     } catch (error) {
       next(error);
