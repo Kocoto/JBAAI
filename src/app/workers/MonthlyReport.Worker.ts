@@ -39,7 +39,7 @@ export const processMonthlyReportJob = async (
     const fileName = `HealthReport_${username}_Month${month}_${year}.xlsx`;
 
     const mailOptions = {
-      from: "JBA AI",
+      from: '"JBA AI" <support@jbabrands.ai>',
       to: email,
       subject: `Your Health Report for ${month}/${year}`,
       html: `

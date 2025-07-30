@@ -32,7 +32,7 @@ export const processEmailJob = async (
           `[Worker] Preparing mail options for ${healthDataPayload.emailTo}...`
         );
         const mailOptions = {
-          from: "JBA AI",
+          from: '"JBA AI" <support@jbabrands.ai>',
           to: healthDataPayload.emailTo,
           subject: "Health Data",
           html: htmlContent,
