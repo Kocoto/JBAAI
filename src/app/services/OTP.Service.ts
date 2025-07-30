@@ -94,7 +94,7 @@ class OTPService {
       );
 
       const mailOptions = {
-        from: process.env.EMAIL_USER, // Thêm thông tin người gửi
+        from: '"JBA AI" <support@jbabrands.ai>', // Thêm thông tin người gửi
         to: user.email,
         subject: "Your OTP Code", // Thêm tiêu đề email
         html: `
