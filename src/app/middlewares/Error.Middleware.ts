@@ -14,15 +14,21 @@ const errorHandler: ErrorRequestHandler = async (
   const statusCode = err instanceof CustomError ? err.status : 500;
   const acceptLang = req.headers["accept-language"]?.split(",")[0];
 
-  if (err.translateEnabled && acceptLang && acceptLang !== "en") {
+  if (err.errorEnabled && acceptLang && acceptLang !== "en") {
     translatedMessage = await translateTextSmart(err.message, acceptLang);
-    console.log(`[ErrorMiddleware] ${err.message} → ${translatedMessage}`);
-    console.log(`[ErrorMiddleware] Translate Enabled: ${err.translateEnabled}`);
   }
+  if (!err.errorEnabled) {
+    translatedMessage = "An error occurred.";
+  }
+  console.log(`[ErrorMiddleware] Message: ${err.message}`);
+  console.log(`[ErrorMiddleware] Stack: ${err.stack}`);
   res.status(statusCode).json({
     success: false,
     message: translatedMessage,
-    stack: process.env.NODE_ENV === "production" ? null : err.stack,
+    stack:
+      process.env.NODE_ENV === "production" || !err.errorEnabled
+        ? null
+        : err.stack,
   });
 };
 

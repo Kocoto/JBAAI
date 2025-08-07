@@ -143,7 +143,7 @@ class AuthService {
             message = "This username is already in use.";
           if (phone && existingUser.phone === phone)
             message = "This phone number is already in use.";
-          throw new CustomError(409, message);
+          throw new CustomError(409, message, false);
         }
 
         // 3. Create userData object
