@@ -13,7 +13,7 @@ const errorHandler: ErrorRequestHandler = async (
   const statusCode = err instanceof CustomError ? err.status : 500;
   const acceptLang = req.headers["accept-language"]?.split(",")[0] || "en";
   const translatedMessage = await translateTextSmart(err.message, acceptLang);
-  console.log(translatedMessage);
+  console.log(`[ErrorMiddleware] ${err.message} → ${translatedMessage}`);
   res.status(statusCode).json({
     success: false,
     message: translatedMessage,

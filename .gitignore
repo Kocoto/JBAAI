@@ -8,4 +8,4 @@ dist/
 *.log
 error.log
 logs/
-translations/
+.cache/
