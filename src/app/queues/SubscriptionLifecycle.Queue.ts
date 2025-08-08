@@ -6,7 +6,13 @@ export interface IExpireSubscriptionPayload {
   userId: string;
 }
 const SUBSCRIPTION_LIFECYCLE_QUEUE_NAME = "subscription-lifecycle-queue";
-
+export enum SubscriptionJobName {
+  EXPIRE = "expireSubscriptionTask",
+  NOTIFY_3_DAYS = "notifyBeforeExpiryTask",
+  NOTIFY_2_DAYS = "notify2DaysLeftTask",
+  NOTIFY_1_DAY = "notify1DayLeftTask",
+  NOTIFY_TODAY = "notifyTodayExpiryTask",
+}
 const subscriptionLifecycleQueue = new Queue(
   SUBSCRIPTION_LIFECYCLE_QUEUE_NAME,
   {

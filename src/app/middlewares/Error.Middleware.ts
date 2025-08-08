@@ -20,8 +20,8 @@ const errorHandler: ErrorRequestHandler = async (
   if (!err.errorEnabled) {
     translatedMessage = "An error occurred.";
   }
-  console.log(`[ErrorMiddleware] Message: ${err.message}`);
-  console.log(`[ErrorMiddleware] Stack: ${err.stack}`);
+  // console.log(`[ErrorMiddleware] Message: ${err.message}`);
+  // console.log(`[ErrorMiddleware] Stack: ${err.stack}`);
   res.status(statusCode).json({
     success: false,
     message: translatedMessage,
