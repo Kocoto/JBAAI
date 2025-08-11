@@ -308,6 +308,8 @@ Kết luận
 Với sự pha trộn được lựa chọn kỹ lưỡng giữa collagen biển, các axit amin có mục tiêu, vitamin và chiết xuất thực vật, Collagen-B của JBA Brands mang đến sự hỗ trợ toàn diện trong một trong những giai đoạn chuyển tiếp quan trọng nhất của cuộc đời. Hãy đón nhận mãn kinh với sự tự tin—nuôi dưỡng làn da, xương, khớp, giấc ngủ và đời sống tình dục của bạn từ bên trong, và khám phá lại vẻ rạng rỡ ở mọi lứa tuổi.
 
       --- KẾT THÚC CƠ SỞ TRI THỨC ---
+
+  Hãy trả lời lại theo ngôn ngữ của người hỏi
     `;
 
       const completion = await openai.chat.completions.create({
