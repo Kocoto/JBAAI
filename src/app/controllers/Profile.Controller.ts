@@ -69,9 +69,16 @@ class ProfileController {
       if (!result) {
         throw new CustomError(400, "User information not found");
       }
+      const ringResult = await RingService.getRing(userId);
+      if (!ringResult) {
+        throw new CustomError(400, "Ring information not found");
+      }
       return res.status(200).json({
         message: "User information retrieved successfully",
-        data: result,
+        data: {
+          profile: result,
+          ring: ringResult,
+        },
       });
     } catch (error) {
       next(error);

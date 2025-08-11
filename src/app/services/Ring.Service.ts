@@ -4,7 +4,7 @@ import CustomError from "../utils/Error.Util";
 import mongoose from "mongoose";
 
 class RingService {
-  async createRing(ring: IRing, session: mongoose.ClientSession) {
+  async createRing(ring: IRing, session?: mongoose.ClientSession) {
     try {
       console.log("aaaaaaa", ring);
 
@@ -24,10 +24,11 @@ class RingService {
   }
   async getRing(
     userId: mongoose.Types.ObjectId,
-    session: mongoose.ClientSession
+    session?: mongoose.ClientSession
   ) {
     try {
-      const ring = await RingModel.findOne({ userId }).session(session);
+      const ring = await RingModel.findOne({ userId }).session(session || null);
+
       if (!ring) {
         throw new CustomError(400, "Failed to get ring");
       }
