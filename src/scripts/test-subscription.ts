@@ -1,18 +1,18 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-import { connect } from "./src/app/config/db";
-import { redisConnection } from "./src/app/config/redis.config";
+import { connect } from "../app/config/db";
+import { redisConnection } from "../app/config/redis.config";
 import {
   subscriptionLifecycleQueue,
   SubscriptionJobName,
-} from "./src/app/queues/SubscriptionLifecycle.Queue";
-import UserModel from "./src/app/models/User.Model";
+} from "../app/queues/SubscriptionLifecycle.Queue";
+import UserModel from "../app/models/User.Model";
 import SubscriptionModel, {
   SubscriptionStatus,
-} from "./src/app/models/Subscription.Model";
-import PackageModel from "./src/app/models/Package.Model";
-import { initializeSubscriptionLifecycleWorker } from "./src/app/workers/SubscriptionLifecycle.Worker";
+} from "../app/models/Subscription.Model";
+import PackageModel from "../app/models/Package.Model";
+import { initializeSubscriptionLifecycleWorker } from "../app/workers/SubscriptionLifecycle.Worker";
 
 (async () => {
   try {
