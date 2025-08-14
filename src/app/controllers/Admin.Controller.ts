@@ -6,6 +6,7 @@ import {
   IInvitationCode,
   IInvitationCodeInput,
 } from "../models/InvitationCode.Model";
+import SubscriptionService from "../services/Subscription.Service";
 
 class AdminController {
   /**
@@ -469,6 +470,8 @@ class AdminController {
 
       // Validate status if provided
       const validStatuses = ["active", "inactive", "suspended"]; // Add valid statuses according to business logic
+      console.log(`[AdminController] status: ${status}`);
+      console.log(`[AdminController] validStatuses: ${validStatuses}`);
       if (status && !validStatuses.includes(status as string)) {
         return res.status(400).json({
           success: false,
@@ -729,6 +732,100 @@ class AdminController {
         success: true,
         message: "Successfully created invitation code",
         data: newInvitationCode,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAllUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { page, limit } = req.query;
+      const users = await AdminService.getAllUsers(
+        parseInt(page as string) || 1,
+        parseInt(limit as string) || 10
+      );
+      res.status(200).json({
+        success: true,
+        message: "Successfully retrieved all users",
+        data: users,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getUserById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const user = await AdminService.getUserById(userId);
+      res.status(200).json({
+        success: true,
+        message: "Successfully retrieved user by id",
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const user = await AdminService.updateUser(userId, req.body);
+      res.status(200).json({
+        success: true,
+        message: "Successfully updated user",
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const user = await AdminService.deleteUser(userId);
+      res.status(200).json({
+        success: true,
+        message: "Successfully deleted user",
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getSearchUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { query, page, limit } = req.query;
+      const users = await AdminService.getSearchUsers(
+        query as string,
+        parseInt(page as string) || 1,
+        parseInt(limit as string) || 10
+      );
+      res.status(200).json({
+        success: true,
+        message: "Successfully retrieved search users",
+        data: users,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createSubscription(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId, packageId } = req.body;
+      const subscription = await SubscriptionService.createSubscription(
+        userId,
+        packageId
+      );
+      res.status(200).json({
+        success: true,
+        message: "Successfully created subscription",
+        data: subscription,
       });
     } catch (error) {
       next(error);

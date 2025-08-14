@@ -10,6 +10,8 @@ import InvitationCodeModel, {
   IInvitationCode,
   IInvitationCodeInput,
 } from "../models/InvitationCode.Model";
+import { IUser } from "../models/User.Model";
+import SubscriptionModel from "../models/Subscription.Model";
 
 export interface campaignFilter {
   status?: string;
@@ -1832,6 +1834,183 @@ class AdminService {
         `[AdminService] Undefined error when allocating quota: ${error}`
       );
       throw new CustomError(500, "Undefined error when allocating quota");
+    }
+  }
+
+  async createUser(data: Partial<IUser>) {
+    try {
+      const user = await UserModel.findOne({
+        $or: [
+          { email: data.email },
+          { phone: data.phone },
+          { username: data.username },
+        ],
+      });
+      if (user) {
+        throw new CustomError(400, "User already exists");
+      }
+      const newUser = await UserModel.create(data);
+      if (!newUser) {
+        throw new CustomError(500, "Undefined error after creating user");
+      }
+      return newUser;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] CustomError when creating user: ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Undefined error when creating user: ${error}`
+      );
+      throw new CustomError(500, "Undefined error when creating user");
+    }
+  }
+
+  async updateUser(userId: string, data: Partial<IUser>) {
+    try {
+      const user = await UserModel.findOne({
+        _id: new Types.ObjectId(userId),
+      });
+      if (!user) {
+        throw new CustomError(404, "User not found");
+      }
+      const updatedUser = await UserModel.updateOne(
+        { _id: new Types.ObjectId(userId) },
+        data,
+        { new: true }
+      );
+      if (!updatedUser) {
+        throw new CustomError(500, "Undefined error after updating user");
+      }
+      return updatedUser;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] CustomError when updating user: ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Undefined error when updating user: ${error}`
+      );
+      throw new CustomError(500, "Undefined error when updating user");
+    }
+  }
+
+  async deleteUser(userId: string) {
+    try {
+      const user = await UserModel.findOne({
+        _id: new Types.ObjectId(userId),
+      });
+      if (!user) {
+        throw new CustomError(404, "User not found");
+      }
+      const deleteUser = await UserModel.updateOne(
+        { _id: new Types.ObjectId(userId) },
+        { isDeleted: true, deletedAt: new Date() }
+      );
+      if (!deleteUser) {
+        throw new CustomError(500, "Undefined error after deleting user");
+      }
+      return deleteUser;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] CustomError when deleting user: ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Undefined error when deleting user: ${error}`
+      );
+      throw new CustomError(500, "Undefined error when deleting user");
+    }
+  }
+
+  async getAllUsers(page: number, limit: number) {
+    try {
+      const users = await UserModel.find({ isDeleted: false })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean();
+      if (!users) {
+        throw new CustomError(404, "Users not found");
+      }
+      return users;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] CustomError when getting all users: ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Undefined error when getting all users: ${error}`
+      );
+      throw new CustomError(500, "Undefined error when getting all users");
+    }
+  }
+
+  async getUserById(userId: string) {
+    try {
+      const user = await UserModel.findOne({ _id: new Types.ObjectId(userId) });
+      if (!user) {
+        throw new CustomError(404, "User not found");
+      }
+      const franchise = await FranchiseDetailsModel.findOne({
+        userId: user._id,
+      });
+      if (!franchise) {
+        throw new CustomError(404, "Franchise not found");
+      }
+      const franchiseHierarchy = await this.getFranchiseHierarchy(
+        user._id.toString()
+      );
+      return {
+        user,
+        franchise,
+        franchiseHierarchy,
+      };
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] CustomError when getting user by id: ${error.message}`
+        );
+        throw error;
+      }
+    }
+  }
+
+  async getSearchUsers(query: string, page: number, limit: number) {
+    try {
+      const users = await UserModel.find({
+        $or: [
+          { email: { $regex: query, $options: "i" } },
+          { username: { $regex: query, $options: "i" } },
+          { phone: { $regex: query, $options: "i" } },
+          { franchiseName: { $regex: query, $options: "i" } },
+        ],
+      })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean();
+      if (!users) {
+        throw new CustomError(404, "Users not found");
+      }
+      return users;
+    } catch (error) {
+      if (error instanceof CustomError) {
+        console.error(
+          `[AdminService] CustomError when searching users: ${error.message}`
+        );
+        throw error;
+      }
+      console.error(
+        `[AdminService] Undefined error when searching users: ${error}`
+      );
+      throw new CustomError(500, "Undefined error when searching users");
     }
   }
 }
