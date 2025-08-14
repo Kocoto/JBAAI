@@ -11,6 +11,7 @@ import InvitationCodeRoute from "./InvitationCode.Route";
 import ReportRoute from "./Report.Route";
 import AdminRoute from "./Admin.Route";
 import FranchiseRoute from "./Franchise.Route";
+import AiRoute from "./AI.Route";
 
 export function route(app: Express) {
   app.use("/api/v1/invitation-code", InvitationCodeRoute);
@@ -24,5 +25,6 @@ export function route(app: Express) {
   app.use("/api/v1/admin", AdminRoute);
   app.use("/api/v1/user", UserRoute);
   app.use("/api/v1/auth", AuthRoute);
+  app.use("/api/v1/ai", AiRoute);
   app.use("/", HomeRoute);
 }

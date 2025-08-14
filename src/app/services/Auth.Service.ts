@@ -30,6 +30,7 @@ import SubscriptionService from "./Subscription.Service";
 import mongoose from "mongoose";
 import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
 import axios from "axios";
+import RingService from "./Ring.Service";
 
 class AuthService {
   /**
@@ -195,6 +196,22 @@ class AuthService {
         // 7. Save all changes on newUser once at the end
         // This ensures changes from _handleInvitationFlow are also saved
         await newUser.save({ session: ses });
+        if (!newUser || !newUser._id) {
+          throw new CustomError(
+            500,
+            "Failed to create user or userId is missing"
+          );
+        }
+        await RingService.createRing(
+          {
+            userId: newUser._id,
+            calories: 0,
+            steps: 0,
+            step_length: 0,
+            duration: 0,
+          },
+          ses
+        );
 
         return newUser;
       });
@@ -300,7 +317,8 @@ class AuthService {
 
         // Use lean() to get plain object, avoid returning Mongoose methods
         const finalUser = await UserModel.findById(user._id).session(ses);
-        return { user: finalUser, accessToken, refreshToken, profile };
+        const ring = await RingService.getRing(user._id, ses);
+        return { user: finalUser, accessToken, refreshToken, profile, ring };
       });
 
       return result;
