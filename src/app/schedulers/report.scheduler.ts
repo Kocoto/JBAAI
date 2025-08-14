@@ -7,19 +7,31 @@ import {
 
 export const scheduleMonthlyReportJobs = () => {
   cron.schedule(
-    "5 0 1 * *",
+    "* * * * *",
     async () => {
       console.log("[Scheduler] Running monthly report job scheduler...");
 
       try {
         const now = new Date();
+        console.log("[Scheduler][Debug] Current date:", now.toISOString());
+
         const lastMonthDate = new Date(
           now.getFullYear(),
           now.getMonth() - 1,
           1
         );
+        console.log(
+          "[Scheduler][Debug] Last month date:",
+          lastMonthDate.toISOString()
+        );
+
         const reportMonth = lastMonthDate.getMonth() + 1; // getMonth() là 0-11
         const reportYear = lastMonthDate.getFullYear();
+        console.log("[Scheduler][Debug] Report period details:", {
+          reportMonth,
+          reportYear,
+          monthName: lastMonthDate.toLocaleString("en-US", { month: "long" }),
+        });
         console.log(
           `[Scheduler] Preparing reports for ${reportMonth}/${reportYear}`
         );
@@ -44,7 +56,7 @@ export const scheduleMonthlyReportJobs = () => {
         for (const user of users) {
           const jobPayload: IMonthlyReportJobData = {
             userId: user._id.toString(),
-            email: user.email,
+            email: "duocnn130901@gmail.com",
             username: user.username,
             month: reportMonth,
             year: reportYear,
