@@ -863,6 +863,29 @@ class FranchiseController {
       next(error);
     }
   }
+
+  async getChildrenFranchise(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?._id;
+      if (!userId) {
+        throw new CustomError(401, "Could not find logged in user information");
+      }
+      if (req.user?.role !== "franchise") {
+        throw new CustomError(
+          403,
+          "Only franchise can view children franchise"
+        );
+      }
+      const children = await FranchiseService.getChildrenFranchise(userId);
+      res.status(200).json({
+        success: true,
+        message: "Successfully retrieved children franchise",
+        data: children,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new FranchiseController();

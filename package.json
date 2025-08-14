@@ -32,8 +32,10 @@
     "typescript": "^5.8.2"
   },
   "dependencies": {
+    "@google-cloud/translate": "^9.2.0",
     "@maxmind/geoip2-node": "^6.1.0",
     "@paypal/checkout-server-sdk": "^1.0.3",
+    "@vitalets/google-translate-api": "^9.2.1",
     "agenda": "^5.0.0",
     "axios": "^1.10.0",
     "bcrypt": "^5.1.1",
@@ -46,13 +48,24 @@
     "express": "^4.19.2",
     "ioredis": "^5.6.1",
     "jsonwebtoken": "^9.0.2",
+    "mockdate": "^3.0.5",
     "mongoose": "^8.4.0",
     "multer": "^1.4.5-lts.2",
     "node-cron": "^4.2.1",
     "nodemailer": "^6.10.0",
+    "open-google-translator": "^1.0.5",
     "pdfmake": "^0.2.20",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
-    "winston": "^3.17.0"
-  }
+    "winston": "^3.17.0",
+    "zod": "^3.23.8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kocoto/JBAAI.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Kocoto/JBAAI/issues"
+  },
+  "homepage": "https://github.com/Kocoto/JBAAI#readme"
 }

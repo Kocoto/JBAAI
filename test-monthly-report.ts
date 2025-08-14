@@ -20,7 +20,6 @@ async function testMonthlyReport() {
     // Initialize worker
     const worker = initializeMonthlyReportWorker();
     console.log("[Test] Worker initialized");
-
     // Get a test user
     const testUser = await UserModel.findOne({
       email: "Duoc6694@gmail.com",

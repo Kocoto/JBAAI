@@ -54,13 +54,16 @@ class AuthService {
     // 2. Create invitation record
     await InvitationService.createInvitation(
       invitationCode,
-      newUser._id.toString(),
+      newUser._id,
       session
     );
 
     // 3. Activate gift package/subscription
+    if (!invitationCodeInfo.packageId) {
+      throw new CustomError(400, "Invitation code missing packageId");
+    }
     await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
-      newUser._id.toString(),
+      newUser._id,
       invitationCodeInfo.packageId.toString(),
       session
     );
@@ -79,8 +82,8 @@ class AuthService {
 
       const parentFranchiseLevel = parentFranchiseDetails?.franchiseLevel ?? 0;
       const newFranchiseLevel = parentFranchiseLevel + 1;
-
-      await FranchiseDetailsModel.create(
+      console.log("parentFranchiseId", invitationCodeInfo.userId);
+      const newFranchiseDetails = await FranchiseDetailsModel.create(
         [
           {
             userId: newUser._id,
@@ -93,14 +96,20 @@ class AuthService {
             ],
           },
         ],
-        { session }
+        { new: true, session }
       );
+      await newFranchiseDetails[0].save({ session });
     }
 
     // 6. Update invitation code info (important: use session)
     if (invitationCodeInfo.totalCumulativeUses !== undefined) {
       invitationCodeInfo.totalCumulativeUses += 1;
     }
+    await UserModel.findByIdAndUpdate(
+      newUser._id,
+      { role: "franchise" },
+      { new: true, session }
+    );
     // **MOST IMPORTANT FIX:** Must pass session to save()
     await invitationCodeInfo.save({ session });
   }
@@ -143,7 +152,7 @@ class AuthService {
             message = "This username is already in use.";
           if (phone && existingUser.phone === phone)
             message = "This phone number is already in use.";
-          throw new CustomError(409, message);
+          throw new CustomError(409, message, true);
         }
 
         // 3. Create userData object
@@ -167,6 +176,8 @@ class AuthService {
         if (invitationCode) {
           await this._handleInvitationFlow(invitationCode, newUser, ses);
         }
+
+        console.log("newUser", newUser);
 
         // 6. Create Profile (always execute)
         await ProfileService.createProfile(

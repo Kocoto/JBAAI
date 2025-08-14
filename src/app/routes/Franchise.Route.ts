@@ -110,4 +110,11 @@ router.post(
   FranchiseController.activeInvitationCode
 );
 
+// GET /api/v1/franchise/children-franchise - Lấy danh sách franchise con
+router.get(
+  "/children-franchise",
+  checkFranchise,
+  FranchiseController.getChildrenFranchise
+);
+
 export default router;

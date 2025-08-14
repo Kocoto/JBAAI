@@ -1,5 +1,8 @@
 import { Worker, Job } from "bullmq";
-import { SUBSCRIPTION_LIFECYCLE_QUEUE_NAME } from "../queues/SubscriptionLifecycle.Queue";
+import {
+  SUBSCRIPTION_LIFECYCLE_QUEUE_NAME,
+  SubscriptionJobName,
+} from "../queues/SubscriptionLifecycle.Queue";
 import { redisConnection } from "../config/redis.config";
 import { IExpireSubscriptionPayload } from "../queues/SubscriptionLifecycle.Queue";
 import SubscriptionModel, {
@@ -20,7 +23,7 @@ export const processSubscriptionLifecycleJob = async (
   console.log(`[Worker] Tên công việc: ${JSON.stringify(job.name)}`);
 
   switch (job.name) {
-    case "expireSubscriptionTask":
+    case SubscriptionJobName.EXPIRE:
       const expireSubscriptionPayload = job.data as IExpireSubscriptionPayload;
       const { subscriptionId, userId } = job.data;
       if (!subscriptionId || !userId) {
@@ -62,7 +65,8 @@ export const processSubscriptionLifecycleJob = async (
         // Mặc dù BullMQ lên lịch job theo delay, vẫn nên có kiểm tra này để đảm bảo.
         // Có thể có sai số nhỏ về thời gian, hoặc job được chạy lại.
         const now = new Date();
-        if (subscription.endDate > now) {
+        const ALLOWED_EARLY_MS = 2000; // Cho phép lệch tối đa 2 giây
+        if (subscription.endDate.getTime() - now.getTime() > ALLOWED_EARLY_MS) {
           // Nếu ngày hết hạn vẫn còn trong tương lai một cách đáng kể (ví dụ > vài phút)
           // Điều này không nên xảy ra nếu job được lên lịch đúng.
           // Có thể là job bị kích hoạt sớm do lỗi nào đó.
@@ -122,12 +126,61 @@ export const processSubscriptionLifecycleJob = async (
         throw error;
       }
       break;
+    case SubscriptionJobName.NOTIFY_3_DAYS:
+    case SubscriptionJobName.NOTIFY_2_DAYS:
+    case SubscriptionJobName.NOTIFY_1_DAY:
+    case SubscriptionJobName.NOTIFY_TODAY:
+      return await handleNotifyJob(job);
     default:
       console.warn(
         `[SubWorker] Nhận được công việc với tên không xác định: ${job.name} (ID: ${job.id}).`
       );
       throw new Error(`Tên công việc không xác định: ${job.name}`); // Ném lỗi để job này được đánh dấu là thất bại
   }
+};
+
+const handleNotifyJob = async (job: Job<IExpireSubscriptionPayload>) => {
+  const { subscriptionId, userId } = job.data;
+
+  const subscription = await SubscriptionModel.findById(subscriptionId);
+  const user = await UserModel.findById(userId);
+
+  if (!subscription || !user || !subscription.isActive) return;
+
+  let subject = "";
+  let message = "";
+  const endDateStr = subscription.endDate.toLocaleDateString();
+
+  switch (job.name) {
+    case SubscriptionJobName.NOTIFY_3_DAYS:
+      subject = "Còn 3 ngày nữa subscription của bạn sẽ hết hạn";
+      message = `Gói của bạn sẽ hết hạn sau 3 ngày (vào ${endDateStr}). Hãy gia hạn để không bị gián đoạn.`;
+      console.log(`[SubWorker] Đã gửi email: ${subject} → ${user.email}`);
+      break;
+    case SubscriptionJobName.NOTIFY_2_DAYS:
+      subject = "Còn 2 ngày nữa subscription của bạn sẽ hết hạn";
+      message = `Gói của bạn sẽ hết hạn sau 2 ngày (vào ${endDateStr}).`;
+      console.log(`[SubWorker] Đã gửi email: ${subject} → ${user.email}`);
+      break;
+    case SubscriptionJobName.NOTIFY_1_DAY:
+      subject = "Ngày mai subscription của bạn sẽ hết hạn";
+      message = `Ngày mai (vào ${endDateStr}) là ngày hết hạn subscription của bạn.`;
+      console.log(`[SubWorker] Đã gửi email: ${subject} → ${user.email}`);
+      break;
+    case SubscriptionJobName.NOTIFY_TODAY:
+      subject = "Hôm nay là ngày hết hạn subscription";
+      message = `Hôm nay (${endDateStr}) là ngày hết hạn subscription của bạn.`;
+      console.log(`[SubWorker] Đã gửi email: ${subject} → ${user.email}`);
+      break;
+  }
+
+  // await sendEmail({
+  //   to: user.email,
+  //   subject,
+  //   text: message,
+  // });
+
+  console.log(`[Worker] Đã gửi email: ${subject} → ${user.email}`);
 };
 
 export const initializeSubscriptionLifecycleWorker =

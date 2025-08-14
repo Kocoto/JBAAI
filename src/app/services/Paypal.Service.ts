@@ -137,17 +137,16 @@ class PaypalService {
         throw new CustomError(
           500,
           "System error when creating PayPal order.",
+          false,
           err.message // Only send original error message
         );
       } else {
         // Very rare case
-        console.error(
-          "[PayPal Create Order] Undefined error object:",
-          err
-        );
+        console.error("[PayPal Create Order] Undefined error object:", err);
         throw new CustomError(
           500,
           "Cannot create PayPal order.",
+          false,
           "An undefined error occurred."
         );
       }
@@ -270,47 +269,47 @@ class PaypalService {
         // --- End changes ---
 
         // Check if amount and currency match (using expectedFinalPrice)
-         // Compare with small tolerance to avoid floating point rounding errors
-         const priceDifference = Math.abs(
-           Number(capturedAmount) - expectedFinalPrice
-         );
-         const tolerance = 0.01; // Accept 0.01 USD tolerance
+        // Compare with small tolerance to avoid floating point rounding errors
+        const priceDifference = Math.abs(
+          Number(capturedAmount) - expectedFinalPrice
+        );
+        const tolerance = 0.01; // Accept 0.01 USD tolerance
 
-         if (
-           priceDifference > tolerance || // Compare expected final price
-           capturedCurrency !== expectedCurrency
-         ) {
-           console.error(
-             `[PayPal Capture Order] !!AMOUNT MISMATCH!! Order ${orderId}, Purchase ${purchaseHistoryId}. Expected: ${expectedFinalPrice.toFixed(
-               2
-             )} ${expectedCurrency}. Actual: ${capturedAmount} ${capturedCurrency}`
-           );
-           // !! CRITICAL HANDLING: Update DB with error status and may need refund !!
-           await PurchaseHistoryService.updatePurchaseHistory(
-             purchaseHistoryId,
-             "amount_mismatch", // New status for amount mismatch error
-             finalPaypalTxnId
-           );
-           // 400 error to inform client about amount mismatch
-           throw new CustomError(
-             400,
-             "Payment amount does not match order amount after applying discount." // Update error message
-           );
-         }
+        if (
+          priceDifference > tolerance || // Compare expected final price
+          capturedCurrency !== expectedCurrency
+        ) {
+          console.error(
+            `[PayPal Capture Order] !!AMOUNT MISMATCH!! Order ${orderId}, Purchase ${purchaseHistoryId}. Expected: ${expectedFinalPrice.toFixed(
+              2
+            )} ${expectedCurrency}. Actual: ${capturedAmount} ${capturedCurrency}`
+          );
+          // !! CRITICAL HANDLING: Update DB with error status and may need refund !!
+          await PurchaseHistoryService.updatePurchaseHistory(
+            purchaseHistoryId,
+            "amount_mismatch", // New status for amount mismatch error
+            finalPaypalTxnId
+          );
+          // 400 error to inform client about amount mismatch
+          throw new CustomError(
+            400,
+            "Payment amount does not match order amount after applying discount." // Update error message
+          );
+        }
 
         console.log(
-           `[PayPal Capture Order] Payment successfully completed for order ${orderId} with transaction ID: ${finalPaypalTxnId}`
-         );
+          `[PayPal Capture Order] Payment successfully completed for order ${orderId} with transaction ID: ${finalPaypalTxnId}`
+        );
 
-         // Update success status in DB
-         const updatedPurchaseHistory =
-           await PurchaseHistoryService.updatePurchaseHistory(
-             purchaseHistoryId,
-             "completed", // Or 'success' depending on your convention
-             finalPaypalTxnId
-           );
+        // Update success status in DB
+        const updatedPurchaseHistory =
+          await PurchaseHistoryService.updatePurchaseHistory(
+            purchaseHistoryId,
+            "completed", // Or 'success' depending on your convention
+            finalPaypalTxnId
+          );
 
-         // Create subscription and update user
+        // Create subscription and update user
 
         const newActiveSubscription =
           await SubscriptionService.handleSuccessfulPaymentAndActivateSubscription(
@@ -425,10 +424,7 @@ class PaypalService {
             }
             // Return message to client, can include code 200 or 409 (Conflict)
             // Use 409 to indicate action cannot be performed due to current state
-            throw new CustomError(
-              409,
-              "This order has been paid previously."
-            );
+            throw new CustomError(409, "This order has been paid previously.");
             // return { message: "This order has been paid previously." };
           } else if (issue === "ORDER_NOT_APPROVED") {
             console.warn(

@@ -8,3 +8,4 @@ dist/
 *.log
 error.log
 logs/
+.cache/
