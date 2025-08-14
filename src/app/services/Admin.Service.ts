@@ -188,10 +188,7 @@ class AdminService {
         throw new CustomError(400, "Campaign name cannot be empty");
       }
       if (!franchiseOwnerId?.trim()) {
-        throw new CustomError(
-          400,
-          "Franchise Owner ID cannot be empty"
-        );
+        throw new CustomError(400, "Franchise Owner ID cannot be empty");
       }
       if (totalAllocated <= 0) {
         throw new CustomError(400, "Allocation amount must be greater than 0");
@@ -224,7 +221,6 @@ class AdminService {
       if (!newCampaign) {
         throw new CustomError(500, "Error creating Campaign in database");
       }
-
       console.log(
         `[AdminService] Successfully created Campaign with ID: ${newCampaign._id}`
       );
@@ -261,6 +257,39 @@ class AdminService {
       console.log(
         `[AdminService] Successfully created ledger with ID: ${newLedger._id}`
       );
+
+      const packageID = newCampaign.packageId.toString();
+      if (!packageID) {
+        throw new CustomError(500, "Error getting packageId from Campaign");
+      }
+      const franchiseDetails = await FranchiseDetailsModel.findOne({
+        userId: franchiseOwnerId,
+      });
+      if (!franchiseDetails) {
+        throw new CustomError(
+          500,
+          "Error getting franchiseDetails from FranchiseDetails"
+        );
+      }
+      const franchise = await InvitationCodeModel.updateMany(
+        {
+          userId: franchiseOwnerId,
+        },
+        {
+          $set: {
+            currentActiveLedgerEntryId:
+              franchiseDetails.userTrialQuotaLedger[0]._id,
+            packageId: new Types.ObjectId(packageID),
+          },
+        }
+      );
+      if (!franchise) {
+        throw new CustomError(
+          500,
+          "Error updating franchise from InvitationCode"
+        );
+      }
+
       return newCampaign;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -588,10 +617,7 @@ class AdminService {
       console.error(
         `[AdminService] Undefined error when getting Campaigns list: ${error}`
       );
-      throw new CustomError(
-        500,
-        "Undefined error when getting Campaigns list"
-      );
+      throw new CustomError(500, "Undefined error when getting Campaigns list");
     }
   }
 
@@ -829,7 +855,9 @@ class AdminService {
         ),
       };
 
-      console.log(`[AdminService] Successfully retrieved Campaign performance summary`);
+      console.log(
+        `[AdminService] Successfully retrieved Campaign performance summary`
+      );
       return result;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -1249,7 +1277,9 @@ class AdminService {
         },
       };
 
-      console.log(`[AdminService] Successfully retrieved franchise hierarchy tree`);
+      console.log(
+        `[AdminService] Successfully retrieved franchise hierarchy tree`
+      );
       return result;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -1728,7 +1758,10 @@ class AdminService {
           : undefined,
       });
       if (!code) {
-        throw new CustomError(500, "Undefined error after creating invitation code");
+        throw new CustomError(
+          500,
+          "Undefined error after creating invitation code"
+        );
       }
 
       return code;
@@ -1742,7 +1775,10 @@ class AdminService {
       console.error(
         `[AdminService] Undefined error when creating invitation code: ${error}`
       );
-      throw new CustomError(500, "Undefined error when creating invitation code");
+      throw new CustomError(
+        500,
+        "Undefined error when creating invitation code"
+      );
     }
   }
 

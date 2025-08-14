@@ -5,6 +5,7 @@ import InvitationCodeService from "./InvitationCode.Service";
 import UserService from "./User.Service";
 import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
 import { generateOTP } from "../utils/OTP.Util";
+import CampaignModel from "../models/Campaign.Model";
 
 class UpgradeRequestService {
   async createUpgradeRequest(userId: string, data: any) {
@@ -203,6 +204,10 @@ class UpgradeRequestService {
         )
           .populate("userId")
           .session(currentSession);
+
+        if (!upgradeRequest) {
+          throw new CustomError(404, "Upgrade request not found");
+        }
         if (!upgradeRequest) {
           throw new CustomError(404, "Không tìm thấy yêu cầu nâng cấp");
         }

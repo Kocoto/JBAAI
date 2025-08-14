@@ -325,7 +325,10 @@ class FranchiseService {
       console.error(
         `[FranchiseService] Undefined error when getting invitation codes: ${error}`
       );
-      throw new CustomError(500, "Undefined error when getting the list of invitation codes");
+      throw new CustomError(
+        500,
+        "Undefined error when getting the list of invitation codes"
+      );
     }
   }
 
@@ -388,7 +391,9 @@ class FranchiseService {
         if (!validStatuses.includes(filters.status)) {
           throw new CustomError(
             400,
-            `Invalid status. Only accepted values are: ${validStatuses.join(", ")}`
+            `Invalid status. Only accepted values are: ${validStatuses.join(
+              ", "
+            )}`
           );
         }
         ledgerEntries = ledgerEntries.filter(
@@ -568,8 +573,12 @@ class FranchiseService {
         throw new CustomError(404, "Child franchise information not found");
       }
 
-      // Check the parent-child relationship
-      if (childFranchise.parentId?.toString() !== parentUserId) {
+      const parentId = childFranchise.parentId;
+      if (!parentId) {
+        throw new CustomError(404, "Parent franchise information not found");
+      }
+      console.log("parentId", parentId.toString());
+      if (parentId.toString() !== parentUserId.toString()) {
         throw new CustomError(
           403,
           "The child franchise is not a direct child of yours"
@@ -722,13 +731,13 @@ class FranchiseService {
         "userTrialQuotaLedger._id": new Types.ObjectId(childLedgerEntryId),
       }).lean();
 
-      if (!childFranchise) {
+      if (!childFranchise?.toString()) {
         throw new CustomError(404, "Ledger entry to be revoked not found");
       }
 
       // 2. Find the specific ledger entry
       const childLedgerEntry = childFranchise.userTrialQuotaLedger?.find(
-        (entry: any) => entry._id.toString() === childLedgerEntryId
+        (entry: any) => entry._id.toString() === childLedgerEntryId.toString()
       );
 
       if (!childLedgerEntry) {
@@ -739,7 +748,10 @@ class FranchiseService {
       }
 
       // 3. Check revocation permission (the allocator must be parentUserId)
-      if (childLedgerEntry.allocatedByUserId?.toString() !== parentUserId) {
+      if (
+        childLedgerEntry.allocatedByUserId?.toString() !==
+        parentUserId.toString()
+      ) {
         throw new CustomError(
           403,
           "You do not have permission to revoke this ledger entry"
@@ -889,17 +901,15 @@ class FranchiseService {
         throw new CustomError(404, "Child franchise not found");
       }
 
-      if (childFranchise.parentId?.toString() !== parentUserId) {
-        throw new CustomError(
-          403,
-          "This franchise is not your direct child"
-        );
+      if (childFranchise.parentId?.toString() !== parentUserId.toString()) {
+        throw new CustomError(403, "This franchise is not your direct child");
       }
 
       // 2. Filter ledger entries allocated by the parent
       const allocationHistory =
         childFranchise.userTrialQuotaLedger?.filter(
-          (entry: any) => entry.allocatedByUserId?.toString() === parentUserId
+          (entry: any) =>
+            entry.allocatedByUserId?.toString() === parentUserId.toString()
         ) || [];
 
       // 3. Enhance with campaign information
@@ -1050,7 +1060,7 @@ class FranchiseService {
             // Filter by campaign if specified
             if (
               rootCampaignId &&
-              ledger.sourceCampaignId?.toString() !== rootCampaignId
+              ledger.sourceCampaignId?.toString() !== rootCampaignId.toString()
             ) {
               return null;
             }
@@ -1332,11 +1342,8 @@ class FranchiseService {
         throw new CustomError(404, "Child franchise not found");
       }
 
-      if (childFranchise.parentId?.toString() !== parentUserId) {
-        throw new CustomError(
-          403,
-          "This franchise is not your direct child"
-        );
+      if (childFranchise.parentId?.toString() !== parentUserId.toString()) {
+        throw new CustomError(403, "This franchise is not your direct child");
       }
 
       // Get child performance using the same logic as getFranchiseTrialPerformance
@@ -1420,27 +1427,37 @@ class FranchiseService {
         throw new CustomError(404, "Franchise information not found");
       }
 
-      // Recursive function to get all descendant franchises
+      const visitedFranchises = new Set<string>();
+      const MAX_DEPTH = 20;
+      const MAX_NODES = 50_000;
+
       const getAllDescendants = async (
         parentId: Types.ObjectId,
-        level: number = 0
+        level: number = 0,
+        countRef = { n: 0 }
       ): Promise<Types.ObjectId[]> => {
-        const directChildren = await FranchiseDetailsModel.find({
-          parentId: parentId,
-        }).lean();
+        if (level > MAX_DEPTH) return [];
+        const key = parentId.toString();
+        if (visitedFranchises.has(key)) return [];
+        visitedFranchises.add(key);
 
-        let allDescendants: Types.ObjectId[] = [];
-
+        const directChildren = await FranchiseDetailsModel.find({ parentId })
+          .select("userId")
+          .lean()
+          .maxTimeMS(30_000);
+        
+        let all: Types.ObjectId[] = [];
         for (const child of directChildren) {
-          allDescendants.push(child.userId as Types.ObjectId);
-          const childDescendants = await getAllDescendants(
-            child.userId as Types.ObjectId,
-            level + 1
-          );
-          allDescendants = allDescendants.concat(childDescendants);
+          const cid = child.userId as Types.ObjectId;
+          all.push(cid);
+          countRef.n++;
+          if (countRef.n > MAX_NODES) {
+            break;
+          }
+          const sub = await getAllDescendants(cid, level + 1, countRef);
+          all = all.concat(sub);
         }
-
-        return allDescendants;
+        return all;
       };
 
       // Get all IDs of descendant franchises
@@ -1874,7 +1891,9 @@ class FranchiseService {
         overallStats.totalAvailableQuota
       );
 
-      console.log(`[FranchiseService] Successfully retrieved quota utilization information`);
+      console.log(
+        `[FranchiseService] Successfully retrieved quota utilization information`
+      );
 
       return {
         myQuotaUtilization: myQuotaUtilization,
@@ -1907,6 +1926,41 @@ class FranchiseService {
       throw new CustomError(
         500,
         "Undefined error when getting quota utilization information"
+      );
+    }
+  }
+
+  async getChildrenFranchise(userId: string) {
+    try {
+      if (!Types.ObjectId.isValid(userId)) {
+        throw new CustomError(400, "Invalid user ID");
+      }
+
+      const parentObjectId = new Types.ObjectId(userId);
+
+      const children = await FranchiseDetailsModel.find({
+        parentId: parentObjectId,
+      })
+        .populate({
+          path: "userId",
+          select: "username email franchiseName",
+          options: { lean: true },
+        })
+        .lean()
+        .exec();
+      if (!children || children.length === 0) {
+        throw new CustomError(404, "Children franchise not found");
+      }
+
+      return children;
+    } catch (error: any) {
+      if (error instanceof CustomError) {
+        throw error;
+      }
+      // đừng nuốt mất message gốc, log/đính kèm để debug dễ hơn
+      throw new CustomError(
+        500,
+        `Error getting children franchise: ${error?.message || "Unknown error"}`
       );
     }
   }

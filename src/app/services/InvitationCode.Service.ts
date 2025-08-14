@@ -15,7 +15,6 @@ class InvitationCodeService {
   ) {
     const otp = generateOTP(4);
     const validCode = code + otp;
-
     // Errors will be thrown directly for parent withTransaction to handle
     const newCode = await InvitationCodeModel.create(
       [
@@ -63,7 +62,7 @@ class InvitationCodeService {
   }
   async getCodeByUserId(userId: string) {
     try {
-      const code = await InvitationCodeModel.findOne({ userId: userId });
+      const code = await InvitationCodeModel.find({ userId: userId });
       return code;
     } catch (error) {
       if (error instanceof CustomError) throw error;
