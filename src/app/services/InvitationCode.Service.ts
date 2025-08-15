@@ -107,6 +107,14 @@ class InvitationCodeService {
       if (!campaign) {
         throw new CustomError(400, "Campaign not found");
       }
+      if (campaign.status === "inactive") {
+        await InvitationCodeModel.updateMany(
+          { sourceCampaignId: campaign._id },
+          { $set: { status: "inactive" } }
+        );
+        console.log("[InvitationCodeService] Campaign is inactive");
+        throw new CustomError(400, "Campaign is inactive");
+      }
       const packageId = campaign.packageId;
 
       const activeCode = await InvitationCodeModel.updateMany(

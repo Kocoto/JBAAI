@@ -6,6 +6,8 @@ import {
   IInvitationCode,
   IInvitationCodeInput,
 } from "../models/InvitationCode.Model";
+import SubscriptionService from "../services/Subscription.Service";
+import UserService from "../services/User.Service";
 
 class AdminController {
   /**
@@ -729,6 +731,83 @@ class AdminController {
         success: true,
         message: "Successfully created invitation code",
         data: newInvitationCode,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getAllUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { page, limit } = req.query;
+      const users = await UserService.getAllUsers(
+        parseInt(page as string) || 1,
+        parseInt(limit as string) || 10
+      );
+      res.status(200).json({
+        success: true,
+        message: "Successfully retrieved all users",
+        data: users,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getUserById(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const user = await UserService.getUserById(userId);
+      res.status(200).json({
+        success: true,
+        message: "Successfully retrieved user by id",
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const user = await UserService.updateUser(userId, req.body);
+      res.status(200).json({
+        success: true,
+        message: "Successfully updated user",
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async deleteUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { userId } = req.params;
+      const user = await UserService.deleteUser(userId);
+      res.status(200).json({
+        success: true,
+        message: "Successfully deleted user",
+        data: user,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getSearchUsers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { query, page, limit } = req.query;
+      const users = await UserService.getSearchUsers(
+        query as string,
+        parseInt(page as string) || 1,
+        parseInt(limit as string) || 10
+      );
+      res.status(200).json({
+        success: true,
+        message: "Successfully retrieved search users",
+        data: users,
       });
     } catch (error) {
       next(error);

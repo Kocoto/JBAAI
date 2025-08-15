@@ -2,7 +2,7 @@ import CampaignModel from "../models/Campaign.Model";
 import { FranchiseDetailsModel } from "../models/FranchiseDetails.Model";
 import InvitationModel from "../models/Invitation.Model";
 import { TrialConversionLogModel } from "../models/TrialConversionLog.Model";
-import UserModel from "../models/User.Model";
+import UserModel, { IUser } from "../models/User.Model";
 import CustomError from "../utils/Error.Util";
 import { Types } from "mongoose";
 import FranchiseService from "./Franchise.Service";
@@ -10,6 +10,7 @@ import InvitationCodeModel, {
   IInvitationCode,
   IInvitationCodeInput,
 } from "../models/InvitationCode.Model";
+import InvitationCodeService from "./InvitationCode.Service";
 
 export interface campaignFilter {
   status?: string;
@@ -205,6 +206,16 @@ class AdminService {
         throw new CustomError(400, "Invalid Franchise Owner ID");
       }
 
+      const oldCampaign = await CampaignModel.find({
+        status: "active",
+      });
+      if (oldCampaign) {
+        await CampaignModel.updateMany(
+          { status: "active" },
+          { $set: { status: "inactive" } }
+        );
+      }
+
       // Create new Campaign
       const newCampaign = await CampaignModel.create({
         campaignName: campaignName.trim(),
@@ -258,38 +269,37 @@ class AdminService {
         `[AdminService] Successfully created ledger with ID: ${newLedger._id}`
       );
 
-      const packageID = newCampaign.packageId.toString();
-      if (!packageID) {
-        throw new CustomError(500, "Error getting packageId from Campaign");
-      }
-      const franchiseDetails = await FranchiseDetailsModel.findOne({
-        userId: franchiseOwnerId,
-      });
-      if (!franchiseDetails) {
-        throw new CustomError(
-          500,
-          "Error getting franchiseDetails from FranchiseDetails"
-        );
-      }
-      const franchise = await InvitationCodeModel.updateMany(
-        {
-          userId: franchiseOwnerId,
-        },
-        {
-          $set: {
-            currentActiveLedgerEntryId:
-              franchiseDetails.userTrialQuotaLedger[0]._id,
-            packageId: new Types.ObjectId(packageID),
-          },
-        }
-      );
-      if (!franchise) {
-        throw new CustomError(
-          500,
-          "Error updating franchise from InvitationCode"
-        );
-      }
-
+      // const packageID = newCampaign.packageId.toString();
+      // if (!packageID) {
+      //   throw new CustomError(500, "Error getting packageId from Campaign");
+      // }
+      // const franchiseDetails = await FranchiseDetailsModel.findOne({
+      //   userId: franchiseOwnerId,
+      // });
+      // if (!franchiseDetails) {
+      //   throw new CustomError(
+      //     500,
+      //     "Error getting franchiseDetails from FranchiseDetails"
+      //   );
+      // }
+      // const franchise = await InvitationCodeModel.updateMany(
+      //   {
+      //     userId: franchiseOwnerId,
+      //   },
+      //   {
+      //     $set: {
+      //       currentActiveLedgerEntryId:
+      //         franchiseDetails.userTrialQuotaLedger[0]._id,
+      //       packageId: new Types.ObjectId(packageID),
+      //     },
+      //   }
+      // );
+      // if (!franchise) {
+      //   throw new CustomError(
+      //     500,
+      //     "Error updating franchise from InvitationCode"
+      //   );
+      // }
       return newCampaign;
     } catch (error) {
       if (error instanceof CustomError) {
@@ -1812,15 +1822,38 @@ class AdminService {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
+
+      const oldLedgerEntry = await FranchiseDetailsModel.findOne({
+        userId: childFranchiseUserId,
+        "userTrialQuotaLedger.status": "active",
+      });
+      if (oldLedgerEntry) {
+        await FranchiseDetailsModel.updateMany(
+          { userId: childFranchiseUserId },
+          { $set: { "userTrialQuotaLedger.$[elem].status": "inactive" } },
+          {
+            arrayFilters: [{ "elem.status": "active" }],
+          }
+        );
+      }
       const updatedFranchise = await FranchiseDetailsModel.findOneAndUpdate(
         { userId: childFranchiseUserId },
         { $push: { userTrialQuotaLedger: newLedgerEntry } },
         { new: true }
       );
+      await InvitationCodeModel.updateMany(
+        {
+          currentActiveLedgerEntryId: {
+            $ne: newLedgerEntry?._id,
+          },
+        },
+        { $set: { status: "inactive" } }
+      );
       if (!updatedFranchise) {
         throw new CustomError(500, "Undefined error after allocation");
       }
-      return newLedgerEntry;
+
+      return updatedFranchise;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(

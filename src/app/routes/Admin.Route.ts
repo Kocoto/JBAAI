@@ -37,4 +37,10 @@ router.get(
 
 router.post("/invitation-code/create", AdminController.createInvitationCode);
 
+router.get("/users/search", AdminController.getSearchUsers);
+router.get("/users", AdminController.getAllUsers);
+router.get("/users/:userId", AdminController.getUserById);
+router.put("/users/:userId", AdminController.updateUser);
+router.delete("/users/:userId", AdminController.deleteUser);
+
 export default router;

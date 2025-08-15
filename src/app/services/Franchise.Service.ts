@@ -1179,15 +1179,40 @@ class FranchiseService {
       console.log(
         `[FranchiseService] Getting child franchise performance summary for parent: ${parentUserId}`
       );
+      console.log(
+        `[FranchiseService] Filters - startDate: ${startDate?.toISOString()}, endDate: ${endDate?.toISOString()}, rootCampaignId: ${rootCampaignId}`
+      );
 
       // Get direct children
+      console.log(
+        `[FranchiseService] Querying direct children for parent: ${parentUserId}`
+      );
       const directChildren = await FranchiseDetailsModel.find({
         parentId: new Types.ObjectId(parentUserId),
       })
         .populate("userId", "username franchiseName email")
         .lean();
 
+      console.log(
+        `[FranchiseService] Found ${directChildren.length} direct children`
+      );
+
+      if (directChildren.length > 0) {
+        console.log(
+          `[FranchiseService] Direct children details:`,
+          directChildren.map((child) => ({
+            childId: child.userId,
+            franchiseLevel: child.franchiseLevel,
+            username: (child.userId as any)?.username,
+            franchiseName: (child.userId as any)?.franchiseName,
+          }))
+        );
+      }
+
       if (directChildren.length === 0) {
+        console.log(
+          `[FranchiseService] No direct children found, returning empty result`
+        );
         return {
           overallChildren: {
             totalInvites: 0,
@@ -1201,6 +1226,10 @@ class FranchiseService {
       // Collect performance data for each child
       const childrenIds = directChildren.map(
         (child) => child.userId as Types.ObjectId
+      );
+      console.log(
+        `[FranchiseService] Children IDs for performance query:`,
+        childrenIds.map((id) => id.toString())
       );
 
       // Build filters
@@ -1218,6 +1247,7 @@ class FranchiseService {
 
         invitationFilter.createdAt = dateFilter;
         trialLogFilter.trialStartDate = dateFilter;
+        console.log(`[FranchiseService] Applied date filters:`, dateFilter);
       }
 
       if (rootCampaignId) {
@@ -1225,13 +1255,32 @@ class FranchiseService {
           rootCampaignId
         );
         trialLogFilter.rootCampaignId = new Types.ObjectId(rootCampaignId);
+        console.log(
+          `[FranchiseService] Applied rootCampaignId filter: ${rootCampaignId}`
+        );
       }
 
+      console.log(
+        `[FranchiseService] Final invitation filter:`,
+        JSON.stringify(invitationFilter, null, 2)
+      );
+      console.log(
+        `[FranchiseService] Final trial log filter:`,
+        JSON.stringify(trialLogFilter, null, 2)
+      );
+
       // Get overall children performance
+      console.log(
+        `[FranchiseService] Executing parallel queries for invitations and trial logs`
+      );
       const [allInvitations, allTrialLogs] = await Promise.all([
         InvitationModel.find(invitationFilter).lean(),
         TrialConversionLogModel.find(trialLogFilter).lean(),
       ]);
+
+      console.log(
+        `[FranchiseService] Query results - Invitations: ${allInvitations.length}, Trial Logs: ${allTrialLogs.length}`
+      );
 
       const overallTotalInvites = allInvitations.length;
       const overallTotalRenewals = allTrialLogs.filter(
@@ -1244,10 +1293,20 @@ class FranchiseService {
             ) / 100
           : 0;
 
+      console.log(
+        `[FranchiseService] Overall performance - Total Invites: ${overallTotalInvites}, Total Renewals: ${overallTotalRenewals}, Renewal Rate: ${overallRenewalRate}%`
+      );
+
       // Get performance by each child
+      console.log(
+        `[FranchiseService] Calculating individual child performance`
+      );
       const performanceByChild = await Promise.all(
         directChildren.map(async (child) => {
           const childUserId = child.userId as Types.ObjectId;
+          console.log(
+            `[FranchiseService] Processing child: ${childUserId.toString()}`
+          );
 
           const childInvitations = allInvitations.filter(
             (inv) => inv.inviterUserId.toString() === childUserId.toString()
@@ -1270,6 +1329,10 @@ class FranchiseService {
 
           const userInfo = child.userId as any;
 
+          console.log(
+            `[FranchiseService] Child ${childUserId.toString()} performance - Invites: ${childTotalInvites}, Renewals: ${childTotalRenewals}, Rate: ${childRenewalRate}%`
+          );
+
           return {
             childFranchiseId: childUserId.toString(),
             childFranchiseName:
@@ -1284,24 +1347,46 @@ class FranchiseService {
 
       // Sort by performance
       performanceByChild.sort((a, b) => b.totalRenewals - a.totalRenewals);
+      console.log(
+        `[FranchiseService] Sorted performance by child (by renewals):`,
+        performanceByChild.map((p) => ({
+          childId: p.childFranchiseId,
+          renewals: p.totalRenewals,
+          rate: p.renewalRate,
+        }))
+      );
 
       console.log(
         `[FranchiseService] Successfully retrieved performance for ${directChildren.length} child franchises`
       );
 
-      return {
+      const result = {
         overallChildren: {
           totalInvites: overallTotalInvites,
           totalRenewals: overallTotalRenewals,
           renewalRate: overallRenewalRate,
         },
         performanceByChild,
+        // filters: {
+        //   startDate: startDate?.toISOString(),
+        //   endDate: endDate?.toISOString(),
+        //   rootCampaignId: rootCampaignId,
+        // },
         filters: {
-          startDate: startDate?.toISOString(),
-          endDate: endDate?.toISOString(),
-          rootCampaignId: rootCampaignId,
+          startDate: startDate ? startDate.toISOString() : null,
+          endDate: endDate ? endDate.toISOString() : null,
+          rootCampaignId: rootCampaignId ?? null,
         },
       };
+
+      console.log(`[FranchiseService] Final result summary:`, {
+        totalChildren: directChildren.length,
+        overallInvites: result.overallChildren.totalInvites,
+        overallRenewals: result.overallChildren.totalRenewals,
+        overallRate: result.overallChildren.renewalRate,
+      });
+
+      return result;
     } catch (error) {
       if (error instanceof CustomError) {
         console.error(
@@ -1445,7 +1530,7 @@ class FranchiseService {
           .select("userId")
           .lean()
           .maxTimeMS(30_000);
-        
+
         let all: Types.ObjectId[] = [];
         for (const child of directChildren) {
           const cid = child.userId as Types.ObjectId;

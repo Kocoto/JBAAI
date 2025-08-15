@@ -105,9 +105,18 @@ class AuthService {
     if (invitationCodeInfo.totalCumulativeUses !== undefined) {
       invitationCodeInfo.totalCumulativeUses += 1;
     }
+    const UserFranchise = await UserModel.findById(invitationCodeInfo.userId);
+    console.log("UserFranchise", UserFranchise);
+    if (!UserFranchise) {
+      throw new CustomError(400, "User not found");
+    }
+    console.log("UserFranchise", UserFranchise);
     await UserModel.findByIdAndUpdate(
       newUser._id,
-      { role: "franchise" },
+      {
+        role: "franchise",
+        franchiseName: UserFranchise?.franchiseName,
+      },
       { new: true, session }
     );
     // **MOST IMPORTANT FIX:** Must pass session to save()
